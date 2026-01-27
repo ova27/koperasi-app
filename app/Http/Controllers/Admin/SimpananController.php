@@ -45,4 +45,31 @@ class SimpananController extends Controller
                 ->withErrors(['jumlah' => $e->getMessage()]);
         }
     }
+
+    public function ambil(
+        Request $request, 
+        Anggota $anggota, 
+        SimpananService $service
+    ){
+        $request->validate([
+            'jumlah' => 'required|integer|min:1',
+            'keterangan' => 'required|string|max:255',
+        ]);
+
+        try {
+            $service->ambil(
+                $anggota->id,
+                $request->jumlah,
+                'manual',
+                $request->keterangan
+            );
+
+            return back()->with('success', 'Pengambilan simpanan berhasil');
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->withErrors(['jumlah' => $e->getMessage()]);
+        }
+    }
+
 }

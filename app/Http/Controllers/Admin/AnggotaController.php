@@ -20,7 +20,12 @@ class AnggotaController extends Controller
         SimpananService $simpananService,
         PinjamanService $pinjamanService
     ) {
-        $anggota->load(['pinjamans', 'simpanans']);
+        $anggota->load([
+            'simpanans' => function ($q) {
+                $q->orderByDesc('tanggal');
+            },
+            'pinjamans',
+        ]);
 
         $saldoSimpanan = $simpananService
             ->saldoPerJenis($anggota->id);

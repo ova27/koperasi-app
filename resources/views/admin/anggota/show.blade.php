@@ -33,6 +33,14 @@
             + Tambah Simpanan
         </a>
 
+        {{-- Proses Pensiun Mutasi --}}
+        @if ($anggota->status === 'aktif')
+            <a href="{{ route('admin.anggota.keluar.confirm', $anggota) }}"
+            class="inline-block bg-red-500 text-white px-3 py-1 rounded text-sm">
+                Proses Pensiun / Mutasi
+            </a>
+        @endif
+
         <table class="text-sm w-full">
             <tr>
                 <td>Simpanan Pokok</td>
@@ -53,6 +61,87 @@
                 </td>
             </tr>
         </table>
+
+        {{-- Ambil Simpanan --}}
+        <div class="bg-white border rounded p-4 mb-6">
+            <h2 class="font-semibold mb-3">Pengambilan Simpanan Sukarela</h2>
+
+            @if ($errors->any())
+                <div class="mb-3 text-sm text-red-600">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('admin.simpanan.ambil', $anggota) }}">
+                @csrf
+
+                <div class="mb-3">
+                    <label class="block text-sm">Jumlah</label>
+                    <input type="number" name="jumlah"
+                        class="border rounded w-full px-2 py-1"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="block text-sm">Keterangan</label>
+                    <input type="text" name="keterangan"
+                        class="border rounded w-full px-2 py-1"
+                        required>
+                </div>
+
+                <button class="bg-red-600 text-white px-4 py-2 rounded">
+                    Ambil Simpanan
+                </button>
+            </form>
+        </div>
+        
+    </div>
+
+    {{-- RIWAYAT SIMPANAN --}}
+    <div class="bg-white border rounded p-4 mb-6">
+        <h2 class="font-semibold mb-3">Riwayat Simpanan</h2>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="border-b bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left">Tanggal</th>
+                        <th class="px-3 py-2 text-left">Jenis</th>
+                        <th class="px-3 py-2 text-right">Jumlah</th>
+                        <th class="px-3 py-2 text-left">Sumber</th>
+                        <th class="px-3 py-2 text-left">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($anggota->simpanans as $simpanan)
+                        <tr class="border-b">
+                            <td class="px-3 py-2">
+                                {{ \Carbon\Carbon::parse($simpanan->tanggal)->format('d-m-Y') }}
+                            </td>
+                            <td class="px-3 py-2 capitalize">
+                                {{ $simpanan->jenis_simpanan }}
+                            </td>
+                            <td class="px-3 py-2 text-right">
+                                Rp {{ number_format($simpanan->jumlah, 0, ',', '.') }}
+                            </td>
+                            <td class="px-3 py-2">
+                                {{ $simpanan->sumber }}
+                            </td>
+                            <td class="px-3 py-2">
+                                {{ $simpanan->keterangan ?? '-' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5"
+                                class="px-3 py-4 text-center text-gray-500">
+                                Belum ada transaksi simpanan
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
 

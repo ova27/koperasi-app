@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Services;
-
+use Carbon\Carbon;
 use App\Models\Simpanan;
 use App\Models\Anggota;
 use Illuminate\Support\Facades\DB;
@@ -55,6 +55,22 @@ class SimpananService
 
         if ($jenis === 'pokok' && !in_array($sumber, ['saldo_awal', 'manual'])) {
             throw new Exception('Sumber simpanan pokok tidak valid');
+        }
+
+        if (in_array($jenis, ['wajib', 'sukarela']) && $alasan === 'biasa') {
+
+            $bulan = Carbon::now()->format('Y-m');
+
+            $sudahAda = Simpanan::where('anggota_id', $anggotaId)
+                ->where('jenis_simpanan', $jenis)
+                ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
+                ->exists();
+
+            if ($sudahAda) {
+                throw new Exception(
+                    "Simpanan {$jenis} bulan ini sudah pernah diinput"
+                );
+            }
         }
 
         if ($jumlah <= 0) {
@@ -126,6 +142,71 @@ class SimpananService
         if ($anggota->status !== 'aktif') {
             throw new Exception('Anggota tidak aktif');
         }
+    }
+
+    public function ambil(
+        int $anggotaId,
+        int $jumlah,
+        string $sumber = 'manual',
+        string $keterangan
+    ): void {
+        if ($jumlah <= 0) {
+            throw new Exception('Jumlah pengambilan harus lebih dari 0');
+        }
+
+        $this->validateAnggotaAktif($anggotaId);
+
+        // HITUNG SALDO SUKARELA
+        $saldo = Simpanan::where('anggota_id', $anggotaId)
+            ->where('jenis_simpanan', 'sukarela')
+            ->sum('jumlah');
+
+        if ($saldo < $jumlah) {
+            throw new Exception('Saldo simpanan sukarela tidak mencukupi');
+        }
+
+        DB::transaction(function () use ($anggotaId, $jumlah, $sumber, $keterangan) {
+            Simpanan::create([
+                'anggota_id'     => $anggotaId,
+                'tanggal'        => now(),
+                'jenis_simpanan' => 'sukarela',
+                'jumlah'         => -$jumlah, // NEGATIF
+                'sumber'         => $sumber,
+                'alasan'         => 'pengambilan',
+                'keterangan'     => $keterangan,
+            ]);
+        });
+    }
+
+    public function kembalikanSemuaSimpanan(
+        int $anggotaId,
+        string $alasan // pensiun | mutasi
+    ): void {
+        if (!in_array($alasan, ['pensiun', 'mutasi'])) {
+            throw new Exception('Alasan pengembalian tidak valid');
+        }
+
+        // hitung saldo per jenis
+        $saldos = Simpanan::where('anggota_id', $anggotaId)
+            ->select('jenis_simpanan', DB::raw('SUM(jumlah) as total'))
+            ->groupBy('jenis_simpanan')
+            ->get();
+
+        DB::transaction(function () use ($anggotaId, $saldos, $alasan) {
+            foreach ($saldos as $saldo) {
+                if ($saldo->total > 0) {
+                    Simpanan::create([
+                        'anggota_id'     => $anggotaId,
+                        'tanggal'        => now(),
+                        'jenis_simpanan' => $saldo->jenis_simpanan,
+                        'jumlah'         => -$saldo->total, // NEGATIF
+                        'sumber'         => 'manual',
+                        'alasan'         => $alasan,
+                        'keterangan'     => 'Pengembalian simpanan karena ' . $alasan,
+                    ]);
+                }
+            }
+        });
     }
 
 }

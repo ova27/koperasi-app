@@ -188,4 +188,11 @@ class PinjamanService
         ];
     }
 
+    public function anggotaMasihPunyaPinjamanAktif(int $anggotaId): bool
+    {
+        return Pinjaman::where('anggota_id', $anggotaId)
+            ->where('status', 'aktif')
+            ->exists();
+    }
+
 }
