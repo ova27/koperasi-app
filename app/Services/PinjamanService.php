@@ -176,4 +176,16 @@ class PinjamanService
             throw new Exception('Melebihi batas maksimal pinjaman');
         }
     }
+
+    public function ringkasanAnggota(int $anggotaId): array
+    {
+        $pinjamans = \App\Models\Pinjaman::where('anggota_id', $anggotaId)->get();
+
+        return [
+            'aktif' => $pinjamans->where('status', 'aktif')->count(),
+            'lunas' => $pinjamans->where('status', 'lunas')->count(),
+            'sisa'  => $pinjamans->where('status', 'aktif')->sum('sisa_pinjaman'),
+        ];
+    }
+
 }

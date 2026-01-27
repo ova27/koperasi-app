@@ -23,7 +23,7 @@ class SimpananService
     public function saldoPerJenis(int $anggotaId): array
     {
         return Simpanan::where('anggota_id', $anggotaId)
-            ->select('jenis_simpanan', DB::raw('SUM(jumlah) as saldo'))
+            ->selectRaw('jenis_simpanan, SUM(jumlah) as saldo')
             ->groupBy('jenis_simpanan')
             ->pluck('saldo', 'jenis_simpanan')
             ->toArray();
@@ -40,6 +40,23 @@ class SimpananService
         string $alasan = 'biasa',
         ?string $keterangan = null
     ): void {
+       
+        if ($jenis === 'pokok') {
+            $sudahAda = Simpanan::where('anggota_id', $anggotaId)
+                ->where('jenis_simpanan', 'pokok')
+                ->exists();
+
+            if ($sudahAda) {
+                throw new Exception(
+                    'Simpanan pokok hanya boleh satu kali di awal keanggotaan'
+                );
+            }
+        }
+
+        if ($jenis === 'pokok' && !in_array($sumber, ['saldo_awal', 'manual'])) {
+            throw new Exception('Sumber simpanan pokok tidak valid');
+        }
+
         if ($jumlah <= 0) {
             throw new Exception('Jumlah simpanan harus lebih dari 0');
         }
@@ -110,4 +127,5 @@ class SimpananService
             throw new Exception('Anggota tidak aktif');
         }
     }
+
 }
