@@ -16,6 +16,10 @@ class Simpanan extends Model
         'keterangan',
     ];
 
+    protected $casts = [
+        'tanggal' => 'date',
+    ];
+
     public function anggota()
     {
         return $this->belongsTo(Anggota::class);

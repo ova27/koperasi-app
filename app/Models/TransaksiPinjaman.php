@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class TransaksiPinjaman extends Model
 {
     protected $table = 'transaksi_pinjaman';
+    protected $casts = [
+        'tanggal' => 'date',
+    ];
 
     protected $fillable = [
         'pinjaman_id',

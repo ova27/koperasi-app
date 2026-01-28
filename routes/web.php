@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AnggotaController;
 use App\Http\Controllers\Admin\SimpananController;
 use App\Http\Controllers\Admin\AnggotaExitController;
+use App\Http\Controllers\Admin\LaporanPinjamanController;
+use App\Http\Controllers\Admin\LaporanSimpananController;
 use App\Http\Controllers\Admin\GenerateSimpananWajibController;
 
 Route::get('/', function () {
@@ -43,11 +45,53 @@ Route::middleware(['auth'])
         Route::post('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'process'])
             ->name('anggota.keluar.process');
 
-        Route::get('/simpanan/generate-wajib', [GenerateSimpananWajibController::class, 'index'])
-            ->name('simpanan.generate-wajib');
+    });
 
-        Route::post('/simpanan/generate-wajib', [GenerateSimpananWajibController::class, 'process'])
-            ->name('simpanan.generate-wajib.process');
+Route::middleware(['auth', 'bendahara'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::get(
+            '/simpanan/generate-wajib',
+            [GenerateSimpananWajibController::class, 'index']
+        )->name('simpanan.generate-wajib');
+
+        Route::post(
+            '/simpanan/generate-wajib',
+            [GenerateSimpananWajibController::class, 'process']
+        )->name('simpanan.generate-wajib.process');
+
+        Route::get(
+            '/laporan/simpanan-bulanan',
+            [LaporanSimpananController::class, 'index']
+        )->name('laporan.simpanan-bulanan');
+
+        Route::get(
+            '/laporan/simpanan-bulanan/export',
+            [LaporanSimpananController::class, 'export']
+        )->name('laporan.simpanan-bulanan.export');
+
+        Route::get(
+            '/laporan/pinjaman',
+            [LaporanPinjamanController::class, 'index']
+        )->name('laporan.pinjaman');
+
+        Route::get(
+            '/laporan/pinjaman/export',
+            [LaporanPinjamanController::class, 'export']
+        )->name('laporan.pinjaman.export');
+
+        Route::get(
+            '/laporan/pinjaman/{pinjaman}',
+            [LaporanPinjamanController::class, 'show']
+        )->name('laporan.pinjaman.show');
+
+        Route::post(
+            '/laporan/simpanan-bulanan/lock',
+            [LaporanSimpananController::class, 'lock']
+        )->name('laporan.simpanan-bulanan.lock');
+
     });
 
 Route::middleware('auth')->group(function () {

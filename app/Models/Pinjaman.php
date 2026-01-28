@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Pinjaman extends Model
 {
     protected $table = 'pinjamans';
+    protected $casts = [
+        'tanggal_pinjam' => 'date',
+    ];
+
     protected $fillable = [
         'anggota_id',
         'tanggal_pinjam',
@@ -20,7 +24,7 @@ class Pinjaman extends Model
         return $this->belongsTo(Anggota::class);
     }
 
-    public function transaksis()
+    public function transaksi()
     {
         return $this->hasMany(TransaksiPinjaman::class);
     }

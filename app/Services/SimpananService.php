@@ -6,6 +6,7 @@ use App\Models\Simpanan;
 use App\Models\Anggota;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use App\Services\ClosingService;
 
 class SimpananService
 {
@@ -41,6 +42,7 @@ class SimpananService
         ?string $keterangan = null
     ): void {
        
+        // 🧱 SIMPANAN POKOK
         if ($jenis === 'pokok') {
             $sudahAda = Simpanan::where('anggota_id', $anggotaId)
                 ->where('jenis_simpanan', 'pokok')
@@ -51,16 +53,22 @@ class SimpananService
                     'Simpanan pokok hanya boleh satu kali di awal keanggotaan'
                 );
             }
+
+            if (!in_array($sumber, ['saldo_awal', 'manual'])) {
+                throw new Exception('Sumber simpanan pokok tidak valid');
+            }
         }
 
-        if ($jenis === 'pokok' && !in_array($sumber, ['saldo_awal', 'manual'])) {
-            throw new Exception('Sumber simpanan pokok tidak valid');
+        // 🔒 CLOSING BULAN (GLOBAL)
+        $bulan = Carbon::now()->format('Y-m');
+        if (app(ClosingService::class)->isLocked($bulan, 'simpanan')) {
+            throw new Exception(
+                'Bulan ini sudah ditutup, tidak bisa input simpanan'
+            );
         }
-
+    
+        // 📅 SIMPANAN BULANAN
         if (in_array($jenis, ['wajib', 'sukarela']) && $alasan === 'biasa') {
-
-            $bulan = Carbon::now()->format('Y-m');
-
             $sudahAda = Simpanan::where('anggota_id', $anggotaId)
                 ->where('jenis_simpanan', $jenis)
                 ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
@@ -73,10 +81,12 @@ class SimpananService
             }
         }
 
+        // 💰 VALIDASI JUMLAH
         if ($jumlah <= 0) {
             throw new Exception('Jumlah simpanan harus lebih dari 0');
         }
 
+        // 👤 VALIDASI ANGGOTA
         $this->validateAnggotaAktif($anggotaId);
 
         DB::transaction(function () use (
@@ -93,6 +103,8 @@ class SimpananService
             ]);
         });
     }
+
+        
 
     /**
      * Ambil / kurangi simpanan

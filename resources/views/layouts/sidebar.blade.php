@@ -40,6 +40,13 @@
         </a>
     @endif
 
+    @role('bendahara')
+        <a href="{{ route('admin.simpanan.generate-wajib') }}"
+            class="px-3 py-2 rounded hover:bg-gray-100">
+            Generate Simpanan Wajib
+        </a>
+    @endrole
+
     {{-- ANGGOTA --}}
     @if($user?->hasRole('anggota'))
         <div class="mt-4 text-gray-400 uppercase text-xs">Anggota</div>
@@ -51,6 +58,29 @@
         <a href="#" class="block px-3 py-2 rounded hover:bg-gray-100">
             Pinjaman Saya
         </a>
+    @endif
+
+    @if(auth()->check() && auth()->user()->hasRole('bendahara'))
+        
+        {{-- LAPORAN --}}
+        <div class="mt-4 text-gray-400 uppercase text-xs">
+            Laporan
+        </div>
+
+        <a
+            href="{{ route('admin.laporan.simpanan-bulanan') }}"
+            class="block px-3 py-2 rounded hover:bg-gray-100
+                {{ request()->routeIs('admin.laporan.simpanan-bulanan*') ? 'bg-gray-100 font-semibold' : '' }}">
+            Laporan Simpanan
+        </a>
+
+        <a
+            href="{{ route('admin.laporan.pinjaman') }}"
+            class="block px-3 py-2 rounded hover:bg-gray-100
+                {{ request()->routeIs('admin.laporan.pinjaman*') ? 'bg-gray-100 font-semibold' : '' }}">
+            Laporan Pinjaman
+        </a>
+
     @endif
 
 </nav>
