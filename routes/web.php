@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\SimpananController;
 use App\Http\Controllers\Admin\AnggotaExitController;
 use App\Http\Controllers\Admin\LaporanPinjamanController;
 use App\Http\Controllers\Admin\LaporanSimpananController;
+use App\Http\Controllers\Anggota\PengajuanPinjamanController;
 use App\Http\Controllers\Admin\GenerateSimpananWajibController;
 
 Route::get('/', function () {
@@ -93,6 +94,23 @@ Route::middleware(['auth', 'bendahara'])
         )->name('laporan.simpanan-bulanan.lock');
 
     });
+
+Route::middleware(['auth'])
+    ->prefix('anggota')
+    ->name('anggota.')
+    ->group(function () {
+
+        Route::get(
+            '/pinjaman/ajukan',
+            [PengajuanPinjamanController::class, 'create']
+        )->name('pinjaman.create');
+
+        Route::post(
+            '/pinjaman/ajukan',
+            [PengajuanPinjamanController::class, 'store']
+        )->name('pinjaman.store');
+    });
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

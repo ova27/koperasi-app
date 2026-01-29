@@ -34,6 +34,26 @@ class PinjamanService
         ]);
     }
 
+    public function updatePengajuan(
+        PengajuanPinjaman $pengajuan,
+        int $jumlah,
+        ?string $tujuan = null
+    ): void {
+        if ($pengajuan->status !== 'diajukan') {
+            throw new Exception('Pengajuan tidak bisa diubah');
+        }
+
+        $this->validateBatasPinjaman(
+            $pengajuan->anggota_id,
+            $jumlah
+        );
+
+        $pengajuan->update([
+            'jumlah_diajukan' => $jumlah,
+            'tujuan' => $tujuan,
+        ]);
+    }
+
     /* ======================================================
      *  PERSETUJUAN
      * ====================================================== */
@@ -162,20 +182,47 @@ class PinjamanService
         }
     }
 
-    protected function validateBatasPinjaman(int $anggotaId, int $pengajuan): void
-    {
+    protected function validateBatasPinjaman(
+        int $anggotaId,
+        int $jumlahPengajuan
+    ): void {
+    
+        // ===== KASUS: PINJAMAN BARU =====
+        if ($jumlahPengajuan > 20000000) {
+            throw new Exception(
+                'Jumlah pinjaman maksimal Rp 20.000.000'
+            );
+        }
+
+        // ambil pinjaman aktif (kalau ada)
         $pinjamanAktif = Pinjaman::where('anggota_id', $anggotaId)
             ->where('status', 'aktif')
-            ->sum('sisa_pinjaman');
+            ->first();
 
-        if ($pinjamanAktif > 0 && $pinjamanAktif >= 3000000) {
-            throw new Exception('Sisa pinjaman masih di atas batas top-up');
+        // ===== KASUS: TOP-UP =====
+        if ($pinjamanAktif) {
+
+            // 1️⃣ batas sisa pinjaman aktif max 5jt
+            if ($pinjamanAktif->sisa_pinjaman > 5000000) {
+                throw new Exception(
+                    'Top-up hanya boleh jika sisa pinjaman aktif maksimal Rp 5.000.000'
+                );
+            }
+
+            // 2️⃣ total eksposur max 20jt
+            $total = $pinjamanAktif->sisa_pinjaman + $jumlahPengajuan;
+
+            if ($total > 20000000) {
+                throw new Exception(
+                    'Total pinjaman aktif dan pengajuan melebihi Rp 20.000.000'
+                );
+            }
+
+            return; // valid
         }
 
-        if (($pinjamanAktif + $pengajuan) > 20000000) {
-            throw new Exception('Melebihi batas maksimal pinjaman');
-        }
     }
+
 
     public function ringkasanAnggota(int $anggotaId): array
     {
