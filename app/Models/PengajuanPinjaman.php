@@ -21,6 +21,12 @@ class PengajuanPinjaman extends Model
         'tanggal_pencairan',
     ];
 
+    protected $casts = [
+        'tanggal_pengajuan'   => 'datetime',
+        'tanggal_persetujuan' => 'datetime',
+        'tanggal_pencairan'   => 'datetime',
+    ];
+
     public function anggota()
     {
         return $this->belongsTo(Anggota::class);

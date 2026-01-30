@@ -15,10 +15,18 @@
         @include('layouts.sidebar')
     </aside>
 
-    {{-- CONTENT --}}
-    <main class="flex-1 p-6">
-        @yield('content')
-    </main>
+    {{-- WRAPPER KANAN --}}
+    <div class="flex-1 flex flex-col">
+
+        {{-- TOP NAVIGATION (LOGOUT ADA DI SINI) --}}
+        @include('layouts.navigation')
+
+        {{-- CONTENT --}}
+        <main class="flex-1 p-6">
+            @yield('content')
+        </main>
+
+    </div>
 
 </div>
 
