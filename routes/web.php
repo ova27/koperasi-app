@@ -23,80 +23,111 @@ use App\Http\Controllers\Anggota\{
     PengajuanPinjamanController
 };
 
+/*
+|--------------------------------------------------------------------------
+| ROOT
+|--------------------------------------------------------------------------
+*/
+Route::get('/', fn () => redirect()->route('login'));
 
-Route::get('/', fn () => view('welcome'));
-
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD (SEMUA ROLE)
+|--------------------------------------------------------------------------
+*/
 Route::get('/dashboard', fn () => view('dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+/*
+|--------------------------------------------------------------------------
+| ADMIN - KEUANGAN
+| KETUA & BENDAHARA
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:ketua,bendahara'])
+    ->prefix('admin/keuangan')
+    ->name('admin.keuangan.')
+    ->group(function () {
+
+        Route::get('/saldo', [SaldoController::class, 'index'])
+            ->name('saldo');
+
+        Route::get('/arus-koperasi', [ArusKasKoperasiController::class, 'index'])
+            ->name('arus.koperasi');
+
+        Route::get('/arus-operasional', [ArusOperasionalController::class, 'index'])
+            ->name('arus.operasional');
+
+        Route::get('/arus-kas', [LaporanArusKasController::class, 'index'])
+            ->name('arus-kas');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN - UMUM (SEMUA ROLE LOGIN)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-        // ADMIN
+        /*
+        | ANGGOTA
+        | Semua role boleh lihat list
+        | Aksi dibatasi di controller / blade
+        */
         Route::get('/anggota', [AnggotaController::class, 'index'])
             ->name('anggota.index');
 
         Route::get('/anggota/{anggota}', [AnggotaController::class, 'show'])
+            ->middleware('role:ketua,bendahara')
             ->name('anggota.show');
 
-        Route::get('/anggota/{anggota}/simpanan/create', [SimpananController::class, 'create'])
-            ->name('simpanan.create');
+        /*
+        | SIMPANAN PER ANGGOTA (BENDAHARA)
+        */
+        Route::middleware('role:bendahara')->group(function () {
 
-        Route::post('/anggota/{anggota}/simpanan', [SimpananController::class, 'store'])
-            ->name('simpanan.store');
+            Route::get('/anggota/{anggota}/simpanan/create', [SimpananController::class, 'create'])
+                ->name('simpanan.create');
 
-        Route::post('/anggota/{anggota}/simpanan/ambil', [SimpananController::class, 'ambil'])
-            ->name('simpanan.ambil');
+            Route::post('/anggota/{anggota}/simpanan', [SimpananController::class, 'store'])
+                ->name('simpanan.store');
 
-        Route::get('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'confirm'])
-            ->name('anggota.keluar.confirm');
+            Route::post('/anggota/{anggota}/simpanan/ambil', [SimpananController::class, 'ambil'])
+                ->name('simpanan.ambil');
 
-        Route::post('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'process'])
-            ->name('anggota.keluar.process');
+            Route::get('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'confirm'])
+                ->name('anggota.keluar.confirm');
 
-        // SALDO
-        Route::get('/keuangan/saldo', [SaldoController::class, 'index'])
-            ->name('keuangan.saldo');
-        
-        // ARUS KOPERASI
-        Route::get('/keuangan/arus-koperasi', [ArusKasKoperasiController::class, 'index'])
-            ->name('keuangan.arus.koperasi');
-        
-        Route::get('/keuangan/arus-koperasi/export', [ArusKasKoperasiController::class, 'export'])
-            ->name('keuangan.arus.koperasi.export');
-        
-        // ARUS OPERASIONAL
-        Route::get('/keuangan/arus-operasional', [ArusOperasionalController::class, 'index'])
-            ->name('keuangan.arus.operasional');
+            Route::post('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'process'])
+                ->name('anggota.keluar.process');
+        });
 
-        Route::get('/keuangan/arus-operasional/export', [ArusOperasionalController::class, 'export'])
-            ->name('keuangan.arus.operasional.export');
+        /*
+        | PERSETUJUAN PINJAMAN (KETUA)
+        */
+        Route::middleware('role:ketua')->group(function () {
 
-        // LAPORAN ARUS KAS
-        Route::get('/keuangan/laporan/arus-kas', [LaporanArusKasController::class, 'index'])
-            ->name('keuangan.laporan.arus-kas');
+            Route::get('/pinjaman/pengajuan', [ApprovalPinjamanController::class, 'index'])
+                ->name('pinjaman.pengajuan.index');
 
-        Route::get('/keuangan/laporan/arus-kas/export', [LaporanArusKasController::class, 'export'])
-            ->name('keuangan.laporan.arus-kas.export');
+            Route::get('/pinjaman/pengajuan/{pengajuan}', [ApprovalPinjamanController::class, 'show'])
+                ->name('pinjaman.pengajuan.show');
 
-        // KETUA - PERSETUJUAN
-        Route::get('/pinjaman/pengajuan', [ApprovalPinjamanController::class, 'index'])
-            ->name('pinjaman.pengajuan.index');
+            Route::post('/pinjaman/pengajuan/{pengajuan}/setujui', [ApprovalPinjamanController::class, 'setujui'])
+                ->name('pinjaman.pengajuan.setujui');
 
-        Route::get('/pinjaman/pengajuan/{pengajuan}', [ApprovalPinjamanController::class, 'show'])
-            ->name('pinjaman.pengajuan.show');
+            Route::post('/pinjaman/pengajuan/{pengajuan}/tolak', [ApprovalPinjamanController::class, 'tolak'])
+                ->name('pinjaman.pengajuan.tolak');
+        });
 
-        Route::post('/pinjaman/pengajuan/{pengajuan}/setujui', [ApprovalPinjamanController::class, 'setujui'])
-            ->name('pinjaman.pengajuan.setujui');
-
-        Route::post('/pinjaman/pengajuan/{pengajuan}/tolak', [ApprovalPinjamanController::class, 'tolak'])
-            ->name('pinjaman.pengajuan.tolak');
-
-        // BENDAHARA
-        Route::middleware('bendahara')->group(function () {
+        /*
+        | BENDAHARA
+        */
+        Route::middleware('role:bendahara')->group(function () {
 
             // SIMPANAN
             Route::get('/simpanan', [SimpananController::class, 'index'])
@@ -118,7 +149,7 @@ Route::middleware('auth')
             Route::post('/pinjaman/pencairan/{pengajuan}', [PencairanPinjamanController::class, 'process'])
                 ->name('pinjaman.pencairan.process');
 
-            Route::get('/pinjaman/aktif', [CicilanPinjamanController::class, 'index'])
+            Route::get('/pinjamanjaman/aktif', [CicilanPinjamanController::class, 'index'])
                 ->name('pinjaman.aktif.index');
 
             Route::get('/pinjaman/{pinjaman}/cicil', [CicilanPinjamanController::class, 'create'])
@@ -148,7 +179,11 @@ Route::middleware('auth')
         });
     });
 
-// ANGGOTA
+/*
+|--------------------------------------------------------------------------
+| ANGGOTA AREA (SEMUA LOGIN)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')
     ->prefix('anggota')
     ->name('anggota.')
@@ -165,23 +200,26 @@ Route::middleware('auth')
 
         Route::put('/pinjaman/{pengajuan}', [PengajuanPinjamanController::class, 'update'])
             ->name('pinjaman.update');
-        
+
         Route::delete('/pinjaman/{id}', [PengajuanPinjamanController::class, 'destroy'])
             ->name('pinjaman.destroy');
 
         Route::get('/simpanan', [SimpananSayaController::class, 'index'])
             ->name('simpanan.index');
-        
+
         Route::get('/pinjaman', [PinjamanSayaController::class, 'index'])
             ->name('pinjaman.index');
     });
 
-// PROFILE
+/*
+|--------------------------------------------------------------------------
+| PROFILE
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 
 require __DIR__.'/auth.php';
