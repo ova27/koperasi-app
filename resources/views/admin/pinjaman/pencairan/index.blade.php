@@ -26,7 +26,7 @@
                 <td class="p-2 border">{{ $p->anggota->nama }}</td>
                 <td class="p-2 border">Rp {{ number_format($p->jumlah_diajukan) }}</td>
                 <td class="p-2 border">
-                    {{ $p->tanggal_persetujuan->format('d-m-Y') }}
+                    {{ $p->tanggal_persetujuan ? $p->tanggal_persetujuan->format('d-m-Y') : '-' }}
                 </td>
                 <td class="p-2 border">
                     <form method="POST"

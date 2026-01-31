@@ -11,6 +11,8 @@ class PengajuanPinjaman extends Model
     protected $fillable = [
         'anggota_id',
         'jumlah_diajukan',
+        'tenor',
+        'bulan_pinjam',
         'tujuan',
         'status',
         'diajukan_oleh',
@@ -46,4 +48,5 @@ class PengajuanPinjaman extends Model
     {
         return $this->belongsTo(User::class, 'dicairkan_oleh');
     }
+
 }

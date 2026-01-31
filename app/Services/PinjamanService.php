@@ -7,17 +7,41 @@ use App\Models\PengajuanPinjaman;
 use App\Models\TransaksiPinjaman;
 use App\Models\Anggota;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Exception;
+use App\Models\ArusKas;
+use Illuminate\Support\Carbon;
+
 
 class PinjamanService
 {
     /* ======================================================
      *  PENGAJUAN
      * ====================================================== */
+    public function bolehAjukan(
+        int $anggotaId,
+        int $jumlahDummy = 0,
+        ?int $pengajuanId = null
+    ): bool {
+        try {
+            // pakai aturan YANG SAMA PERSIS
+            $this->validateBatasPinjaman(
+                $anggotaId,
+                $jumlahDummy,
+                $pengajuanId
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 
     public function ajukan(
         int $anggotaId,
         int $jumlah,
+        int $tenor,       
+        string $bulan,    
         int $userId,
         ?string $tujuan = null
     ): PengajuanPinjaman {
@@ -27,18 +51,24 @@ class PinjamanService
         return PengajuanPinjaman::create([
             'anggota_id'        => $anggotaId,
             'jumlah_diajukan'   => $jumlah,
+            'tenor'             => $tenor,    
+            'bulan_pinjam'      => $bulan,    
             'tujuan'            => $tujuan,
             'status'            => 'diajukan',
             'diajukan_oleh'     => $userId,
-            'tanggal_pengajuan'=> now(),
+            'tanggal_pengajuan' => now(),
         ]);
     }
 
     public function updatePengajuan(
-        PengajuanPinjaman $pengajuan,
-        int $jumlah,
-        ?string $tujuan = null
+        $pengajuan, $jumlah, $tenor, $bulan, $keterangan
     ): void {
+
+        // Cek apakah bulan yang diinput < bulan sekarang
+        if (Carbon::parse($bulan)->startOfMonth()->isPast() && !Carbon::parse($bulan)->isCurrentMonth()) {
+            throw new Exception('Tidak boleh mengajukan pinjaman untuk bulan yang sudah lewat.');
+        }
+
         if ($pengajuan->status !== 'diajukan') {
             throw new Exception('Pengajuan tidak bisa diubah');
         }
@@ -49,9 +79,12 @@ class PinjamanService
             $pengajuan->id
         );
 
+        // Update semua kolom yang dikirim dari modal
         $pengajuan->update([
             'jumlah_diajukan' => $jumlah,
-            'tujuan' => $tujuan,
+            'tenor'           => $tenor,      // Sebelumnya ini tidak ada
+            'bulan_pinjam'    => $bulan,     // Sebelumnya ini tidak ada
+            'tujuan'          => $keterangan, // Gunakan variabel $keterangan yang diterima
         ]);
     }
 
@@ -60,17 +93,22 @@ class PinjamanService
      * ====================================================== */
 
     public function setujui(
-        PengajuanPinjaman $pengajuan,
-        int $userId
-    ): void {
-        if ($pengajuan->status !== 'diajukan') {
-            throw new Exception('Pengajuan tidak valid');
+        PengajuanPinjaman $pengajuan, 
+        int $userId, 
+        array $data = []
+    ):void {
+        
+        if (!in_array($pengajuan->status, ['diajukan', 'disetujui'])) {
+            throw new Exception('Pengajuan tidak valid atau sudah dicairkan');
         }
 
         $pengajuan->update([
-            'status'               => 'disetujui',
-            'disetujui_oleh'       => $userId,
-            'tanggal_persetujuan'  => now(),
+            'jumlah_diajukan' => $data['jumlah_diajukan'], 
+            'tenor'           => $data['tenor'],           
+            'bulan_pinjam'    => $data['bulan_pinjam'],    
+            'status'          => 'disetujui',
+            'disetujui_oleh'  => $userId,
+            'tgl_persetujuan' => now(), 
         ]);
     }
 
@@ -116,6 +154,20 @@ class PinjamanService
                 ]);
             }
 
+            // 🔹 ARUS KAS (SELALU SEKALI SAAT CAIR)
+            ArusKas::create([
+                'tanggal' => now(),
+                'rekening_koperasi_id' => 1, // Kas Tunai (sementara)
+                'jenis_arus' => 'koperasi',
+                'tipe' => 'keluar',
+                'kategori' => 'pinjaman',
+                'sub_kategori' => $pinjaman->wasRecentlyCreated ? 'pencairan' : 'topup',
+                'jumlah' => $pengajuan->jumlah_diajukan,
+                'anggota_id' => $pengajuan->anggota_id,
+                'created_by' => $userId,
+                'keterangan' => 'Pencairan pinjaman',
+            ]);
+
             $pengajuan->update([
                 'status'               => 'dicairkan',
                 'dicairkan_oleh'       => $userId,
@@ -151,6 +203,19 @@ class PinjamanService
                 'jenis'       => 'cicilan',
                 'jumlah'      => $jumlah,
                 'keterangan'  => $keterangan,
+            ]);
+
+            ArusKas::create([
+                'tanggal' => now(),
+                'rekening_koperasi_id' => 1, // Kas Tunai (sementara)
+                'jenis_arus' => 'koperasi',
+                'tipe' => 'masuk',
+                'kategori' => 'pinjaman',
+                'sub_kategori' => 'cicilan',
+                'jumlah' => $jumlah,
+                'anggota_id' => $pinjaman->anggota_id,
+                'created_by' => Auth::id(), // atau userId kalau kamu passing
+                'keterangan' => 'Cicilan pinjaman',
             ]);
 
             if ($pinjaman->sisa_pinjaman <= 0) {
@@ -197,13 +262,18 @@ class PinjamanService
         $sisaPinjamanAktif = $pinjamanAktif?->sisa_pinjaman ?? 0;
 
         // ambil pengajuan yang masih mengikat dana
-        $totalPengajuanAktif = PengajuanPinjaman::where('anggota_id', $anggotaId)
+        $queryPengajuan = PengajuanPinjaman::where('anggota_id', $anggotaId)
             ->whereIn('status', ['diajukan', 'disetujui'])
             ->when($pengajuanId, function ($q) use ($pengajuanId) {
                 $q->where('id', '!=', $pengajuanId);
-            })
-            ->sum('jumlah_diajukan');
-
+            });
+        if ($queryPengajuan->exists()) {
+            throw new Exception(
+                'Anda masih memiliki pengajuan yang berstatus diajukan atau disetujui. ' . 
+                'Harap tunggu proses selesai sebelum mengajukan kembali.'
+            );
+        }
+        $totalPengajuanAktif = $queryPengajuan->sum('jumlah_diajukan');
         $totalEksposur = $sisaPinjamanAktif + $totalPengajuanAktif + $jumlahPengajuan;
 
         // 1️⃣ batas total eksposur
@@ -220,8 +290,6 @@ class PinjamanService
             );
         }
     }
-
-
 
     public function ringkasanAnggota(int $anggotaId): array
     {

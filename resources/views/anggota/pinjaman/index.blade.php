@@ -4,8 +4,14 @@
 
 @section('content')
 
-<h1 class="text-xl font-semibold mb-4">Pinjaman Saya</h1>
-
+<div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-semibold mb-4">Pinjaman Saya</h1>
+    
+    <a href="{{ route('anggota.pinjaman.ajukan') }}"
+        class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
+        + Pengajuan Pinjaman
+    </a>
+</div>
 @forelse($pinjaman as $p)
     <div class="mb-6 p-4 bg-white border rounded">
         <div class="font-semibold mb-2">
@@ -30,7 +36,7 @@
         <div class="text-sm font-semibold mb-2">Riwayat</div>
 
         <table class="w-full text-sm">
-            @foreach($p->transaksis as $t)
+            @foreach($p->transaksi as $t)
                 <tr class="border-t">
                     <td class="py-1">{{ $t->tanggal->format('d-m-Y') }}</td>
                     <td class="py-1">{{ ucfirst($t->jenis) }}</td>

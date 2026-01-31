@@ -11,13 +11,18 @@ use App\Http\Controllers\Admin\{
     GenerateSimpananWajibController,
     ApprovalPinjamanController,
     PencairanPinjamanController,
-    CicilanPinjamanController
+    CicilanPinjamanController,
+    SaldoController,
+    ArusKasKoperasiController,
+    ArusOperasionalController,
+    LaporanArusKasController
 };
 use App\Http\Controllers\Anggota\{
     SimpananSayaController,
     PinjamanSayaController,
     PengajuanPinjamanController
 };
+
 
 Route::get('/', fn () => view('welcome'));
 
@@ -52,6 +57,31 @@ Route::middleware('auth')
         Route::post('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'process'])
             ->name('anggota.keluar.process');
 
+        // SALDO
+        Route::get('/keuangan/saldo', [SaldoController::class, 'index'])
+            ->name('keuangan.saldo');
+        
+        // ARUS KOPERASI
+        Route::get('/keuangan/arus-koperasi', [ArusKasKoperasiController::class, 'index'])
+            ->name('keuangan.arus.koperasi');
+        
+        Route::get('/keuangan/arus-koperasi/export', [ArusKasKoperasiController::class, 'export'])
+            ->name('keuangan.arus.koperasi.export');
+        
+        // ARUS OPERASIONAL
+        Route::get('/keuangan/arus-operasional', [ArusOperasionalController::class, 'index'])
+            ->name('keuangan.arus.operasional');
+
+        Route::get('/keuangan/arus-operasional/export', [ArusOperasionalController::class, 'export'])
+            ->name('keuangan.arus.operasional.export');
+
+        // LAPORAN ARUS KAS
+        Route::get('/keuangan/laporan/arus-kas', [LaporanArusKasController::class, 'index'])
+            ->name('keuangan.laporan.arus-kas');
+
+        Route::get('/keuangan/laporan/arus-kas/export', [LaporanArusKasController::class, 'export'])
+            ->name('keuangan.laporan.arus-kas.export');
+
         // KETUA - PERSETUJUAN
         Route::get('/pinjaman/pengajuan', [ApprovalPinjamanController::class, 'index'])
             ->name('pinjaman.pengajuan.index');
@@ -69,6 +99,12 @@ Route::middleware('auth')
         Route::middleware('bendahara')->group(function () {
 
             // SIMPANAN
+            Route::get('/simpanan', [SimpananController::class, 'index'])
+                ->name('simpanan.index');
+
+            Route::post('/simpanan/manual', [SimpananController::class, 'storeManual'])
+                ->name('simpanan.store-manual');
+
             Route::get('/simpanan/generate-wajib', [GenerateSimpananWajibController::class, 'index'])
                 ->name('simpanan.generate-wajib');
 
@@ -119,11 +155,20 @@ Route::middleware('auth')
     ->group(function () {
 
         Route::get('/pinjaman/ajukan', [PengajuanPinjamanController::class, 'create'])
-            ->name('pinjaman.create');
+            ->name('pinjaman.ajukan');
 
         Route::post('/pinjaman/ajukan', [PengajuanPinjamanController::class, 'store'])
             ->name('pinjaman.store');
+
+        Route::get('/pinjaman/{pengajuan}/edit', [PengajuanPinjamanController::class, 'edit'])
+            ->name('pinjaman.edit');
+
+        Route::put('/pinjaman/{pengajuan}', [PengajuanPinjamanController::class, 'update'])
+            ->name('pinjaman.update');
         
+        Route::delete('/pinjaman/{id}', [PengajuanPinjamanController::class, 'destroy'])
+            ->name('pinjaman.destroy');
+
         Route::get('/simpanan', [SimpananSayaController::class, 'index'])
             ->name('simpanan.index');
         
@@ -137,5 +182,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
 
 require __DIR__.'/auth.php';

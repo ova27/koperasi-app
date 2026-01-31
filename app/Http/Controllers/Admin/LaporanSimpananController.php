@@ -15,6 +15,7 @@ class LaporanSimpananController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('lihat-laporan-simpanan');
         // default: bulan ini
         $bulan = $request->get('bulan', now()->format('Y-m'));
 

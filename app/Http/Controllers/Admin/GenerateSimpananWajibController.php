@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
-
+use App\Services\ClosingService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\SimpananService;
@@ -17,8 +17,19 @@ class GenerateSimpananWajibController extends Controller
 
     public function process(
         Request $request,
-        SimpananService $simpananService
+        SimpananService $simpananService,
+        ClosingService $closingService
     ) {
+        // 🔒 1. CEK CLOSING DI PALING AWAL
+        $bulan = $request->bulan ?? now()->format('Y-m');
+
+        if ($closingService->isLocked($bulan, 'simpanan')) {
+            return back()->withErrors([
+                'generate' => 'Bulan ini sudah ditutup, tidak bisa generate simpanan wajib.',
+            ]);
+        }
+
+        // 🔹 2. VALIDASI INPUT
         $request->validate([
             'bulan' => ['required', 'date_format:Y-m'],
         ]);
@@ -26,13 +37,14 @@ class GenerateSimpananWajibController extends Controller
         $bulanDipilih = $request->bulan;
         $bulanBerjalan = now()->format('Y-m');
 
-        // 🔒 RULE FINAL: hanya boleh bulan berjalan
+        // 🔒 3. RULE: hanya boleh bulan berjalan
         if ($bulanDipilih !== $bulanBerjalan) {
             return back()->withErrors([
                 'bulan' => 'Generate simpanan wajib hanya boleh untuk bulan berjalan.',
             ]);
         }
 
+        // 🔹 4. AMBIL ANGGOTA YANG BELUM ADA SIMPANAN WAJIB BULAN INI
         $anggotas = Anggota::where('status', 'aktif')
             ->whereDoesntHave('simpanans', function ($q) use ($bulanDipilih) {
                 $q->where('jenis_simpanan', 'wajib')
@@ -43,6 +55,7 @@ class GenerateSimpananWajibController extends Controller
         $berhasil = 0;
         $skip = 0;
 
+        // 🔹 5. GENERATE
         foreach ($anggotas as $anggota) {
             try {
                 $simpananService->tambah(
@@ -64,5 +77,6 @@ class GenerateSimpananWajibController extends Controller
             "Generate selesai. Berhasil: {$berhasil}, Skip: {$skip}"
         );
     }
+
 
 }

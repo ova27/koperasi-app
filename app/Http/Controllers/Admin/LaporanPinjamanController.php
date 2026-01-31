@@ -10,10 +10,12 @@ use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LaporanPinjamanExport;
 
+
 class LaporanPinjamanController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('lihat-laporan-pinjaman');
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
         $start = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth();

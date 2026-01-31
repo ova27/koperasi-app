@@ -12,7 +12,7 @@ class PinjamanSayaController extends Controller
     {
         $anggota = Auth::user()->anggota;
 
-        $pinjaman = Pinjaman::with('transaksis')
+        $pinjaman = Pinjaman::with('transaksi')
             ->where('anggota_id', $anggota->id)
             ->orderByDesc('tanggal_pinjam')
             ->get();

@@ -5,8 +5,11 @@ use Carbon\Carbon;
 use App\Models\Simpanan;
 use App\Models\Anggota;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 use App\Services\ClosingService;
+use App\Models\ArusKas;
+
 
 class SimpananService
 {
@@ -92,7 +95,7 @@ class SimpananService
         DB::transaction(function () use (
             $anggotaId, $jenis, $jumlah, $sumber, $alasan, $keterangan
         ) {
-            Simpanan::create([
+            $simpanan = Simpanan::create([
                 'anggota_id'     => $anggotaId,
                 'tanggal'        => now(),
                 'jenis_simpanan' => $jenis,
@@ -101,10 +104,23 @@ class SimpananService
                 'alasan'         => $alasan,
                 'keterangan'     => $keterangan,
             ]);
-        });
-    }
 
-        
+            // ⬇️ TAMBAHAN BARU (ARUS KAS)
+            ArusKas::create([
+                'tanggal' => $simpanan->tanggal,
+                'rekening_koperasi_id' => 1, // Kas Tunai (sementara hardcode)
+                'jenis_arus' => 'koperasi',
+                'tipe' => $jumlah > 0 ? 'masuk' : 'keluar',
+                'kategori' => 'simpanan',
+                'sub_kategori' => $jenis,
+                'jumlah' => abs($jumlah),
+                'anggota_id' => $anggotaId,
+                'created_by' => Auth::id(),
+                'keterangan' => 'Transaksi simpanan',
+            ]);
+        });
+
+    }
 
     /**
      * Ambil / kurangi simpanan

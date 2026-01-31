@@ -41,7 +41,7 @@
         </h2>
 
         <a href="{{ route('admin.laporan.simpanan-bulanan.export', ['bulan' => $bulan]) }}"
-            class="inline-flex items-center px-4 py-2 mb-4 bg-green-600 text-white rounded hover:bg-green-700">
+            class="inline-flex items-center px-4 py-1 mb-4 bg-green-600 text-white rounded hover:bg-green-700">
             Export Excel
         </a>
 
@@ -58,7 +58,7 @@
 
                     <button
                         type="submit"
-                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        class="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700"
                     >
                         Tutup Bulan
                     </button>
