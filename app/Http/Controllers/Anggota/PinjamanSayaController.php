@@ -10,7 +10,10 @@ class PinjamanSayaController extends Controller
 {
     public function index()
     {
+        $this->authorize('view pinjaman saya');
+
         $anggota = Auth::user()->anggota;
+        abort_if(! $anggota, 403);
 
         $pinjaman = Pinjaman::with('transaksi')
             ->where('anggota_id', $anggota->id)
@@ -19,4 +22,5 @@ class PinjamanSayaController extends Controller
 
         return view('anggota.pinjaman.index', compact('pinjaman'));
     }
+
 }

@@ -15,7 +15,7 @@ class LaporanPinjamanController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('lihat-laporan-pinjaman');
+        $this->authorize('view laporan pinjaman');
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
         $start = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth();
@@ -53,6 +53,7 @@ class LaporanPinjamanController extends Controller
 
     public function export(Request $request)
     {
+        $this->authorize('export laporan pinjaman');
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
         return Excel::download(
@@ -63,6 +64,8 @@ class LaporanPinjamanController extends Controller
 
     public function show(Pinjaman $pinjaman)
     {
+        $this->authorize('view laporan pinjaman');
+
         $pinjaman->load(['anggota', 'transaksi']);
 
         return view('admin.laporan.pinjaman-detail', [

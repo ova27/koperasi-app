@@ -2,11 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-.sidebar-link {
-    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600
-           hover:bg-slate-100 hover:text-slate-900 transition;
+/* HEADER */
+.menu-header:first-child {
+    margin-top: 0;
 }
 
-.sidebar-link.active {
-    @apply bg-blue-50 text-blue-700 font-semibold;
+.menu-header {
+    margin-top: 1.25rem;
+    margin-bottom: 0.25rem;
+    padding: 0 1rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8; /* slate-400 */
+}
+
+
+/* ITEM */
+.menu-item a {
+    display: block;
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    color: #0f172a; /* slate-900 */
+    font-size: 0.875rem;
+}
+
+.menu-item a.active {
+    background-color: #e0f2fe; /* blue-100 */
+    color: #0369a1;            /* blue-700 */
+    font-weight: 600;
+    border-left: 3px solid #0284c7;
 }

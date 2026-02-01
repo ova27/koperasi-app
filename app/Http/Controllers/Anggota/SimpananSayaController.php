@@ -10,12 +10,15 @@ class SimpananSayaController extends Controller
 {
     public function index()
     {
+        $this->authorize('view simpanan saya');
+
         $anggota = Auth::user()->anggota;
+        abort_if(! $anggota, 403);
 
         $simpanan = Simpanan::where('anggota_id', $anggota->id)
             ->orderByDesc('tanggal')
             ->get();
-
+    
         $saldo = $simpanan
             ->groupBy('jenis_simpanan')
             ->map(fn ($items) => $items->sum('jumlah'));

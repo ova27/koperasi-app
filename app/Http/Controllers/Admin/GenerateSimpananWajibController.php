@@ -12,6 +12,8 @@ class GenerateSimpananWajibController extends Controller
 {
     public function index()
     {
+        $this->authorize('manage simpanan anggota');
+
         return view('admin.simpanan.generate-wajib');
     }
 
@@ -20,6 +22,8 @@ class GenerateSimpananWajibController extends Controller
         SimpananService $simpananService,
         ClosingService $closingService
     ) {
+        $this->authorize('manage simpanan anggota');
+
         // 🔒 1. CEK CLOSING DI PALING AWAL
         $bulan = $request->bulan ?? now()->format('Y-m');
 

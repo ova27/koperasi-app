@@ -12,7 +12,7 @@ class ArusOperasionalController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('lihat-keuangan-global');
+        $this->authorize('view arus operasional');
 
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
@@ -27,8 +27,8 @@ class ArusOperasionalController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('lihat-keuangan-global');
-
+        $this->authorize('view arus operasional');
+        
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
         return Excel::download(

@@ -1,83 +1,148 @@
 @extends('layouts.main')
 
-@section('title', 'Laporan Pinjaman Bulanan')
-
 @section('content')
-<h1 class="text-xl font-bold mb-4">Laporan Pinjaman Bulanan</h1>
+<div class="max-w-6xl mx-auto">
 
-<form method="GET" class="mb-6">
-    <label class="mr-2 font-semibold">Bulan:</label>
-    <input type="month" name="bulan" value="{{ $bulan }}">
-    <button class="ml-2 px-3 py-1 bg-blue-600 text-white rounded">
-        Tampilkan
-    </button>
-</form>
+    {{-- HEADER --}}
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-semibold">
+            Laporan Pinjaman
+        </h1>
 
-{{-- RINGKASAN --}}
-<div class="grid grid-cols-4 gap-4 mb-6">
-    <div class="p-4 bg-white border rounded">
-        <div class="text-gray-500 text-sm">Total Pencairan</div>
-        <div class="text-lg font-bold">
-            Rp {{ number_format($totalPencairan) }}
+        @can('export laporan pinjaman')
+            <a href="{{ route('admin.laporan.pinjaman.export', ['bulan' => $bulan]) }}"
+               class="px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                Export Excel
+            </a>
+        @endcan
+    </div>
+
+    {{-- FILTER BULAN --}}
+    <form method="GET" class="mb-6 flex items-end gap-2">
+        <div>
+            <label class="text-sm text-gray-600">Bulan</label>
+            <input
+                type="month"
+                name="bulan"
+                value="{{ $bulan }}"
+                class="border rounded px-3 py-1"
+            >
+        </div>
+        <button class="px-4 py-1 bg-blue-600 text-white rounded">
+            Tampilkan
+        </button>
+    </form>
+
+    {{-- RINGKASAN --}}
+    <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="border rounded p-4 bg-white">
+            <div class="text-sm text-gray-500">
+                Total Pencairan
+            </div>
+            <div class="text-lg font-semibold">
+                Rp {{ number_format($totalPencairan ?? 0, 0, ',', '.') }}
+            </div>
+        </div>
+
+        <div class="border rounded p-4 bg-white">
+            <div class="text-sm text-gray-500">
+                Total Cicilan
+            </div>
+            <div class="text-lg font-semibold">
+                Rp {{ number_format($totalCicilan ?? 0, 0, ',', '.') }}
+            </div>
+        </div>
+
+        <div class="border rounded p-4 bg-white">
+            <div class="text-sm text-gray-500">
+                Pinjaman Lunas
+            </div>
+            <div class="text-lg font-semibold">
+                {{ $totalPelunasan ?? 0 }} Pinjaman
+            </div>
         </div>
     </div>
 
-    <div class="p-4 bg-white border rounded">
-        <div class="text-gray-500 text-sm">Total Cicilan</div>
-        <div class="text-lg font-bold">
-            Rp {{ number_format($totalCicilan) }}
-        </div>
+    {{-- TABEL TRANSAKSI --}}
+    <div class="mb-10">
+        <h2 class="text-lg font-semibold mb-3">
+            Transaksi Pinjaman Bulan Ini
+        </h2>
+
+        <table class="min-w-full border bg-white text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border px-3 py-2 text-left">Tanggal</th>
+                    <th class="border px-3 py-2 text-left">Anggota</th>
+                    <th class="border px-3 py-2">Jenis</th>
+                    <th class="border px-3 py-2 text-right">Jumlah</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($transaksis as $trx)
+                    <tr>
+                        <td class="border px-3 py-2">
+                            {{ \Carbon\Carbon::parse($trx->tanggal)->format('d-m-Y') }}
+                        </td>
+                        <td class="border px-3 py-2">
+                            {{ $trx->pinjaman->anggota->nama ?? '-' }}
+                        </td>
+                        <td class="border px-3 py-2 text-center capitalize">
+                            {{ $trx->jenis }}
+                        </td>
+                        <td class="border px-3 py-2 text-right">
+                            Rp {{ number_format($trx->jumlah, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="border px-3 py-4 text-center text-gray-500">
+                            Tidak ada transaksi pinjaman pada bulan ini
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 
-    <div class="p-4 bg-white border rounded">
-        <div class="text-gray-500 text-sm">Pelunasan</div>
-        <div class="text-lg font-bold">
-            {{ $totalPelunasan }} pinjaman
-        </div>
+    {{-- SNAPSHOT PINJAMAN --}}
+    <div>
+        <h2 class="text-lg font-semibold mb-3">
+            Posisi Pinjaman Anggota
+        </h2>
+
+        <table class="min-w-full border bg-white text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border px-3 py-2 text-left">Anggota</th>
+                    <th class="border px-3 py-2">Status</th>
+                    <th class="border px-3 py-2 text-right">Sisa Pinjaman</th>
+                    <th class="border px-3 py-2 text-center">Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($pinjamans as $pinjaman)
+                    <tr>
+                        <td class="border px-3 py-2">
+                            {{ $pinjaman->anggota->nama ?? '-' }}
+                        </td>
+                        <td class="border px-3 py-2 text-center capitalize">
+                            {{ $pinjaman->status }}
+                        </td>
+                        <td class="border px-3 py-2 text-right">
+                            Rp {{ number_format($pinjaman->sisa_pinjaman ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="border px-3 py-2 text-center">
+                            <a href="{{ route('admin.laporan.pinjaman.show', $pinjaman) }}"
+                               class="text-blue-600 hover:underline">
+                                Lihat
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 
-    <div class="p-4 bg-white border rounded">
-        <div class="text-gray-500 text-sm">Total Pinjaman Aktif</div>
-        <div class="text-lg font-bold">
-            {{ $pinjamans->where('status','aktif')->count() }}
-        </div>
-    </div>
 </div>
-
-{{-- RINCIAN TRANSAKSI --}}
-<h2 class="text-lg font-semibold mb-3">Rincian Transaksi</h2>
-
-<a href="{{ route('admin.laporan.pinjaman.export', ['bulan' => $bulan]) }}"
-    class="inline-flex items-center px-4 py-2 mb-4 bg-green-600 text-white rounded hover:bg-green-700">
-    Export Excel
-</a>
-
-<table class="w-full border mb-6">
-    <thead>
-        <tr class="bg-gray-100">
-            <th class="p-2 border">Tanggal</th>
-            <th class="p-2 border">Anggota</th>
-            <th class="p-2 border">Jenis</th>
-            <th class="p-2 border">Jumlah</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse ($transaksis as $t)
-            <tr>
-                <td class="p-2 border">{{ $t->tanggal->format('d-m-Y') }}</td>
-                <td class="p-2 border">{{ $t->pinjaman->anggota->nama }}</td>
-                <td class="p-2 border">{{ ucfirst($t->jenis) }}</td>
-                <td class="p-2 border">
-                    Rp {{ number_format($t->jumlah) }}
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="4" class="p-4 text-center text-gray-500">
-                    Tidak ada transaksi
-                </td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
 @endsection

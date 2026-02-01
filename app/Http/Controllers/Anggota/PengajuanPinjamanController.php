@@ -13,7 +13,10 @@ class PengajuanPinjamanController extends Controller
 {
     public function create(PinjamanService $pinjamanService)
     {
+        $this->authorize('create pinjaman');
+
         $anggota = Auth::user()->anggota;
+        abort_if(! $anggota, 403);
 
         $riwayatPengajuan = PengajuanPinjaman::where('anggota_id', $anggota->id)
             ->orderByDesc('created_at')
@@ -47,10 +50,9 @@ class PengajuanPinjamanController extends Controller
             'keterangan'      => 'nullable|string',
         ]);
 
+        $this->authorize('create pinjaman');
         $anggota = Auth::user()->anggota;
-        if (! $anggota) {
-            abort(403);
-        }
+        abort_if(! $anggota, 403);
 
         try {
             $service->ajukan(
@@ -75,15 +77,15 @@ class PengajuanPinjamanController extends Controller
 
     public function edit(PengajuanPinjaman $pengajuan)
     {
-        // 🔐 hanya pemilik
-        if ($pengajuan->anggota_id !== Auth::user()->anggota->id) {
-            abort(403);
-        }
-
-        // 🔐 hanya status boleh diedit
-        if (! in_array($pengajuan->status, ['diajukan', 'ditolak'])) {
-            abort(403);
-        }
+        $this->authorize('edit pinjaman');
+        abort_if(
+            $pengajuan->anggota_id !== Auth::user()->anggota->id,
+            403
+        );
+        abort_if(
+            ! in_array($pengajuan->status, ['diajukan','ditolak']),
+            403
+        );
 
         return view('anggota.pinjaman.edit', compact('pengajuan'));
     }
@@ -93,9 +95,11 @@ class PengajuanPinjamanController extends Controller
         PengajuanPinjaman $pengajuan,
         PinjamanService $pinjamanService
     ) {
-        if ($pengajuan->anggota_id !== Auth::user()->anggota->id) {
-            abort(403);
-        }
+        $this->authorize('edit pinjaman');
+        abort_if(
+            $pengajuan->anggota_id !== Auth::user()->anggota->id,
+            403
+        );
 
         $request->validate([
             'jumlah_diajukan' => 'required|integer|min:1',
@@ -124,13 +128,17 @@ class PengajuanPinjamanController extends Controller
         }
     }
 
-    public function destroy($id) {
+    public function destroy($id) 
+    {
+        $this->authorize('delete pinjaman');
+
         $pengajuan = PengajuanPinjaman::where('id', $id)
             ->where('anggota_id', Auth::user()->anggota->id)
-            ->where('status', 'diajukan') // Hanya boleh hapus jika masih 'diajukan'
+            ->where('status', 'diajukan') 
             ->firstOrFail();
 
         $pengajuan->delete();
+        
         return back()->with('success', 'Pengajuan berhasil dibatalkan.');
     }
     

@@ -15,7 +15,8 @@ class LaporanSimpananController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('lihat-laporan-simpanan');
+        $this->authorize('view laporan simpanan bulanan');
+
         // default: bulan ini
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
@@ -55,6 +56,7 @@ class LaporanSimpananController extends Controller
 
     public function export(Request $request)
     {
+        $this->authorize('export laporan simpanan');
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
         return Excel::download(
@@ -65,6 +67,8 @@ class LaporanSimpananController extends Controller
 
     public function lock(Request $request, ClosingService $closingService)
     {
+        $this->authorize('lock laporan simpanan');
+        
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
         $closingService->lock($bulan, 'simpanan');

@@ -13,7 +13,7 @@ class ArusKasKoperasiController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('lihat-keuangan-global');
+        $this->authorize('view arus koperasi');
 
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
@@ -28,7 +28,7 @@ class ArusKasKoperasiController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('lihat-keuangan-global');
+        $this->authorize('view arus koperasi');
 
         $bulan = $request->get('bulan', now()->format('Y-m'));
 

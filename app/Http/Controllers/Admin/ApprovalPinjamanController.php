@@ -12,6 +12,7 @@ class ApprovalPinjamanController extends Controller
 {
     public function index()
     {
+        $this->authorize('view pengajuan pinjaman');
         $pengajuans = PengajuanPinjaman::with('anggota')
             ->where('status', 'diajukan')
             ->orderBy('tanggal_pengajuan')
@@ -40,6 +41,9 @@ class ApprovalPinjamanController extends Controller
         PengajuanPinjaman $pengajuan,
         PinjamanService $service
     ) {
+        $this->authorize('approve pinjaman');
+        abort_if($pengajuan->status !== 'diajukan', 400);
+
         try {
             $jumlahMurni = str_replace(['Rp', '.', ' '], '', $request->jumlah_diajukan);
 
@@ -62,8 +66,12 @@ class ApprovalPinjamanController extends Controller
 
     public function tolak(Request $request, PengajuanPinjaman $pengajuan)
     {
-        if (!in_array($pengajuan->status, ['diajukan', 'disetujui'])) {
-            return redirect()->back()->withErrors('Gagal: Pengajuan sudah dicairkan.');
+        $this->authorize('reject pinjaman');
+
+        if (! in_array($pengajuan->status, ['diajukan', 'disetujui'])) {
+            return redirect()
+                ->back()
+                ->withErrors('Pengajuan tidak dapat ditolak karena sudah dicairkan.');
         }
 
         $request->validate([

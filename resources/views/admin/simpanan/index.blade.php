@@ -78,7 +78,8 @@
             {{-- ANGGOTA --}}
             <div class="mb-3">
                 <label class="text-xs text-gray-500">Anggota</label>
-                <select name="anggota_id" class="w-full border rounded px-2 py-1">
+                <select name="anggota_id" class="w-full border rounded px-2 py-1" required>
+                    <option value="" disabled selected>Pilih Anggota</option>
                     @foreach ($anggotas as $anggota)
                         <option value="{{ $anggota->id }}">
                             {{ $anggota->nama }}
@@ -91,6 +92,7 @@
             <div class="mb-3">
                 <label class="text-xs text-gray-500">Jenis Simpanan</label>
                 <select name="jenis_simpanan" class="w-full border rounded px-2 py-1">
+                    <option value="" disabled selected>Pilih Jenis Simpanan</option>
                     <option value="pokok">Pokok</option>
                     <option value="wajib">Wajib</option>
                     <option value="sukarela">Sukarela</option>

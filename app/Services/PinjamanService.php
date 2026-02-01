@@ -2,15 +2,16 @@
 
 namespace App\Services;
 
+use Exception;
+use App\Models\Anggota;
+use App\Models\ArusKas;
 use App\Models\Pinjaman;
+use Illuminate\Support\Carbon;
+use App\Models\RekeningKoperasi;
 use App\Models\PengajuanPinjaman;
 use App\Models\TransaksiPinjaman;
-use App\Models\Anggota;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Exception;
-use App\Models\ArusKas;
-use Illuminate\Support\Carbon;
 
 
 class PinjamanService
@@ -88,6 +89,11 @@ class PinjamanService
         ]);
     }
 
+    protected function rekeningAktif(): RekeningKoperasi
+    {
+        return RekeningKoperasi::where('aktif', true)->firstOrFail();
+    }
+
     /* ======================================================
      *  PERSETUJUAN
      * ====================================================== */
@@ -154,10 +160,12 @@ class PinjamanService
                 ]);
             }
 
+            $rekening = $this->rekeningAktif();
+
             // 🔹 ARUS KAS (SELALU SEKALI SAAT CAIR)
             ArusKas::create([
                 'tanggal' => now(),
-                'rekening_koperasi_id' => 1, // Kas Tunai (sementara)
+                'rekening_koperasi_id' => $rekening->id,
                 'jenis_arus' => 'koperasi',
                 'tipe' => 'keluar',
                 'kategori' => 'pinjaman',
@@ -205,9 +213,11 @@ class PinjamanService
                 'keterangan'  => $keterangan,
             ]);
 
+            $rekening = $this->rekeningAktif();
+
             ArusKas::create([
                 'tanggal' => now(),
-                'rekening_koperasi_id' => 1, // Kas Tunai (sementara)
+                'rekening_koperasi_id' => $rekening->id,
                 'jenis_arus' => 'koperasi',
                 'tipe' => 'masuk',
                 'kategori' => 'pinjaman',
@@ -244,7 +254,9 @@ class PinjamanService
         $anggota = Anggota::findOrFail($anggotaId);
 
         if ($anggota->status !== 'aktif') {
-            throw new Exception('Anggota tidak aktif');
+            throw new Exception(
+                'Transaksi hanya dapat dilakukan oleh anggota aktif'
+            );
         }
     }
 

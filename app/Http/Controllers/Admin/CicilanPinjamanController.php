@@ -11,6 +11,7 @@ class CicilanPinjamanController extends Controller
 {
     public function index()
     {
+        $this->authorize('manage cicilan pinjaman');
         $pinjamans = Pinjaman::with('anggota')
             ->where('status', 'aktif')
             ->orderBy('tanggal_pinjam')
@@ -21,8 +22,12 @@ class CicilanPinjamanController extends Controller
 
     public function create(Pinjaman $pinjaman)
     {
+        $this->authorize('manage cicilan pinjaman');
+
         if ($pinjaman->status !== 'aktif') {
-            abort(404);
+            return redirect()
+                ->back()
+                ->withErrors('Pinjaman tidak aktif atau sudah lunas.');
         }
 
         return view('admin.pinjaman.cicilan.create', compact('pinjaman'));
@@ -33,6 +38,14 @@ class CicilanPinjamanController extends Controller
         Pinjaman $pinjaman,
         PinjamanService $service
     ) {
+        $this->authorize('manage cicilan pinjaman');
+
+        if ($pinjaman->status !== 'aktif') {
+            return redirect()
+                ->back()
+                ->withErrors('Pinjaman tidak aktif atau sudah lunas.');
+        }
+
         $request->validate([
             'jumlah' => 'required|integer|min:1',
             'keterangan' => 'nullable|string|max:255',
@@ -48,4 +61,5 @@ class CicilanPinjamanController extends Controller
             ->route('admin.pinjaman.aktif.index')
             ->with('success', 'Cicilan berhasil disimpan');
     }
+
 }

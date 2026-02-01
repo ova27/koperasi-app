@@ -13,6 +13,7 @@ class AnggotaExitController extends Controller
 {
     public function confirm(Anggota $anggota)
     {
+        $this->authorize('manage simpanan anggota');
         // hitung saldo per jenis
         $saldos = Simpanan::where('anggota_id', $anggota->id)
             ->select('jenis_simpanan', DB::raw('SUM(jumlah) as total'))
@@ -31,6 +32,7 @@ class AnggotaExitController extends Controller
         Anggota $anggota,
         AnggotaExitService $service
     ) {
+        $this->authorize('manage simpanan anggota');
         $request->validate([
             'alasan' => 'required|in:pensiun,mutasi',
         ]);

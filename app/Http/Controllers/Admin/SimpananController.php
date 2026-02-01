@@ -12,6 +12,7 @@ class SimpananController extends Controller
 {
     public function index()
     {
+        $this->authorize('manage simpanan anggota');
         $bulan = now()->format('Y-m');
 
         // cek apakah simpanan wajib bulan ini sudah digenerate
@@ -35,6 +36,7 @@ class SimpananController extends Controller
 
     public function create(Anggota $anggota)
     {
+        $this->authorize('manage simpanan anggota');
         return view('admin.simpanan.create', compact('anggota'));
     }
 
@@ -43,6 +45,8 @@ class SimpananController extends Controller
         Anggota $anggota,
         SimpananService $simpananService
     ) {
+        $this->authorize('manage simpanan anggota');
+
         $request->validate([
             'jenis_simpanan' => 'required|in:pokok,wajib,sukarela',
             'jumlah'         => 'required|integer',
@@ -74,6 +78,8 @@ class SimpananController extends Controller
         Request $request,
         SimpananService $simpananService
     ) {
+        $this->authorize('manage simpanan anggota');
+
         $request->validate([
             'anggota_id'     => 'required|exists:anggotas,id',
             'jenis_simpanan' => 'required|in:pokok,wajib,sukarela',
@@ -106,6 +112,7 @@ class SimpananController extends Controller
         Anggota $anggota, 
         SimpananService $service
     ){
+        $this->authorize('manage simpanan anggota');
         $request->validate([
             'jumlah' => 'required|integer|min:1',
             'keterangan' => 'required|string|max:255',

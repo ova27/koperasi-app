@@ -12,7 +12,7 @@ class LaporanArusKasController extends Controller
 {
     public function index(Request $request)
     {
-        $this->authorize('lihat-keuangan-global');
+        $this->authorize('view laporan arus kas');
 
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
@@ -42,8 +42,6 @@ class LaporanArusKasController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('lihat-keuangan-global');
-
         $bulan = $request->get('bulan', now()->format('Y-m'));
 
         return Excel::download(

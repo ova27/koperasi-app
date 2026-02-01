@@ -11,6 +11,7 @@ class PencairanPinjamanController extends Controller
 {
     public function index()
     {
+        $this->authorize('pencairan pinjaman');
         $pengajuans = PengajuanPinjaman::with('anggota')
             ->where('status', 'disetujui')
             ->orderBy('tanggal_persetujuan')
@@ -23,6 +24,9 @@ class PencairanPinjamanController extends Controller
         PengajuanPinjaman $pengajuan,
         PinjamanService $service
     ) {
+        $this->authorize('pencairan pinjaman');
+        abort_if($pengajuan->status !== 'disetujui', 400);
+        
         $service->cairkan($pengajuan, Auth::id());
 
         return redirect()

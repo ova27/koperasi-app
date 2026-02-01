@@ -10,7 +10,7 @@ class SaldoController extends Controller
 {
     public function index()
     {
-        $this->authorize('lihat-keuangan-global');
+        $this->authorize('view saldo');
 
         $rekenings = RekeningKoperasi::where('aktif', true)->get();
 

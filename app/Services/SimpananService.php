@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 use App\Services\ClosingService;
+use App\Models\RekeningKoperasi;
 use App\Models\ArusKas;
 
 
@@ -31,6 +32,12 @@ class SimpananService
             ->groupBy('jenis_simpanan')
             ->pluck('saldo', 'jenis_simpanan')
             ->toArray();
+    }
+
+    protected function rekeningAktif(): RekeningKoperasi
+    {
+        return RekeningKoperasi::where('aktif', true)
+            ->firstOrFail();
     }
 
     /**
@@ -105,10 +112,11 @@ class SimpananService
                 'keterangan'     => $keterangan,
             ]);
 
+            $rekening = $this->rekeningAktif();
             // ⬇️ TAMBAHAN BARU (ARUS KAS)
             ArusKas::create([
                 'tanggal' => $simpanan->tanggal,
-                'rekening_koperasi_id' => 1, // Kas Tunai (sementara hardcode)
+                'rekening_koperasi_id'  => $rekening->id,
                 'jenis_arus' => 'koperasi',
                 'tipe' => $jumlah > 0 ? 'masuk' : 'keluar',
                 'kategori' => 'simpanan',
@@ -157,6 +165,21 @@ class SimpananService
                 'alasan'         => $alasan,
                 'keterangan'     => $keterangan,
             ]);
+
+            $rekening = $this->rekeningAktif();
+
+            ArusKas::create([
+                'tanggal'              => now(),
+                'rekening_koperasi_id' => $rekening->id,
+                'jenis_arus'           => 'koperasi',
+                'tipe'                 => 'keluar',
+                'kategori'             => 'simpanan',
+                'sub_kategori'         => $jenis,
+                'jumlah'               => $jumlah,
+                'anggota_id'           => $anggotaId,
+                'created_by'           => Auth::id(),
+                'keterangan'           => $keterangan ?? 'Pengurangan simpanan',
+            ]);
         });
     }
 
@@ -168,7 +191,9 @@ class SimpananService
         $anggota = Anggota::findOrFail($anggotaId);
 
         if ($anggota->status !== 'aktif') {
-            throw new Exception('Anggota tidak aktif');
+            throw new Exception(
+                'Transaksi hanya dapat dilakukan oleh anggota aktif'
+            );
         }
     }
 
@@ -198,12 +223,28 @@ class SimpananService
                 'anggota_id'     => $anggotaId,
                 'tanggal'        => now(),
                 'jenis_simpanan' => 'sukarela',
-                'jumlah'         => -$jumlah, // NEGATIF
+                'jumlah'         => -$jumlah,
                 'sumber'         => $sumber,
                 'alasan'         => 'pengambilan',
                 'keterangan'     => $keterangan,
             ]);
+
+            $rekening = $this->rekeningAktif();
+
+            ArusKas::create([
+                'tanggal'              => now(),
+                'rekening_koperasi_id' => $rekening->id,
+                'jenis_arus'           => 'koperasi',
+                'tipe'                 => 'keluar',
+                'kategori'             => 'simpanan',
+                'sub_kategori'         => 'sukarela',
+                'jumlah'               => $jumlah,
+                'anggota_id'           => $anggotaId,
+                'created_by'           => Auth::id(),
+                'keterangan'           => $keterangan,
+            ]);
         });
+
     }
 
     public function kembalikanSemuaSimpanan(
@@ -220,21 +261,35 @@ class SimpananService
             ->groupBy('jenis_simpanan')
             ->get();
 
-        DB::transaction(function () use ($anggotaId, $saldos, $alasan) {
+        $rekening = $this->rekeningAktif();
+        
+        DB::transaction(function () use ($anggotaId, $saldos, $alasan, $rekening) {
             foreach ($saldos as $saldo) {
                 if ($saldo->total > 0) {
                     Simpanan::create([
                         'anggota_id'     => $anggotaId,
                         'tanggal'        => now(),
                         'jenis_simpanan' => $saldo->jenis_simpanan,
-                        'jumlah'         => -$saldo->total, // NEGATIF
+                        'jumlah'         => -$saldo->total,
                         'sumber'         => 'manual',
                         'alasan'         => $alasan,
                         'keterangan'     => 'Pengembalian simpanan karena ' . $alasan,
+                    ]);
+
+                    ArusKas::create([
+                        'tanggal'              => now(),
+                        'rekening_koperasi_id' => $rekening->id,
+                        'jenis_arus'           => 'koperasi',
+                        'tipe'                 => 'keluar',
+                        'kategori'             => 'simpanan',
+                        'sub_kategori'         => $saldo->jenis_simpanan,
+                        'jumlah'               => $saldo->total,
+                        'anggota_id'           => $anggotaId,
+                        'created_by'           => Auth::id(),
+                        'keterangan'           => 'Pengembalian simpanan karena ' . $alasan,
                     ]);
                 }
             }
         });
     }
-
 }
