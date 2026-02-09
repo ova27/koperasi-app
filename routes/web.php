@@ -57,9 +57,17 @@ Route::middleware(['auth','permission:view saldo'])
             ->get('/arus-koperasi', [ArusKasKoperasiController::class, 'index'])
             ->name('arus.koperasi');
 
+        Route::middleware('permission:view arus koperasi')
+            ->get('/arus-koperasi/export', [ArusKasKoperasiController::class, 'export'])
+            ->name('arus.koperasi.export');
+
         Route::middleware('permission:view arus operasional')
             ->get('/arus-operasional', [ArusOperasionalController::class, 'index'])
             ->name('arus.operasional');
+
+        Route::middleware('permission:view arus operasional')
+            ->get('/arus-operasional/export', [ArusOperasionalController::class, 'export'])
+            ->name('arus.operasional.export');
 
         Route::middleware('permission:view laporan arus kas')
             ->get('/arus-kas', [LaporanArusKasController::class, 'index'])

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>@yield('title', 'Koperasi')</title>
+    <title>@yield('title', 'Koperasi Simpatik')</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -12,7 +12,7 @@
 <div class="flex min-h-screen">
 
     {{-- SIDEBAR --}}
-    <aside class="w-64 bg-white border-r shadow-sm">
+    <aside class="w-64 bg-white border-r shadow-sm px-4 pt-4 pb-6">
 
         @role('admin')
             @include('layouts.sidebar.admin')

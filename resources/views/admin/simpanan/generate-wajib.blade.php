@@ -1,5 +1,5 @@
 @extends('layouts.main')
-
+@section('title', 'Generate Simpanan Wajib')
 @section('content')
 <div class="max-w-xl mx-auto">
 
