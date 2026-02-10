@@ -52,15 +52,6 @@
             </li>
             @endcan
 
-            @can('create pinjaman')
-            <li class="menu-item">
-                <a href="{{ route('anggota.pinjaman.ajukan') }}"
-                class="{{ request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
-                    Ajukan Pinjaman
-                </a>
-            </li>
-            @endcan
-
             {{-- ================= LAPORAN PRIBADI ================= --}}
             @canany(['view laporan simpanan pribadi', 'view laporan pinjaman pribadi'])
             <li class="menu-header">Laporan Saya</li>

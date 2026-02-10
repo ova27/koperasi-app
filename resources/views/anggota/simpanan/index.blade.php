@@ -33,16 +33,16 @@
             <table class="w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 w-[18%]">
+                        <th class="px-4 py-3 text-left w-[18%]">
                             Tanggal
                         </th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 w-[18%]">
+                        <th class="px-4 py-3 text-center w-[18%]">
                             Jenis
                         </th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 w-[20%]">
+                        <th class="px-4 py-3 text-right w-[20%]">
                             Jumlah
                         </th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 w-[44%]">
+                        <th class="px-4 py-3 text-center w-[44%]">
                             Keterangan
                         </th>
                     </tr>

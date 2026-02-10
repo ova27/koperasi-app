@@ -20,7 +20,15 @@ class PinjamanSayaController extends Controller
             ->orderByDesc('tanggal_pinjam')
             ->get();
 
-        return view('anggota.pinjaman.index', compact('pinjaman'));
-    }
+        $totalPinjamanSaya = $pinjaman->sum('jumlah_pinjaman');
+        $sisaPinjamanSaya  = $pinjaman->sum('sisa_pinjaman');
+        $pinjamanAktifSaya = $pinjaman->where('status', 'aktif')->count() > 0;
 
+        return view('anggota.pinjaman.index', compact(
+            'pinjaman',
+            'totalPinjamanSaya',
+            'sisaPinjamanSaya',
+            'pinjamanAktifSaya'
+        ));
+    }
 }

@@ -48,21 +48,12 @@
             @endcan
 
             @can('view pinjaman saya')
-            <li class="menu-item">
-                <a href="{{ route('anggota.pinjaman.index') }}"
-                class="{{ request()->routeIs('anggota.pinjaman.index') ? 'active' : '' }}">
-                    Pinjaman Saya
-                </a>
-            </li>
-            @endcan
-
-            @can('create pinjaman')
-            <li class="menu-item">
-                <a href="{{ route('anggota.pinjaman.ajukan') }}"
-                class="{{ request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
-                    Ajukan Pinjaman
-                </a>
-            </li>
+                <li class="menu-item">
+                    <a href="{{ route('anggota.pinjaman.index') }}"
+                    class="{{ request()->routeIs('anggota.pinjaman.*') ? 'active' : '' }}">
+                        Pinjaman Saya
+                    </a>
+                </li>
             @endcan
 
             {{-- ================= LAPORAN PRIBADI ================= --}}

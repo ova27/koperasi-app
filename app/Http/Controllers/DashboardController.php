@@ -30,6 +30,8 @@ class DashboardController extends Controller
                         ->whereMonth('created_at', now()->month)
                         ->whereYear('created_at', now()->year)
                         ->sum('jumlah');
+        $totalSimpanan = Simpanan::sum('jumlah');
+        $totalPinjaman = Pinjaman::where('status', 'aktif')->sum('jumlah_pinjaman');
         $sisaPinjamanAktif = Pinjaman::where('status', 'aktif')
                         ->get()
                         ->sum(function ($pinjaman) {
@@ -38,17 +40,19 @@ class DashboardController extends Controller
                                 ->sum('jumlah');
             return max(0, $pinjaman->jumlah_pinjaman - $totalCicilan);
         });
+
         $lastUpdated = collect([
-                            DB::table('anggotas')->max('updated_at'),
-                            DB::table('simpanans')->max('updated_at'),
-                            DB::table('pinjamans')->max('updated_at'),
-                        ])
-                        ->filter() // buang null kalau tabel kosong
-                        ->max();
+                        Simpanan::max('updated_at'),
+                        Pinjaman::max('updated_at'),
+                        Anggota::max('updated_at'),
+                    ])->filter()->max();
+                    
         return view('dashboard', [
             'bulan'             => $bulan,
             'tahun'             => $tahun,
             'anggotaAktif'      => $anggotaAktif,
+            'totalSimpanan'     => $totalSimpanan,
+            'totalPinjaman'     => $totalPinjaman,
             'pinjamanAktif'     => $pinjamanAktif,
             'antrianPinjaman'   => $antrianPinjaman,
             'simpananPokok'     => $simpananPokok,
