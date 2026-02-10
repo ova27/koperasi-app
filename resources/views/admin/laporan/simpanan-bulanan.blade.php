@@ -19,23 +19,43 @@
 
             @can('lock laporan simpanan')
                 @if(! $isLocked)
+                    {{-- TUTUP --}}
                     <form method="POST"
-                          action="{{ route('admin.laporan.simpanan-bulanan.lock') }}"
-                          onsubmit="return confirm('Yakin ingin menutup bulan ini? Setelah ditutup, data tidak bisa diubah.')">
+                        action="{{ route('admin.laporan.simpanan-bulanan.lock') }}"
+                        onsubmit="return confirm('Yakin ingin menutup bulan ini? Setelah ditutup, input akan dibatasi.')">
                         @csrf
                         <input type="hidden" name="bulan" value="{{ $bulan }}">
+
                         <button
                             type="submit"
                             class="px-4 py-1 bg-red-600 text-white rounded hover:bg-red-700">
                             Tutup Bulan
                         </button>
                     </form>
+
                 @else
-                    <span class="px-4 py-1 bg-gray-200 text-gray-700 rounded text-sm">
-                        🔒 Bulan sudah ditutup
-                    </span>
+                    <div class="flex items-center gap-3">
+
+                        <span class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm">
+                            🔒 Bulan sudah ditutup
+                        </span>
+
+                        {{-- BUKA KEMBALI --}}
+                        @can('unlock laporan simpanan')
+                            <form method="POST"
+                                action="{{ route('admin.laporan.simpanan-bulanan.unlock') }}">
+                                @csrf
+                                <input type="hidden" name="bulan" value="{{ $bulan }}">
+                                <button class="px-3 py-1 bg-yellow-500 text-white rounded">
+                                    Buka Kembali
+                                </button>
+                            </form>
+                        @endcan
+
+                    </div>
                 @endif
             @endcan
+
         </div>
     </div>
 

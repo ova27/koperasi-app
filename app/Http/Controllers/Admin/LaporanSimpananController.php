@@ -77,4 +77,18 @@ class LaporanSimpananController extends Controller
             ->back()
             ->with('success', "Simpanan bulan {$bulan} berhasil ditutup");
     }
+
+    public function unlock(Request $request, ClosingService $closingService)
+    {
+        $this->authorize('lock laporan simpanan');
+
+        $bulan = $request->get('bulan', now()->format('Y-m'));
+
+        $closingService->unlock($bulan, 'simpanan');
+
+        return redirect()
+            ->back()
+            ->with('success', "Simpanan bulan {$bulan} berhasil dibuka kembali");
+    }
+
 }

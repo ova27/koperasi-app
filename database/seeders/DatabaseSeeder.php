@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
             'view laporan simpanan bulanan',
             'export laporan simpanan',
             'lock laporan simpanan',
-
+            'unlock laporan simpanan',
             'view laporan pinjaman',
             'export laporan pinjaman',
 
@@ -135,8 +135,6 @@ class DatabaseSeeder extends Seeder
 
             'view laporan simpanan bulanan',
             'export laporan simpanan',
-            'lock laporan simpanan',
-
             'view laporan pinjaman',
             'export laporan pinjaman',
 
@@ -173,7 +171,7 @@ class DatabaseSeeder extends Seeder
             'view laporan simpanan bulanan',
             'export laporan simpanan',
             'lock laporan simpanan',
-
+            'unlock laporan simpanan',
             'view laporan pinjaman',
             'export laporan pinjaman',
 

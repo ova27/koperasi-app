@@ -32,4 +32,12 @@ class ClosingService
             ->where('jenis', $jenis)
             ->exists();
     }
+
+    public function unlock(string $bulan, string $jenis)
+    {
+        return ClosingBulan::where('bulan', $bulan)
+            ->where('jenis', $jenis)
+            ->delete();
+    }
+
 }

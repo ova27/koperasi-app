@@ -1,162 +1,128 @@
 @extends('layouts.main')
 
 @section('title', 'Dashboard')
+@section('page-title', 'Dashboard')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-10">
 
     {{-- ========================= --}}
-    {{-- HEADER --}}
+    {{-- WELCOME --}}
     {{-- ========================= --}}
-    <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h1 class="text-2xl font-bold text-gray-800">
-            Dashboard
-        </h1>
-
-        <p class="mt-1 text-gray-600">
+    <div class="bg-gray-50 p-6 rounded-xl shadow-sm border border-gray-200">
+        <p class="text-gray-800">
             Selamat datang,
-            <span class="font-semibold">{{ auth()->user()->name }}</span>
-        </p>
-
-        <p class="mt-1 text-sm text-gray-500">
-            Role:
-            <span class="font-medium">
-                {{ auth()->user()->getRoleNames()->implode(', ') }}
+            <span class="font-semibold text-gray-900">
+                {{ auth()->user()->name }}
             </span>
         </p>
+
+        <p class="mt-1 text-sm text-gray-600">
+            Semoga aktivitas hari ini berjalan lancar.
+        </p>
     </div>
 
     {{-- ========================= --}}
-    {{-- QUICK STATS --}}
+    {{-- STATISTIK UTAMA --}}
     {{-- ========================= --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div>
+        <h2 class="section-title">
+            Ringkasan Koperasi
+            <span class="section-subtitle">
+                ({{ $bulan }} {{ $tahun }})
+            </span>
+        </h2>
 
-        {{-- SIMPANAN --}}
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-            <div class="text-sm text-blue-700">
-                Total Simpanan
-            </div>
-            <div class="mt-1 text-xl font-bold text-blue-900">
-                Rp {{ number_format($totalSimpanan ?? 0, 0, ',', '.') }}
-            </div>
-        </div>
-
-        {{-- PINJAMAN --}}
-        <div class="bg-orange-50 border border-orange-200 p-4 rounded-lg">
-            <div class="text-sm text-orange-700">
-                Sisa Pinjaman
-            </div>
-            <div class="mt-1 text-xl font-bold text-orange-900">
-                Rp {{ number_format($sisaPinjaman ?? 0, 0, ',', '.') }}
-            </div>
-        </div>
-
-        {{-- ARUS KAS --}}
-        @can('lihat-keuangan')
-            <div class="bg-green-50 border border-green-200 p-4 rounded-lg">
-                <div class="text-sm text-green-700">
-                    Saldo Kas
-                </div>
-                <div class="mt-1 text-xl font-bold text-green-900">
-                    Rp {{ number_format($saldoKas ?? 0, 0, ',', '.') }}
-                </div>
-            </div>
-        @endcan
-
+        {{-- ========================= --}}
         {{-- ANGGOTA --}}
-        @can('lihat-keuangan')
-            <div class="bg-purple-50 border border-purple-200 p-4 rounded-lg">
-                <div class="text-sm text-purple-700">
-                    Total Anggota Aktif
-                </div>
-                <div class="mt-1 text-xl font-bold text-purple-900">
-                    {{ $totalAnggota ?? 0 }}
+        {{-- ========================= --}}
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-2">
+            Anggota
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card stat-success">
+                <div class="stat-label">Anggota Aktif</div>
+                <div class="stat-value">
+                    {{ $anggotaAktif ?? 0 }}
                 </div>
             </div>
-        @endcan
+        </div>
 
-    </div>
+        {{-- ========================= --}}
+        {{-- SIMPANAN --}}
+        {{-- ========================= --}}
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-2">
+            Simpanan Seluruh Anggota
+        </p>
 
-    {{-- ========================= --}}
-    {{-- QUICK ACTIONS --}}
-    {{-- ========================= --}}
-    <div class="bg-white p-6 rounded-lg shadow-sm">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
-            Akses Cepat
-        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div class="stat-card stat-primary">
+                <div class="stat-label">Simpanan Pokok</div>
+                <div class="stat-value">
+                    Rp {{ number_format($simpananPokok ?? 0, 0, ',', '.') }}
+                </div>
+            </div>
+
+            <div class="stat-card stat-primary">
+                <div class="stat-label">Simpanan Wajib</div>
+                <div class="stat-value">
+                    Rp {{ number_format($simpananWajib ?? 0, 0, ',', '.') }}
+                </div>
+            </div>
+
+            <div class="stat-card stat-primary">
+                <div class="stat-label">Simpanan Sukarela</div>
+                <div class="stat-value">
+                    Rp {{ number_format($simpananSukarela ?? 0, 0, ',', '.') }}
+                </div>
+            </div>
+        </div>
+
+        {{-- ========================= --}}
+        {{-- PINJAMAN --}}
+        {{-- ========================= --}}
+        <p class="text-xs uppercase tracking-wide text-gray-400 mb-2">
+            Pinjaman Seluruh Anggota
+        </p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="stat-card stat-warning">
+                <div class="stat-label">Pinjaman Aktif</div>
+                <div class="stat-value">
+                    {{ $pinjamanAktif ?? 0 }}
+                </div>
+            </div>
 
-            {{-- ANGGOTA --}}
-            @role('anggota')
-                <a href="{{ route('anggota.simpanan.index') }}"
-                   class="block p-4 border rounded-lg hover:bg-gray-50 transition">
-                    <div class="font-semibold text-gray-800">
-                        Simpanan Saya
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        Lihat detail simpanan pribadi
-                    </div>
-                </a>
+            <div class="stat-card stat-warning">
+                <div class="stat-label">Antrian Pinjaman</div>
+                <div class="stat-value">
+                    {{ $antrianPinjaman ?? 0 }}
+                </div>
+            </div>
 
-                <a href="{{ route('anggota.pinjaman.index') }}"
-                   class="block p-4 border rounded-lg hover:bg-gray-50 transition">
-                    <div class="font-semibold text-gray-800">
-                        Pinjaman Saya
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        Status pinjaman & pengajuan
-                    </div>
-                </a>
-            @endrole
-
-            {{-- BENDAHARA --}}
-            @role('bendahara')
-                <a href="{{ route('admin.simpanan.index') }}"
-                   class="block p-4 border rounded-lg hover:bg-gray-50 transition">
-                    <div class="font-semibold text-gray-800">
-                        Kelola Simpanan
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        Generate & input simpanan
-                    </div>
-                </a>
-
-                <a href="{{ route('admin.pinjaman.pencairan.index') }}"
-                   class="block p-4 border rounded-lg hover:bg-gray-50 transition">
-                    <div class="font-semibold text-gray-800">
-                        Pencairan Pinjaman
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        Proses pinjaman disetujui
-                    </div>
-                </a>
-            @endrole
-
-            {{-- KETUA / ADMIN --}}
-            @can('lihat-laporan')
-                <a href="{{ route('admin.laporan.simpanan-bulanan') }}"
-                   class="block p-4 border rounded-lg hover:bg-gray-50 transition">
-                    <div class="font-semibold text-gray-800">
-                        Laporan Simpanan
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        Rekap simpanan bulanan
-                    </div>
-                </a>
-
-                <a href="{{ route('admin.laporan.pinjaman.index') }}"
-                   class="block p-4 border rounded-lg hover:bg-gray-50 transition">
-                    <div class="font-semibold text-gray-800">
-                        Laporan Pinjaman
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        Status & histori pinjaman
-                    </div>
-                </a>
-            @endcan
-
+            <div class="stat-card stat-warning">
+                <div class="stat-label">
+                    Sisa Pinjaman Aktif
+                </div>
+                <div class="stat-value">
+                    Rp {{ number_format($sisaPinjamanAktif ?? 0, 0, ',', '.') }}
+                </div>
+            </div>
         </div>
+    </div>
+
+
+    {{-- ========================= --}}
+    {{-- LAST UPDATED --}}
+    {{-- ========================= --}}
+    <div class="text-right text-xs text-gray-400">
+        Terakhir diperbarui:
+        @if($lastUpdated)
+            {{ $lastUpdated->format('d M Y H:i') }}
+        @else
+            -
+        @endif
     </div>
 
 </div>

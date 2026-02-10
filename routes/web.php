@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\{
     AnggotaController,
@@ -37,7 +38,7 @@ Route::get('/', fn () => redirect()->route('login'));
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth','permission:view dashboard'])
-    ->get('/dashboard', fn () => view('dashboard'))
+    ->get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 /*
@@ -227,7 +228,9 @@ Route::middleware(['auth','permission:view anggota list'])
         Route::middleware(['auth','permission:lock laporan simpanan'])
             ->post('/laporan/simpanan-bulanan/lock', [LaporanSimpananController::class, 'lock'])
             ->name('laporan.simpanan-bulanan.lock');
-                
+        Route::middleware(['auth','permission:unlock laporan simpanan'])
+            ->post('/laporan/simpanan-bulanan/unlock', [LaporanSimpananController::class, 'unlock'])
+            ->name('laporan.simpanan-bulanan.unlock');
 
         Route::middleware('permission:view laporan pinjaman')
             ->group(function () {
