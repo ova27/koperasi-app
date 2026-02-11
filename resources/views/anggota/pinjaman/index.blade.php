@@ -67,7 +67,7 @@
                 class="px-3 py-1.5 rounded-md text-sm font-medium
                         bg-orange-100 text-orange-700
                         hover:bg-orange-200 transition">
-                    + Ajukan Pinjaman
+                    + Pengajuan Pinjaman
                 </a>
             @endcan
         </div>
@@ -76,23 +76,30 @@
             <table class="w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left w-[20%]">
+                        <th class="px-4 py-3 text-left w-[15%]">
                             Tanggal
                         </th>
-                        <th class="px-4 py-3 text-center w-[20%]">
+                        <th class="px-4 py-3 text-center w-[15%]">
                             Status
                         </th>
-                        <th class="px-4 py-3 text-right w-[30%]">
+                        <th class="px-4 py-3 text-right w-[20%]">
                             Jumlah
                         </th>
-                        <th class="px-4 py-3 text-right w-[30%]">
+                        <th class="px-4 py-3 text-right w-[20%]">
                             Sisa
+                        </th>
+                        <th class="px-4 py-3 text-center w-[25%]">
+                            Detail
                         </th>
                     </tr>
                 </thead>
 
                 <tbody>
                     @forelse($pinjaman as $p)
+
+                        {{-- ========================= --}}
+                        {{-- BARIS PINJAMAN UTAMA --}}
+                        {{-- ========================= --}}
                         <tr class="border-t hover:bg-gray-50">
                             <td class="px-4 py-2">
                                 {{ $p->tanggal_pinjam->format('d M Y') }}
@@ -122,11 +129,72 @@
                             <td class="px-4 py-2 text-right font-medium">
                                 Rp {{ number_format($p->sisa_pinjaman, 0, ',', '.') }}
                             </td>
+
+                            <td class="px-4 py-2 text-center">
+                                @if($p->transaksi->isNotEmpty())
+                                    <button
+                                        onclick="toggleCicilan({{ $p->id }})"
+                                        class="text-blue-600 text-sm hover:underline">
+                                        Lihat Cicilan
+                                    </button>
+                                @else
+                                    <span class="text-xs text-gray-400 italic">-</span>
+                                @endif
+                            </td>
                         </tr>
+
+                        {{-- ========================= --}}
+                        {{-- RIWAYAT CICILAN --}}
+                        {{-- ========================= --}}
+                        @if($p->transaksi->isNotEmpty())
+                            <tr id="cicilan-{{ $p->id }}" class="hidden bg-gray-50">
+                                <td colspan="5" class="px-6 py-4">
+
+                                    <div class="text-sm font-semibold mb-3 text-gray-700">
+                                        Riwayat Transaksi
+                                    </div>
+
+                                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                        <table class="w-full text-sm">
+                                            <thead class="bg-gray-100 text-gray-600">
+                                                <tr>
+                                                    <th class="px-4 py-2 text-left">Tanggal</th>
+                                                    <th class="px-4 py-2 text-center">Jenis</th>
+                                                    <th class="px-4 py-2 text-right">Jumlah</th>
+                                                    <th class="px-4 py-2 text-right">Sisa Setelah</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($p->transaksi as $t)
+                                                    <tr class="border-t">
+                                                        <td class="px-4 py-2">
+                                                            {{ \Carbon\Carbon::parse($t->tanggal)->format('d M Y') }}
+                                                        </td>
+
+                                                        <td class="px-4 py-2 text-center capitalize">
+                                                            {{ $t->jenis }}
+                                                        </td>
+
+                                                        <td class="px-4 py-2 text-right">
+                                                            Rp {{ number_format($t->jumlah, 0, ',', '.') }}
+                                                        </td>
+
+                                                        <td class="px-4 py-2 text-right font-medium">
+                                                            Rp {{ number_format($t->sisa_setelah ?? 0, 0, ',', '.') }}
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        @endif
+
                     @empty
                         <tr>
-                            <td colspan="4"
-                                class="px-4 py-6 text-center text-gray-500">
+                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
                                 Belum ada pinjaman.
                             </td>
                         </tr>
@@ -138,3 +206,10 @@
 
 </div>
 @endsection
+
+<script>
+function toggleCicilan(id) {
+    const row = document.getElementById('cicilan-' + id);
+    row.classList.toggle('hidden');
+}
+</script>

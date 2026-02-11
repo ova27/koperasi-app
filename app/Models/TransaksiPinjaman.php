@@ -16,6 +16,7 @@ class TransaksiPinjaman extends Model
         'tanggal',
         'jenis',
         'jumlah',
+        'sisa_setelah',
         'keterangan',
     ];
 

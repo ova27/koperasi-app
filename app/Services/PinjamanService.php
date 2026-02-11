@@ -139,16 +139,23 @@ class PinjamanService
 
             if ($pinjaman) {
                 // TOP-UP
-                $pinjaman->increment('jumlah_pinjaman', $pengajuan->jumlah_diajukan);
-                $pinjaman->increment('sisa_pinjaman', $pengajuan->jumlah_diajukan);
+                $sisaSebelumnya = $pinjaman->sisa_pinjaman;
+                $sisaBaru = $sisaSebelumnya + $pengajuan->jumlah_diajukan;
+
+                $pinjaman->update([
+                    'jumlah_pinjaman' => $pinjaman->jumlah_pinjaman + $pengajuan->jumlah_diajukan,
+                    'sisa_pinjaman'   => $sisaBaru,
+                ]);
 
                 TransaksiPinjaman::create([
-                    'pinjaman_id' => $pinjaman->id,
-                    'tanggal'     => now(),
-                    'jenis'       => 'topup',
-                    'jumlah'      => $pengajuan->jumlah_diajukan,
-                    'keterangan'  => 'Top-up pinjaman',
+                    'pinjaman_id'  => $pinjaman->id,
+                    'tanggal'      => now(),
+                    'jenis'        => 'topup',
+                    'jumlah'       => $pengajuan->jumlah_diajukan,
+                    'sisa_setelah' => $sisaBaru, // 🔑 INI YANG HILANG
+                    'keterangan'   => 'Top-up pinjaman',
                 ]);
+
             } else {
                 // PINJAMAN BARU
                 $pinjaman = Pinjaman::create([
@@ -157,6 +164,15 @@ class PinjamanService
                     'jumlah_pinjaman' => $pengajuan->jumlah_diajukan,
                     'sisa_pinjaman'   => $pengajuan->jumlah_diajukan,
                     'status'          => 'aktif',
+                ]);
+
+                TransaksiPinjaman::create([
+                    'pinjaman_id'  => $pinjaman->id,
+                    'tanggal'      => now(),
+                    'jenis'        => 'pencairan',
+                    'jumlah'       => $pengajuan->jumlah_diajukan,
+                    'sisa_setelah' => $pengajuan->jumlah_diajukan, // 🔑
+                    'keterangan'   => 'Pencairan pinjaman',
                 ]);
             }
 
@@ -187,12 +203,12 @@ class PinjamanService
     /* ======================================================
      *  CICILAN / PELUNASAN
      * ====================================================== */
-
     public function cicil(
         Pinjaman $pinjaman,
         int $jumlah,
         ?string $keterangan = null
     ): void {
+
         if ($pinjaman->status !== 'aktif') {
             throw new Exception('Pinjaman sudah lunas');
         }
@@ -203,15 +219,46 @@ class PinjamanService
 
         DB::transaction(function () use ($pinjaman, $jumlah, $keterangan) {
 
-            $pinjaman->decrement('sisa_pinjaman', $jumlah);
+            $sisaSebelumnya = $pinjaman->sisa_pinjaman;
+            $sisaBaru = $sisaSebelumnya - $jumlah;
 
-            TransaksiPinjaman::create([
-                'pinjaman_id' => $pinjaman->id,
-                'tanggal'     => now(),
-                'jenis'       => 'cicilan',
-                'jumlah'      => $jumlah,
-                'keterangan'  => $keterangan,
-            ]);
+            if ($sisaBaru < 0) {
+                throw new Exception('Jumlah cicilan melebihi sisa pinjaman');
+            }
+
+            // 🔥 Kalau langsung lunas
+            if ($sisaBaru === 0) {
+
+                $pinjaman->update([
+                    'sisa_pinjaman' => 0,
+                    'status'        => 'lunas',
+                ]);
+
+                TransaksiPinjaman::create([
+                    'pinjaman_id'  => $pinjaman->id,
+                    'tanggal'      => now(),
+                    'jenis'        => 'pelunasan',
+                    'jumlah'       => $jumlah,
+                    'sisa_setelah' => 0,
+                    'keterangan'   => 'Pelunasan pinjaman',
+                ]);
+
+            } else {
+
+                // 🔹 Cicilan biasa
+                $pinjaman->update([
+                    'sisa_pinjaman' => $sisaBaru,
+                ]);
+
+                TransaksiPinjaman::create([
+                    'pinjaman_id'  => $pinjaman->id,
+                    'tanggal'      => now(),
+                    'jenis'        => 'cicilan',
+                    'jumlah'       => $jumlah,
+                    'sisa_setelah' => $sisaBaru,
+                    'keterangan'   => $keterangan,
+                ]);
+            }
 
             $rekening = $this->rekeningAktif();
 
@@ -224,24 +271,9 @@ class PinjamanService
                 'sub_kategori' => 'cicilan',
                 'jumlah' => $jumlah,
                 'anggota_id' => $pinjaman->anggota_id,
-                'created_by' => Auth::id(), // atau userId kalau kamu passing
+                'created_by' => Auth::id(),
                 'keterangan' => 'Cicilan pinjaman',
             ]);
-
-            if ($pinjaman->sisa_pinjaman <= 0) {
-                $pinjaman->update([
-                    'sisa_pinjaman' => 0,
-                    'status' => 'lunas',
-                ]);
-
-                TransaksiPinjaman::create([
-                    'pinjaman_id' => $pinjaman->id,
-                    'tanggal'     => now(),
-                    'jenis'       => 'pelunasan',
-                    'jumlah'      => 0,
-                    'keterangan'  => 'Pinjaman lunas',
-                ]);
-            }
         });
     }
 

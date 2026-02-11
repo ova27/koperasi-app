@@ -20,9 +20,11 @@ class PinjamanSayaController extends Controller
             ->orderByDesc('tanggal_pinjam')
             ->get();
 
-        $totalPinjamanSaya = $pinjaman->sum('jumlah_pinjaman');
-        $sisaPinjamanSaya  = $pinjaman->sum('sisa_pinjaman');
-        $pinjamanAktifSaya = $pinjaman->where('status', 'aktif')->count() > 0;
+        $pinjamanAktif = $pinjaman->where('status', 'aktif');
+
+        $totalPinjamanSaya = $pinjamanAktif->sum('jumlah_pinjaman');
+        $sisaPinjamanSaya  = $pinjamanAktif->sum('sisa_pinjaman');
+        $pinjamanAktifSaya = $pinjamanAktif->isNotEmpty();
 
         return view('anggota.pinjaman.index', compact(
             'pinjaman',
