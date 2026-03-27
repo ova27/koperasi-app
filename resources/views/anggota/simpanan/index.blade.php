@@ -56,13 +56,17 @@
                                     {{ $s->tanggal->format('d M Y') }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
+                                    @php
+                                        $badge = match($s->jenis_simpanan) {
+                                            'pokok'    => 'bg-blue-100 text-blue-800',
+                                            'wajib'    => 'bg-purple-100 text-purple-800',
+                                            'sukarela' => 'bg-green-100 text-green-800',
+                                            default    => 'bg-gray-100 text-gray-700',
+                                        };
+                                    @endphp
+
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                                        @if($s->jenis_simpanan === 'pokok') bg-blue-100 text-blue-800
-                                        @elseif($s->jenis_simpanan === 'wajib') bg-purple-100 text-purple-800
-                                        @elseif($s->jenis_simpanan === 'sukarela') bg-green-100 text-green-800
-                                        @else bg-gray-100 text-gray-700
-                                        @endif
-                                    ">
+                                        {{ $badge }}">
                                         {{ ucfirst($s->jenis_simpanan) }}
                                     </span>
                                 </td>
@@ -98,13 +102,17 @@
                                     Rp {{ number_format($s->jumlah, 0, ',', '.') }}
                                 </div>
                             </div>
+                            @php
+                                $badge = match($s->jenis_simpanan) {
+                                    'pokok'    => 'bg-blue-100 text-blue-800',
+                                    'wajib'    => 'bg-purple-100 text-purple-800',
+                                    'sukarela' => 'bg-green-100 text-green-800',
+                                    default    => 'bg-gray-100 text-gray-700',
+                                };
+                            @endphp
+
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                                @if($s->jenis_simpanan === 'pokok') bg-blue-100 text-blue-800
-                                @elseif($s->jenis_simpanan === 'wajib') bg-purple-100 text-purple-800
-                                @elseif($s->jenis_simpanan === 'sukarela') bg-green-100 text-green-800
-                                @else bg-gray-100 text-gray-700
-                                @endif
-                            ">
+                                {{ $badge }}">
                                 {{ ucfirst($s->jenis_simpanan) }}
                             </span>
                         </div>
