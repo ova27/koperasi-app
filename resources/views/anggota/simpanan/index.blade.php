@@ -8,8 +8,6 @@
 
     {{-- SALDO --}}
     <div>
-        <h2 class="section-title">Saldo Simpanan Saya</h2>
-
         @if(empty($saldo) || count($saldo) == 0)
             <div class="bg-white border border-gray-200 rounded-xl p-6 text-center text-gray-500 mb-8">
                 Belum ada saldo simpanan.
@@ -19,7 +17,7 @@
                 @foreach($saldo as $jenis => $jumlah)
                     <div class="stat-card stat-info">
                         <div class="stat-label">
-                            {{ ucfirst($jenis) }}
+                            Total Simpanan {{ ucfirst($jenis) }}
                         </div>
                         <div class="stat-value">
                             Rp {{ number_format($jumlah, 0, ',', '.') }}

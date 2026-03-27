@@ -14,9 +14,9 @@
         <div class="lg:col-span-2">
 
             @if ($bolehAjukan)
-                <div class="bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm p-6">
-                    <h2 class="section-title mb-4">Form Pengajuan Pinjaman</h2>
-
+                <div class="bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm p-4">
+                    <h2 class="section-title">Form Pengajuan Pinjaman</h2>
+                    <hr class="my-4">
                     {{-- ERROR MESSAGE --}}
                     @error('pengajuan')
                         <div class="mb-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded text-sm">
@@ -83,16 +83,16 @@
                             </label>
                             <textarea
                                 name="keterangan"
-                                rows="3"
+                                rows="2"
                                 class="w-full border border-gray-300 rounded-md p-2"
-                                placeholder="Tujuan atau catatan pinjaman">{{ old('keterangan') }}</textarea>
+                                placeholder="Keterangan">{{ old('keterangan') }}</textarea>
                         </div>
 
-                        <div class="mt-6 flex items-center gap-3">
+                        <div class="mt-6">
                             <button
                                 type="submit"
                                 class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition shadow-sm">
-                                Ajukan Pinjaman
+                                <span class="font-sm"> Ajukan Pinjaman </span>
                             </button>
                         </div>
                     </form>

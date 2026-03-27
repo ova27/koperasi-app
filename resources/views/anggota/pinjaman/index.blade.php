@@ -10,7 +10,6 @@
     {{-- RINGKASAN PINJAMAN --}}
     {{-- ========================= --}}
     <div>
-        <h2 class="section-title">Ringkasan Pinjaman Aktif</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             {{-- TOTAL PINJAMAN --}}
             <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
@@ -54,214 +53,210 @@
     </div>
 
     {{-- ========================= --}}
-    {{-- PINJAMAN AKTIF--}}
+    {{-- TABEL PINJAMAN AKTIF--}}
     {{-- ========================= --}}
-    <div>
-        <h2 class="section-title">
-            Pinjaman Aktif
-        </h2>
+    @if ($pinjamanAktif->isNotEmpty())
+        <div>
+            <h2 class="section-title">
+                Pinjaman Aktif
+            </h2>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left w-[15%]">
-                            Tanggal
-                        </th>
-                        <th class="px-4 py-3 text-center w-[15%]">
-                            Status
-                        </th>
-                        <th class="px-4 py-3 text-right w-[20%]">
-                            Jumlah
-                        </th>
-                        <th class="px-4 py-3 text-right w-[20%]">
-                            Sisa
-                        </th>
-                        <th class="px-4 py-3 text-center w-[25%]">
-                            Detail
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($pinjamanAktif as $p)
-
-                        {{-- ========================= --}}
-                        {{-- BARIS PINJAMAN UTAMA --}}
-                        {{-- ========================= --}}
-                        <tr class="border-t hover:bg-gray-50 transition-colors duration-200 border-l-4 border-transparent" id="pinjaman-row-{{ $p->id }}">
-                            <td class="px-4 py-2">
-                                {{ $p->tanggal_pinjam->format('d M Y') }}
-                            </td>
-
-                            <td class="px-4 py-2 text-center">
-                                @php
-                                    $badge = match($p->status) {
-                                        'aktif' => 'bg-green-100 text-green-800',
-                                        'pengajuan' => 'bg-yellow-100 text-yellow-800',
-                                        'disetujui' => 'bg-blue-100 text-blue-800',
-                                        'ditolak' => 'bg-red-100 text-red-800',
-                                        'lunas' => 'bg-gray-100 text-gray-700',
-                                        default => 'bg-gray-100 text-gray-700',
-                                    };
-                                @endphp
-
-                                <span class="px-3 py-1 rounded-full text-xs {{ $badge }}">
-                                    {{ ucfirst($p->status) }}
-                                </span>
-                            </td>
-
-                            <td class="px-4 py-2 text-right font-medium">
-                                Rp {{ number_format($p->jumlah_pinjaman, 0, ',', '.') }}
-                            </td>
-
-                            <td class="px-4 py-2 text-right font-medium">
-                                Rp {{ number_format($p->sisa_pinjaman, 0, ',', '.') }}
-                            </td>
-
-                            <td class="px-4 py-2 text-center">
-                                @if($p->transaksi->isNotEmpty())
-                                    <button
-                                        onclick="toggleCicilan({{ $p->id }})"
-                                        id="btn-lihat-{{ $p->id }}"
-                                        class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-3 py-1.5 rounded-md transition-all duration-200 inline-flex items-center gap-1 transform hover:scale-105">
-                                        <svg class="w-3 h-3 transition-transform duration-200" id="icon-lihat-{{ $p->id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                        Lihat
-                                    </button>
-                                @else
-                                    <span class="text-xs text-gray-400 italic">-</span>
-                                @endif
-                            </td>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left w-[15%]">
+                                Tanggal
+                            </th>
+                            <th class="px-4 py-3 text-center w-[15%]">
+                                Status
+                            </th>
+                            <th class="px-4 py-3 text-right w-[20%]">
+                                Jumlah
+                            </th>
+                            <th class="px-4 py-3 text-right w-[20%]">
+                                Sisa
+                            </th>
+                            <th class="px-4 py-3 text-center w-[25%]">
+                                Detail
+                            </th>
                         </tr>
+                    </thead>
 
-                        {{-- ========================= --}}
-                        {{-- RIWAYAT CICILAN --}}
-                        {{-- ========================= --}}
-                        @if($p->transaksi->isNotEmpty())
-                            <tr id="cicilan-{{ $p->id }}" class="hidden">
-                                <td colspan="5" class="px-6 py-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg shadow-inner">
+                    <tbody>
+                        @foreach($pinjamanAktif as $p)
 
-                                    <div class="text-sm font-semibold mb-3 text-gray-700">
-                                        Riwayat Transaksi
-                                    </div>
+                            {{-- ========================= --}}
+                            {{-- BARIS PINJAMAN UTAMA --}}
+                            {{-- ========================= --}}
+                            <tr class="border-t hover:bg-gray-50 transition-colors duration-200 border-l-4 border-transparent" id="pinjaman-row-{{ $p->id }}">
+                                <td class="px-4 py-2">
+                                    {{ $p->tanggal_pinjam->format('d M Y') }}
+                                </td>
 
-                                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                                        <table class="w-full text-sm">
-                                            <thead class="bg-gray-100 text-gray-600">
-                                                <tr>
-                                                    <th class="px-4 py-2 text-left">Tanggal</th>
-                                                    <th class="px-4 py-2 text-center">Jenis</th>
-                                                    <th class="px-4 py-2 text-right">Jumlah</th>
-                                                    <th class="px-4 py-2 text-right">Sisa Pinjaman</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @php
-                                                    // Sort transactions: pencairan first (by date asc for progression), then others by date asc
-                                                    $pencairanTransactions = $p->transaksi->where('jenis', 'pencairan')->sortBy('tanggal');
-                                                    $otherTransactions = $p->transaksi->where('jenis', '!=', 'pencairan')->sortBy('tanggal');
-                                                @endphp
+                                <td class="px-4 py-2 text-center">
+                                    @php
+                                        $badge = match($p->status) {
+                                            'aktif' => 'bg-green-100 text-green-800',
+                                            'pengajuan' => 'bg-yellow-100 text-yellow-800',
+                                            'disetujui' => 'bg-blue-100 text-blue-800',
+                                            'ditolak' => 'bg-red-100 text-red-800',
+                                            'lunas' => 'bg-gray-100 text-gray-700',
+                                            default => 'bg-gray-100 text-gray-700',
+                                        };
+                                    @endphp
 
-                                                {{-- Pencairan transactions first --}}
-                                                @php
-                                                    $previousSisa = 0; // Start with 0 for pencairan
-                                                @endphp
-                                                @foreach($pencairanTransactions as $t)
-                                                    @php
-                                                        $selisih = ($t->sisa_setelah ?? 0) - $previousSisa;
-                                                        $previousSisa = $t->sisa_setelah ?? 0;
-                                                    @endphp
-                                                    <tr class="border-t">
-                                                        <td class="px-4 py-2">
-                                                            {{ \Carbon\Carbon::parse($t->tanggal)->format('d M Y') }}
-                                                        </td>
+                                    <span class="px-3 py-1 rounded-full text-xs {{ $badge }}">
+                                        {{ ucfirst($p->status) }}
+                                    </span>
+                                </td>
 
-                                                        <td class="px-4 py-2 text-center capitalize">
-                                                            {{ ucfirst($t->jenis) }}
-                                                        </td>
+                                <td class="px-4 py-2 text-right font-medium">
+                                    Rp {{ number_format($p->jumlah_pinjaman, 0, ',', '.') }}
+                                </td>
 
-                                                        <td class="px-4 py-2 text-right">
-                                                            Rp {{ number_format($t->jumlah, 0, ',', '.') }}
-                                                        </td>
+                                <td class="px-4 py-2 text-right font-medium">
+                                    Rp {{ number_format($p->sisa_pinjaman, 0, ',', '.') }}
+                                </td>
 
-                                                        <td class="px-4 py-2 text-right font-medium">
-                                                            Rp {{ number_format($t->sisa_setelah ?? 0, 0, ',', '.') }}
-                                                            @if($selisih != 0)
-                                                                <span class="text-xs {{ $selisih < 0 ? 'text-green-600' : 'text-red-600' }}">
-                                                                    ({{ $selisih < 0 ? '-' : '+' }}Rp {{ number_format(abs($selisih), 0, ',', '.') }})
-                                                                </span>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-
-                                                {{-- Other transactions in chronological order --}}
-                                                @php
-                                                    // Continue from last pencairan sisa, or original loan amount if no pencairan
-                                                    $previousSisa = $previousSisa ?: $p->jumlah_pinjaman;
-                                                    $counters = []; // Initialize counters for each jenis
-                                                @endphp
-                                                @foreach($otherTransactions as $t)
-                                                    @php
-                                                        $selisih = ($t->sisa_setelah ?? 0) - $previousSisa;
-                                                        $previousSisa = $t->sisa_setelah ?? 0;
-                                                        
-                                                        // Initialize counter for this jenis if not exists
-                                                        if(!isset($counters[$t->jenis])) {
-                                                            $counters[$t->jenis] = 1;
-                                                        }
-                                                    @endphp
-                                                    <tr class="border-t">
-                                                        <td class="px-4 py-2">
-                                                            {{ \Carbon\Carbon::parse($t->tanggal)->format('d M Y') }}
-                                                        </td>
-
-                                                        <td class="px-4 py-2 text-center capitalize">
-                                                            @if(in_array($t->jenis, ['pencairan', 'topup','pelunasan']))
-                                                                {{ ucfirst($t->jenis) }}
-                                                            @else
-                                                                {{ ucfirst($t->jenis) }} ke-{{ $counters[$t->jenis] }}
-                                                            @endif
-                                                        </td>
-
-                                                        <td class="px-4 py-2 text-right">
-                                                            Rp {{ number_format($t->jumlah, 0, ',', '.') }}
-                                                        </td>
-
-                                                        <td class="px-4 py-2 text-right font-medium">
-                                                            Rp {{ number_format($t->sisa_setelah ?? 0, 0, ',', '.') }}
-                                                            @if($selisih != 0)
-                                                                <span class="text-xs {{ $selisih < 0 ? 'text-green-600' : 'text-red-600' }}">
-                                                                    ({{ $selisih < 0 ? '-' : '+' }}Rp {{ number_format(abs($selisih), 0, ',', '.') }})
-                                                                </span>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                    @php
-                                                        $counters[$t->jenis]++;
-                                                    @endphp
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-
+                                <td class="px-4 py-2 text-center">
+                                    @if($p->transaksi->isNotEmpty())
+                                        <button
+                                            onclick="toggleCicilan({{ $p->id }})"
+                                            id="btn-lihat-{{ $p->id }}"
+                                            class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium px-3 py-1.5 rounded-md transition-all duration-200 inline-flex items-center gap-1 transform hover:scale-105">
+                                            <svg class="w-3 h-3 transition-transform duration-200" id="icon-lihat-{{ $p->id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                            Lihat
+                                        </button>
+                                    @else
+                                        <span class="text-xs text-gray-400 italic">-</span>
+                                    @endif
                                 </td>
                             </tr>
-                        @endif
 
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
-                                Tidak ada pinjaman aktif.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                            {{-- ========================= --}}
+                            {{-- RIWAYAT CICILAN --}}
+                            {{-- ========================= --}}
+                            @if($p->transaksi->isNotEmpty())
+                                <tr id="cicilan-{{ $p->id }}" class="hidden">
+                                    <td colspan="5" class="px-6 py-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg shadow-inner">
+
+                                        <div class="text-sm font-semibold mb-3 text-gray-700">
+                                            Riwayat Transaksi
+                                        </div>
+
+                                        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                            <table class="w-full text-sm">
+                                                <thead class="bg-gray-100 text-gray-600">
+                                                    <tr>
+                                                        <th class="px-4 py-2 text-left">Tanggal</th>
+                                                        <th class="px-4 py-2 text-center">Jenis</th>
+                                                        <th class="px-4 py-2 text-right">Jumlah</th>
+                                                        <th class="px-4 py-2 text-right">Sisa Pinjaman</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @php
+                                                        // Sort transactions: pencairan first (by date asc for progression), then others by date asc
+                                                        $pencairanTransactions = $p->transaksi->where('jenis', 'pencairan')->sortBy('tanggal');
+                                                        $otherTransactions = $p->transaksi->where('jenis', '!=', 'pencairan')->sortBy('tanggal');
+                                                    @endphp
+
+                                                    {{-- Pencairan transactions first --}}
+                                                    @php
+                                                        $previousSisa = 0; // Start with 0 for pencairan
+                                                    @endphp
+                                                    @foreach($pencairanTransactions as $t)
+                                                        @php
+                                                            $selisih = ($t->sisa_setelah ?? 0) - $previousSisa;
+                                                            $previousSisa = $t->sisa_setelah ?? 0;
+                                                        @endphp
+                                                        <tr class="border-t">
+                                                            <td class="px-4 py-2">
+                                                                {{ \Carbon\Carbon::parse($t->tanggal)->format('d M Y') }}
+                                                            </td>
+
+                                                            <td class="px-4 py-2 text-center capitalize">
+                                                                {{ ucfirst($t->jenis) }}
+                                                            </td>
+
+                                                            <td class="px-4 py-2 text-right">
+                                                                Rp {{ number_format($t->jumlah, 0, ',', '.') }}
+                                                            </td>
+
+                                                            <td class="px-4 py-2 text-right font-medium">
+                                                                Rp {{ number_format($t->sisa_setelah ?? 0, 0, ',', '.') }}
+                                                                @if($selisih != 0)
+                                                                    <span class="text-xs {{ $selisih < 0 ? 'text-green-600' : 'text-red-600' }}">
+                                                                        ({{ $selisih < 0 ? '-' : '+' }}Rp {{ number_format(abs($selisih), 0, ',', '.') }})
+                                                                    </span>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+
+                                                    {{-- Other transactions in chronological order --}}
+                                                    @php
+                                                        // Continue from last pencairan sisa, or original loan amount if no pencairan
+                                                        $previousSisa = $previousSisa ?: $p->jumlah_pinjaman;
+                                                        $counters = []; // Initialize counters for each jenis
+                                                    @endphp
+                                                    @foreach($otherTransactions as $t)
+                                                        @php
+                                                            $selisih = ($t->sisa_setelah ?? 0) - $previousSisa;
+                                                            $previousSisa = $t->sisa_setelah ?? 0;
+                                                            
+                                                            // Initialize counter for this jenis if not exists
+                                                            if(!isset($counters[$t->jenis])) {
+                                                                $counters[$t->jenis] = 1;
+                                                            }
+                                                        @endphp
+                                                        <tr class="border-t">
+                                                            <td class="px-4 py-2">
+                                                                {{ \Carbon\Carbon::parse($t->tanggal)->format('d M Y') }}
+                                                            </td>
+
+                                                            <td class="px-4 py-2 text-center capitalize">
+                                                                @if(in_array($t->jenis, ['pencairan', 'topup','pelunasan']))
+                                                                    {{ ucfirst($t->jenis) }}
+                                                                @else
+                                                                    {{ ucfirst($t->jenis) }} ke-{{ $counters[$t->jenis] }}
+                                                                @endif
+                                                            </td>
+
+                                                            <td class="px-4 py-2 text-right">
+                                                                Rp {{ number_format($t->jumlah, 0, ',', '.') }}
+                                                            </td>
+
+                                                            <td class="px-4 py-2 text-right font-medium">
+                                                                Rp {{ number_format($t->sisa_setelah ?? 0, 0, ',', '.') }}
+                                                                @if($selisih != 0)
+                                                                    <span class="text-xs {{ $selisih < 0 ? 'text-green-600' : 'text-red-600' }}">
+                                                                        ({{ $selisih < 0 ? '-' : '+' }}Rp {{ number_format(abs($selisih), 0, ',', '.') }})
+                                                                    </span>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                        @php
+                                                            $counters[$t->jenis]++;
+                                                        @endphp
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    @endif
+    
 
     {{-- ========================= --}}
     {{-- RIWAYAT PINJAMAN LUNAS --}}
