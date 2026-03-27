@@ -1,7 +1,13 @@
 @extends('layouts.main')
 
 @section('title', 'Pengajuan Pinjaman')
-@section('page-title', 'Pinjaman Saya > Pengajuan Pinjaman')
+@section('page-title')
+    <a href="{{ route('anggota.pinjaman.index') }}" class="hover:text-blue-700">
+        Pinjaman Saya
+    </a>
+    <span class="mx-1 text-gray-400">></span>
+    <span>Pengajuan Pinjaman</span>
+@endsection
 
 @section('content')
 <div class="space-y-10">
@@ -108,7 +114,7 @@
                 <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-xl p-4">
                     
                     <div class="font-medium flex items-center justify-between mb-2">
-                        Pengajuan Tidak Dapat Dilakukan
+                        Pengajuan Baru Tidak Dapat Dilakukan
                         <a href="{{ route('anggota.pinjaman.index') }}"
                             class="text-sm text-gray-500 hover:text-gray-700">
                             ← Kembali
@@ -116,11 +122,20 @@
                     </div>
 
                     @if ($pengajuanAktif && $pengajuanAktif->status === 'diajukan')
-                        Pengajuan pinjaman Anda sedang diproses.
+                        <span
+                         class="block text-sm">
+                            Pinjaman Anda sedang diproses. Mohon menunggu keputusan dari pengurus koperasi/lakukan edit pengajuan jika diperlukan.
+                        </span>
                     @elseif ($pengajuanAktif && $pengajuanAktif->status === 'disetujui')
-                        Pengajuan pinjaman Anda sudah disetujui dan menunggu pencairan.
+                        <span
+                         class="block text-sm">
+                            Pengajuan pinjaman Anda sudah disetujui. Mohon menunggu untuk pencairan.
+                        </span>
                     @else
-                        Anda belum memenuhi syarat untuk mengajukan pinjaman baru.
+                        <span
+                         class="block text-sm">
+                            Anda belum memenuhi syarat untuk mengajukan pinjaman baru. Sisa pinjaman aktif harus ≤ Rp 5.000.000 dan tidak ada pengajuan yang sedang diproses.
+                        </span>
                     @endif
                 </div>
             @endif
