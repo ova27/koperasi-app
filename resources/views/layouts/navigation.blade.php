@@ -19,6 +19,9 @@
                                 <span class="text-sm font-medium text-slate-700">
                                     {{ Auth::user()->name }}
                                 </span>
+                                <div class="text-[11px] items-left text-slate-400 capitalize">
+                                    {{ auth()->user()->getRoleNames()->implode(', ') }}
+                                </div>
                             </div>
 
                             <div class="ms-1">

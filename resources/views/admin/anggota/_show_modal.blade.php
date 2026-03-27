@@ -30,6 +30,7 @@
     </div>
 
     {{-- RINGKASAN SIMPANAN --}}
+    @if($canViewFullDetails)
     <div class="border rounded-lg p-4">
         <h3 class="font-semibold mb-3 text-sm">
             Ringkasan Simpanan
@@ -62,8 +63,10 @@
             </tr>
         </table>
     </div>
+    @endif
 
     {{-- RINGKASAN PINJAMAN --}}
+    @if($canViewFullDetails)
     <div class="border rounded-lg p-4">
         <h3 class="font-semibold mb-3 text-sm">
             Ringkasan Pinjaman
@@ -90,6 +93,7 @@
             </tr>
         </table>
     </div>
+    @endif
 
     {{-- FOOTER AKSI --}}
     <div class="flex justify-end gap-3 pt-4 border-t text-sm">

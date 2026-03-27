@@ -81,6 +81,7 @@
     </div>
 
     {{-- ================= RINGKASAN SIMPANAN ================= --}}
+    @if($canViewFullDetails)
     @php
         $pokok = $saldoSimpanan['pokok'] ?? 0;
         $wajib = $saldoSimpanan['wajib'] ?? 0;
@@ -140,8 +141,10 @@
             </tr>
         </table>
     </div>
+    @endif
 
     {{-- ================= AMBIL SIMPANAN ================= --}}
+    @if($canViewFullDetails)
     @can('manage simpanan anggota')
     <div class="bg-white border rounded-lg p-5">
         <h2 class="font-semibold mb-4">
@@ -181,8 +184,10 @@
         </form>
     </div>
     @endcan
+    @endif
 
     {{-- ================= RIWAYAT SIMPANAN ================= --}}
+    @if($canViewFullDetails)
     <div class="bg-white border rounded-lg p-5">
         <h2 class="font-semibold mb-4">
             Riwayat Simpanan
@@ -230,8 +235,10 @@
             </table>
         </div>
     </div>
+    @endif
 
     {{-- ================= RINGKASAN PINJAMAN ================= --}}
+    @if($canViewFullDetails)
     <div class="bg-white border rounded-lg p-5">
         <h2 class="font-semibold mb-4">
             Ringkasan Pinjaman
@@ -258,6 +265,7 @@
             </tr>
         </table>
     </div>
+    @endif
 
 </div>
 @endsection

@@ -8,16 +8,36 @@ use App\Services\SimpananService;
 use App\Services\PinjamanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class AnggotaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('view anggota list');
 
-        $anggotas = Anggota::orderBy('nama')->get();
+        $search = $request->query('search');
 
-        return view('admin.anggota.index', compact('anggotas'));
+        $allowedSorts = ['nama', 'jabatan', 'status', 'tanggal_masuk'];
+        $sort = $request->query('sort', 'nama');
+        $direction = $request->query('direction', 'asc');
+
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'nama';
+        }
+
+        $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
+
+        $anggotas = Anggota::when($search, function ($query, $search) {
+                $query->where('nama', 'like', "%{$search}%")
+                      ->orWhere('jabatan', 'like', "%{$search}%")
+                      ->orWhere('nip', 'like', "%{$search}%");
+            })
+            ->orderBy($sort, $direction)
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.anggota.index', compact('anggotas', 'search', 'sort', 'direction'));
     }
 
     public function show(
@@ -27,6 +47,11 @@ class AnggotaController extends Controller
         PinjamanService $pinjamanService
     ) {
         $this->authorize('view anggota list');
+
+        // Check if user can view full details (simpanan & pinjaman)
+        // Only admin/bendahara/ketua can see financial details of other anggota
+        $canViewFullDetails = Gate::allows('manage simpanan anggota') || 
+                             Gate::allows('nonaktifkan anggota');
 
         $anggota->load([
             'simpanans' => fn ($q) => $q->orderByDesc('tanggal'),
@@ -51,7 +76,8 @@ class AnggotaController extends Controller
                 'wajib',
                 'sukarela',
                 'total',
-                'ringkasanPinjaman'
+                'ringkasanPinjaman',
+                'canViewFullDetails'
             ));
         }
 
@@ -59,7 +85,8 @@ class AnggotaController extends Controller
         return view('admin.anggota.show', compact(
             'anggota',
             'saldoSimpanan',
-            'ringkasanPinjaman'
+            'ringkasanPinjaman',
+            'canViewFullDetails'
         ));
     }
 

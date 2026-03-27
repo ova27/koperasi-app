@@ -15,13 +15,19 @@ class SimpananSayaController extends Controller
         $anggota = Auth::user()->anggota;
         abort_if(! $anggota, 403);
 
-        $simpanan = Simpanan::where('anggota_id', $anggota->id)
+        // Get all simpanan for saldo calculation
+        $allSimpanan = Simpanan::where('anggota_id', $anggota->id)
             ->orderByDesc('tanggal')
             ->get();
     
-        $saldo = $simpanan
+        $saldo = $allSimpanan
             ->groupBy('jenis_simpanan')
             ->map(fn ($items) => $items->sum('jumlah'));
+
+        // Paginate for table display (10 per page)
+        $simpanan = Simpanan::where('anggota_id', $anggota->id)
+            ->orderByDesc('tanggal')
+            ->paginate(10);
 
         return view('anggota.simpanan.index', compact(
             'simpanan',

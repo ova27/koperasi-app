@@ -17,5 +17,13 @@ export default {
         },
     },
 
+    safelist: [
+        // Simpanan jenis colors
+        'bg-blue-100', 'text-blue-800',      // pokok
+        'bg-indigo-100', 'text-indigo-800',  // wajib
+        'bg-green-100', 'text-green-800',    // sukarela
+        'bg-gray-100', 'text-gray-700',      // default
+    ],
+
     plugins: [forms],
 };

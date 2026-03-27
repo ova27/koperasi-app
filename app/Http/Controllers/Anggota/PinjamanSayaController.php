@@ -17,10 +17,12 @@ class PinjamanSayaController extends Controller
 
         $pinjaman = Pinjaman::with('transaksi')
             ->where('anggota_id', $anggota->id)
+            ->orderByRaw("CASE WHEN status = 'aktif' THEN 1 ELSE 2 END")
             ->orderByDesc('tanggal_pinjam')
             ->get();
 
-        $pinjamanAktif = $pinjaman->where('status', 'aktif');
+        $pinjamanAktif = $pinjaman->whereIn('status', ['aktif', 'pengajuan', 'disetujui', 'ditolak']);
+        $pinjamanLunas = $pinjaman->where('status', 'lunas');
 
         $totalPinjamanSaya = $pinjamanAktif->sum('jumlah_pinjaman');
         $sisaPinjamanSaya  = $pinjamanAktif->sum('sisa_pinjaman');
@@ -28,6 +30,8 @@ class PinjamanSayaController extends Controller
 
         return view('anggota.pinjaman.index', compact(
             'pinjaman',
+            'pinjamanAktif',
+            'pinjamanLunas',
             'totalPinjamanSaya',
             'sisaPinjamanSaya',
             'pinjamanAktifSaya'

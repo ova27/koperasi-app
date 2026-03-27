@@ -11,8 +11,8 @@
         <div class="text-[13px] font-semibold tracking-wide text-slate-800 uppercase">
             Koperasi Simpatik
         </div>
-        <div class="text-[11px] text-slate-500 capitalize">
-            {{ auth()->user()->getRoleNames()->implode(', ') }}
+        <div class="text-[13px] text-slate-500 capitalize">
+            BPS Provinsi Banten
         </div>
 
     </div>
@@ -50,8 +50,17 @@
             @can('view pinjaman saya')
                 <li class="menu-item">
                     <a href="{{ route('anggota.pinjaman.index') }}"
-                    class="{{ request()->routeIs('anggota.pinjaman.*') ? 'active' : '' }}">
+                    class="{{ request()->routeIs('anggota.pinjaman.index') ? 'active' : '' }}">
                         Pinjaman Saya
+                    </a>
+                </li>
+            @endcan
+
+            @can('create pinjaman')
+                <li class="menu-item">
+                    <a href="{{ route('anggota.pinjaman.ajukan') }}"
+                    class="{{ request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
+                        Pengajuan Pinjaman Saya
                     </a>
                 </li>
             @endcan

@@ -12,16 +12,13 @@
 <div class="flex min-h-screen">
 
     {{-- SIDEBAR --}}
-    <aside class="w-64 bg-white border-r shadow-sm px-4 pt-4 pb-6">
-
+    <aside class="w-64 rounded-r-xl bg-gradient-to-b from-blue-50 via-teal-50 to-green-50 border-r border-gray-200 shadow-sm px-4 pt-5 pb-6">
         @role('admin')
             @include('layouts.sidebar.admin')
         @elserole('anggota')
             @include('layouts.sidebar.anggota')
         @endrole
-
     </aside>
-
 
     {{-- WRAPPER KANAN --}}
     <div class="flex-1 flex flex-col">

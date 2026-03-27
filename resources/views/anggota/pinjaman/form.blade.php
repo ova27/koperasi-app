@@ -1,13 +1,7 @@
 @extends('layouts.main')
 
-@section('title', 'Pengajuan Pinjaman')
-@section('page-title')
-    <a href="{{ route('anggota.pinjaman.index') }}" class="hover:text-blue-700">
-        Pinjaman Saya
-    </a>
-    <span class="mx-1 text-gray-400">></span>
-    <span>Pengajuan Pinjaman</span>
-@endsection
+@section('title', 'Pengajuan Pinjaman Saya')
+@section('page-title', 'Pengajuan Pinjaman Saya')
 
 @section('content')
 <div class="space-y-10">
@@ -21,13 +15,7 @@
 
             @if ($bolehAjukan)
                 <div class="bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="section-title">Form Pengajuan Pinjaman</h2>
-                        <a href="{{ route('anggota.pinjaman.index') }}"
-                            class="text-sm text-gray-500 hover:text-gray-700">
-                            ← Kembali
-                        </a>
-                    </div>
+                    <h2 class="section-title mb-4">Form Pengajuan Pinjaman</h2>
 
                     {{-- ERROR MESSAGE --}}
                     @error('pengajuan')
@@ -112,13 +100,8 @@
             @else
                 {{-- TIDAK BOLEH AJUKAN --}}
                 <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-xl p-4">
-                    
-                    <div class="font-medium flex items-center justify-between mb-2">
+                    <div class="font-medium mb-2">
                         Pengajuan Baru Tidak Dapat Dilakukan
-                        <a href="{{ route('anggota.pinjaman.index') }}"
-                            class="text-sm text-gray-500 hover:text-gray-700">
-                            ← Kembali
-                        </a>
                     </div>
 
                     @if ($pengajuanAktif && $pengajuanAktif->status === 'diajukan')

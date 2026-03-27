@@ -13,7 +13,7 @@
         </div>
 
         <div class="text-[11px] text-slate-500 capitalize">
-            {{ auth()->user()->getRoleNames()->implode(', ') }}
+            BPS Provinsi Banten
         </div>
     </div>
 </div>
@@ -46,10 +46,29 @@
             @can('view pinjaman saya')
                 <li class="menu-item">
                     <a href="{{ route('anggota.pinjaman.index') }}"
-                    class="{{ request()->routeIs('anggota.pinjaman.*') ? 'active' : '' }}">
+                    class="{{ request()->routeIs('anggota.pinjaman.index') ? 'active' : '' }}">
                         Pinjaman Saya
                     </a>
                 </li>
+            @endcan
+
+            @can('create pinjaman')
+                <li class="menu-item">
+                    <a href="{{ route('anggota.pinjaman.ajukan') }}"
+                    class="{{ request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
+                        Pengajuan Pinjaman Saya
+                    </a>
+                </li>
+            @endcan
+            {{-- ================= DATA ANGGOTA ================= --}}
+            @can('view anggota list')
+            <li class="menu-header">Data</li>
+            <li class="menu-item">
+                <a href="{{ route('admin.anggota.index') }}"
+                class="{{ request()->routeIs('admin.anggota.*') ? 'active' : '' }}">
+                    Data Anggota
+                </a>
+            </li>
             @endcan
 
             {{-- ================= LAPORAN PRIBADI ================= --}}
