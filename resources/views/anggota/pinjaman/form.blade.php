@@ -106,8 +106,13 @@
             @else
                 {{-- TIDAK BOLEH AJUKAN --}}
                 <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-xl p-4">
-                    <div class="font-medium mb-1">
+                    
+                    <div class="font-medium flex items-center justify-between mb-2">
                         Pengajuan Tidak Dapat Dilakukan
+                        <a href="{{ route('anggota.pinjaman.index') }}"
+                            class="text-sm text-gray-500 hover:text-gray-700">
+                            ← Kembali
+                        </a>
                     </div>
 
                     @if ($pengajuanAktif && $pengajuanAktif->status === 'diajukan')
@@ -188,6 +193,7 @@
                                     'diajukan' => 'bg-yellow-100 text-yellow-700',
                                     'disetujui' => 'bg-blue-100 text-blue-700',
                                     'ditolak'  => 'bg-red-100 text-red-700',
+                                    'dicairkan' => 'bg-green-100 text-green-700',
                                     default    => 'bg-gray-100 text-gray-700',
                                 };
                             @endphp

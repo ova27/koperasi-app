@@ -12,18 +12,11 @@
     <div>
         <h2 class="section-title">
             Ringkasan Koperasi
-            <span class="section-subtitle">
-                ({{ $bulan }} {{ $tahun }})
-            </span>
         </h2>
 
         {{-- ========================= --}}
         {{-- RINGKASAN UTAMA --}}
         {{-- ========================= --}}
-        <p class="text-xs uppercase tracking-wide text-gray-400 mb-3">
-            Ringkasan Utama
-        </p>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
 
             {{-- ANGGOTA --}}
@@ -97,11 +90,14 @@
         {{-- DETAIL RINGKASAN --}}
         {{-- ========================= --}}
         <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-10">
-
+                        
             {{-- SIMPANAN --}}
             <div>
                 <p class="text-xs uppercase tracking-wide text-gray-400 mb-2">
                     Simpanan Seluruh Anggota
+                    <span class="section-subtitle">
+                        ({{ $bulan }} {{ $tahun }})
+                    </span>
                 </p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -132,6 +128,9 @@
             <div>
                 <p class="text-xs uppercase tracking-wide text-gray-400 mb-2">
                     Pinjaman Seluruh Anggota
+                    <span class="section-subtitle">
+                        ({{ $bulan }} {{ $tahun }})
+                    </span>
                 </p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
