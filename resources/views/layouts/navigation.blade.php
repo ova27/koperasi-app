@@ -7,11 +7,6 @@
                 <div class="text-slate-700">
                     {{-- icon laravel kamu --}}
                 </div>
-
-                {{-- TITLE --}}
-                <span class="text-sm font-semibold text-slate-800">
-                    @yield('title')
-                </span>
             </div>
 
 

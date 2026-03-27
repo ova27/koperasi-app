@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Anggota;
 
 use Illuminate\Http\Request;
 use App\Models\PengajuanPinjaman;
-use App\Models\Pinjaman;
 use App\Services\PinjamanService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -124,7 +123,9 @@ class PengajuanPinjamanController extends Controller
         } catch (\Exception $e) {
             return back()
                 ->withInput()
-                ->withErrors(['jumlah_diajukan' => $e->getMessage()]);
+                ->withErrors(['pengajuan' => $e->getMessage()])
+                ->with('open_edit_modal', true)
+                ->with('edit_id', $pengajuan->id); 
         }
     }
 

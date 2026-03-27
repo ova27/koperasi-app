@@ -82,7 +82,7 @@
 
             {{-- ================= DATA MASTER ================= --}}
             @can('view anggota list')
-            <li class="menu-header">Data Master</li>
+            <li class="menu-header">Master</li>
 
             <li class="menu-item">
                 <a href="{{ route('admin.anggota.index') }}"
@@ -91,6 +91,17 @@
                 </a>
             </li>
             @endcan
+            
+            @canany(['edit profil', 'manage users'])
+                @can('manage users')
+                <li class="menu-item">
+                    <a href="{{ route('admin.users.index') }}"
+                    class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        Data Pengguna
+                    </a>
+                </li>
+                @endcan
+            @endcanany
 
 
             {{-- ================= PROSES & APPROVAL ================= --}}
@@ -211,30 +222,6 @@
                     <a href="{{ route('admin.laporan.pinjaman.index') }}"
                     class="{{ request()->routeIs('admin.laporan.pinjaman.*') ? 'active' : '' }}">
                         Laporan Pinjaman
-                    </a>
-                </li>
-                @endcan
-            @endcanany
-
-
-            {{-- ================= PENGATURAN ================= --}}
-            @canany(['edit profil', 'manage users'])
-            <li class="menu-header">Pengaturan</li>
-
-                @can('edit profil')
-                <li class="menu-item">
-                    <a href="{{ route('profile.edit') }}"
-                    class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                        Profil
-                    </a>
-                </li>
-                @endcan
-
-                @can('manage users')
-                <li class="menu-item">
-                    <a href="{{ route('admin.users.index') }}"
-                    class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                        Manajemen Pengguna
                     </a>
                 </li>
                 @endcan

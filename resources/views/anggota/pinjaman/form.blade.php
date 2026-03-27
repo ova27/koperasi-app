@@ -1,38 +1,10 @@
 @extends('layouts.main')
 
 @section('title', 'Pengajuan Pinjaman')
-@section('page-title', 'Pengajuan Pinjaman')
+@section('page-title', 'Pinjaman Saya > Pengajuan Pinjaman')
 
 @section('content')
-<div class="space-y-8">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900">
-                Pengajuan Pinjaman
-            </h1>
-            <p class="text-sm text-gray-500 mt-1">
-                Ajukan pinjaman baru sesuai ketentuan koperasi
-            </p>
-        </div>
-
-        <a href="{{ route('anggota.pinjaman.index') }}"
-        class="inline-flex items-center gap-2 px-4 py-2
-                bg-white border border-gray-300 text-gray-700
-                text-sm font-medium rounded-lg
-                hover:bg-gray-50 transition shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Kembali
-        </a>
-    </div>
+<div class="space-y-10">
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -42,9 +14,21 @@
         <div class="lg:col-span-2">
 
             @if ($bolehAjukan)
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-                    <h2 class="section-title">Form Pengajuan Pinjaman</h2>
+                <div class="bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="section-title">Form Pengajuan Pinjaman</h2>
+                        <a href="{{ route('anggota.pinjaman.index') }}"
+                            class="text-sm text-gray-500 hover:text-gray-700">
+                            ← Kembali
+                        </a>
+                    </div>
 
+                    {{-- ERROR MESSAGE --}}
+                    @error('pengajuan')
+                        <div class="mb-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded text-sm">
+                            {{ $message }}
+                        </div>
+                    @enderror
                     <form method="POST" action="{{ route('anggota.pinjaman.store') }}">
                         @csrf
 
@@ -116,11 +100,6 @@
                                 class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition shadow-sm">
                                 Ajukan Pinjaman
                             </button>
-
-                            <a href="{{ route('anggota.pinjaman.index') }}"
-                               class="text-sm text-gray-500 hover:underline">
-                                Batal
-                            </a>
                         </div>
                     </form>
                 </div>
@@ -168,7 +147,8 @@
 
                 <div class="mt-3 text-xs text-gray-500 leading-relaxed">
                     • Top-up hanya boleh jika sisa pinjaman ≤ Rp 5.000.000<br>
-                    • Total pengajuan maksimal Rp 20.000.000
+                    • Total pengajuan maksimal Rp 20.000.000<br>
+                    • Tenor maksimal 20 bulan
                 </div>
             </div>
 
@@ -194,8 +174,8 @@
                     <thead class="bg-gray-50 text-gray-600">
                         <tr>
                             <th class="px-4 py-3 text-left w-[18%]">Tanggal</th>
-                            <th class="px-4 py-3 text-right w-[22%]">Jumlah</th>
-                            <th class="px-4 py-3 text-center w-[12%]">Tenor</th>
+                            <th class="px-4 py-3 text-right w-[18%]">Jumlah</th>
+                            <th class="px-4 py-3 text-center w-[15%]">Tenor</th>
                             <th class="px-4 py-3 text-center w-[18%]">Bulan Pinjam</th>
                             <th class="px-4 py-3 text-center w-[15%]">Status</th>
                             <th class="px-4 py-3 text-center w-[15%]">Aksi</th>
@@ -221,63 +201,69 @@
                                     Rp {{ number_format($item->jumlah_diajukan, 0, ',', '.') }}
                                 </td>
 
-                                <td class="px-4 py-2 text-center">
+                                <td class="px-4 py-3 text-center align-middle">
                                     {{ $item->tenor }} bln
                                 </td>
 
-                                <td class="px-4 py-2 text-center">
+                                <td class="px-4 py-3 text-center align-middle">
                                     {{ \Carbon\Carbon::parse($item->bulan_pinjam)->translatedFormat('F Y') }}
                                 </td>
 
-                                <td class="px-4 py-2 text-center">
+                                <td class="px-4 py-3 text-center align-middle">
                                     <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $badge }}">
                                         {{ ucfirst($item->status) }}
                                     </span>
                                 </td>
 
-                                {{-- AKSI --}}
-                                <td class="px-4 py-2 text-center">
+                                <td class="px-4 py-3 text-center align-middle">
                                     @if ($item->status === 'diajukan')
-                                        <div class="inline-flex items-center gap-4 text-sm">
-
+                                        <div class="flex items-center justify-center gap-3">
                                             {{-- EDIT --}}
-                                            <button
-                                                type="button"
-                                                onclick="openEditModal(
-                                                    {{ $item->id }},
-                                                    {{ $item->jumlah_diajukan }},
-                                                    {{ $item->tenor }},
-                                                    '{{ \Carbon\Carbon::parse($item->bulan_pinjam)->format('Y-m') }}',
-                                                    '{{ addslashes($item->keterangan) }}'
-                                                )"
-                                                class="text-blue-600 hover:underline whitespace-nowrap">
-                                                Edit
-                                            </button>
+                                            <div class="relative group">
+                                                <button
+                                                    type="button" onclick="openEditModal(
+                                                    {{ $item->id }}, 
+                                                    {{ $item->jumlah_diajukan }}, 
+                                                    {{ $item->tenor }}, 
+                                                    '{{ \Carbon\Carbon::parse($item->bulan_pinjam)->format('Y-m') }}', 
+                                                    '{{ addslashes($item->keterangan) }}')"
+                                                    class="w-9 h-9 flex items-center justify-center
+                                                        rounded-lg bg-blue-50 text-blue-600
+                                                        hover:bg-blue-100 transition
+                                                        text-base leading-none">
+                                                    ✏️
+                                                </button>
+
+                                                <span class="absolute -top-8 left-1/2 -translate-x-1/2
+                                                    bg-gray-800 text-white text-[10px] px-2 py-1 rounded
+                                                    opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                                                    Edit
+                                                </span>
+                                            </div>
 
                                             {{-- BATAL --}}
-                                            <form
-                                                action="{{ route('anggota.pinjaman.destroy', $item->id) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Batalkan pengajuan ini?')"
-                                                class="inline-flex"
-                                            >
-                                                @csrf
-                                                @method('DELETE')
+                                            <div class="relative group">
                                                 <button
                                                     type="submit"
-                                                    class="text-red-600 hover:underline whitespace-nowrap">
-                                                    Batal
+                                                    onclick="handleDelete({{ $item->id }})"
+                                                    class="w-9 h-9 flex items-center justify-center
+                                                        rounded-lg bg-red-50 text-red-600
+                                                        hover:bg-red-100 transition
+                                                        text-base leading-none">
+                                                    🗑️
                                                 </button>
-                                            </form>
 
+                                                <span class="absolute -top-8 left-1/2 -translate-x-1/2
+                                                    bg-gray-800 text-white text-[10px] px-2 py-1 rounded
+                                                    opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                                                    Batal
+                                                </span>
+                                            </div>
                                         </div>
                                     @else
-                                        <span class="text-xs text-gray-400 italic">
-                                            Tidak tersedia
-                                        </span>
+                                        <span class="text-xs text-gray-400 italic">-</span>
                                     @endif
                                 </td>
-
                             </tr>
                         @endforeach
                     </tbody>
@@ -285,13 +271,119 @@
             </div>
         @endif
     </div>
+</div>
 
+<form id="formDelete" method="POST" class="hidden">
+    @csrf
+    @method('DELETE')
+</form>
 
+<!-- MODAL EDIT -->
+<div id="modalEdit" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6">
+
+        <h3 class="text-lg font-bold mb-4">Edit Pengajuan</h3>
+
+        {{-- ERROR MESSAGE --}}
+        @error('pengajuan')
+            <div class="mb-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded text-sm">
+                {{ $message }}
+            </div>
+        @enderror
+
+        <form id="formEdit" method="POST">
+            @csrf
+            @method('PUT')
+
+            {{-- JUMLAH --}}
+            <div class="mb-3">
+                <label class="text-sm">Jumlah</label>
+                <input type="text" id="edit_jumlah_format"
+                    class="w-full border rounded p-2"
+                    oninput="formatRupiahEdit(this)">
+                <input type="hidden" name="jumlah_diajukan" id="edit_jumlah_asli">
+            </div>
+
+            {{-- TENOR --}}
+            <div class="mb-3">
+                <label class="text-sm">Tenor</label>
+                <input type="number" name="tenor" id="edit_tenor"
+                    class="w-full border rounded p-2">
+            </div>
+
+            {{-- BULAN --}}
+            <div class="mb-3">
+                <label class="text-sm">Bulan Pinjam</label>
+                <input type="month" name="bulan_pinjam" id="edit_bulan"
+                    class="w-full border rounded p-2">
+            </div>
+
+            {{-- KETERANGAN --}}
+            <div class="mb-3">
+                <label class="text-sm">Keterangan</label>
+                <textarea name="keterangan" id="edit_keterangan"
+                    class="w-full border rounded p-2"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-4">
+                <button type="button" onclick="closeEditModal()"
+                    class="px-4 py-2 text-sm text-gray-500">
+                    Batal
+                </button>
+
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded">
+                    Simpan
+                </button>
+            </div>
+
+        </form>
+    </div>
 </div>
 @endsection
 
 <script>
-function formatRupiah(el) {
+function handleDelete(id) {
+    if (!confirm('Batalkan pengajuan ini?')) return;
+
+    const form = document.getElementById('formDelete');
+    form.action = `/anggota/pinjaman/${id}`;
+    form.submit();
+}
+
+function formatRupiah(el) { 
+    let value = el.value.replace(/[^,\d]/g, '');
+    let sisa = value.length % 3; let rupiah = value.substr(0, sisa); 
+    let ribuan = value.substr(sisa).match(/\d{3}/g); 
+    if (ribuan) { 
+        let separator = sisa ? '.' : ''; rupiah += separator + ribuan.join('.');
+    } el.value = value ? 'Rp ' + rupiah : ''; 
+    document.getElementById('jumlah_asli').value = value; 
+}
+function openEditModal(id, jumlah, tenor, bulan, keterangan) {
+
+    // set action form
+    document.getElementById('formEdit').action = `/anggota/pinjaman/${id}`;
+
+    // isi field
+    document.getElementById('edit_jumlah_format').value = 'Rp ' + jumlah.toLocaleString('id-ID');
+    document.getElementById('edit_jumlah_asli').value = jumlah;
+
+    document.getElementById('edit_tenor').value = tenor;
+    document.getElementById('edit_bulan').value = bulan;
+    document.getElementById('edit_keterangan').value = keterangan;
+
+    // tampilkan modal
+    document.getElementById('modalEdit').classList.remove('hidden');
+    document.getElementById('modalEdit').classList.add('flex');
+}
+
+function closeEditModal() {
+    document.getElementById('modalEdit').classList.add('hidden');
+}
+
+function formatRupiahEdit(el) {
     let value = el.value.replace(/[^,\d]/g, '');
     let sisa = value.length % 3;
     let rupiah = value.substr(0, sisa);
@@ -303,6 +395,20 @@ function formatRupiah(el) {
     }
 
     el.value = value ? 'Rp ' + rupiah : '';
-    document.getElementById('jumlah_asli').value = value;
+    document.getElementById('edit_jumlah_asli').value = value;
 }
 </script>
+
+@if (session('open_edit_modal'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        openEditModal(
+            {{ session('edit_id') }},
+            {{ old('jumlah_diajukan', 0) }},
+            {{ old('tenor', 1) }},
+            '{{ old('bulan_pinjam') }}',
+            '{{ old('keterangan') }}'
+        );
+    });
+</script>
+@endif

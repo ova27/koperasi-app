@@ -42,7 +42,7 @@ class ApprovalPinjamanController extends Controller
         PinjamanService $service
     ) {
         $this->authorize('approve pinjaman');
-        abort_if($pengajuan->status !== 'diajukan', 400);
+        // abort_if($pengajuan->status !== 'diajukan', 400);
 
         try {
             $jumlahMurni = str_replace(['Rp', '.', ' '], '', $request->jumlah_diajukan);
@@ -71,7 +71,7 @@ class ApprovalPinjamanController extends Controller
         if (! in_array($pengajuan->status, ['diajukan', 'disetujui'])) {
             return redirect()
                 ->back()
-                ->withErrors('Pengajuan tidak dapat ditolak karena sudah dicairkan.');
+                ->withErrors('Pengajuan sudah ditolak.');
         }
 
         $request->validate([

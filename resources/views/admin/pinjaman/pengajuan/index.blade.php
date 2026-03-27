@@ -213,12 +213,28 @@
         document.getElementById('approval_jumlah_asli').value = murni;
     }
 
-    function submitTolak() {
-        if (confirm('Apakah Anda yakin ingin MENOLAK pengajuan ini?')) {
-            const catatan = document.querySelector('textarea[name="catatan_ketua"]').value;
-            document.getElementById('hidden_alasan_tolak').value = catatan;
-            document.getElementById('formTolak').submit();
+    function handleTolak() {
+        const textarea = document.getElementById('alasanTolak');
+
+        if (!textarea) {
+            alert('Textarea tidak ditemukan!');
+            return false;
         }
+
+        const val = textarea.value.trim();
+
+        if (!val) {
+            alert('Alasan penolakan wajib diisi!');
+            return false;
+        }
+
+        if (!confirm('Yakin ingin menolak pengajuan ini?')) {
+            return false;
+        }
+
+        document.getElementById('inputAlasanTolak').value = val;
+
+        return true; // lanjut submit
     }
 </script>
 

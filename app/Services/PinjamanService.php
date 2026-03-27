@@ -104,7 +104,7 @@ class PinjamanService
         array $data = []
     ):void {
         
-        if (!in_array($pengajuan->status, ['diajukan', 'disetujui'])) {
+        if (!in_array($pengajuan->status, ['diajukan', 'ditolak'])) {
             throw new Exception('Pengajuan tidak valid atau sudah dicairkan');
         }
 

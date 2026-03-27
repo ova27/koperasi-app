@@ -9,18 +9,25 @@
     {{-- SALDO --}}
     <div>
         <h2 class="section-title">Saldo Simpanan Saya</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            @foreach($saldo as $jenis => $jumlah)
-                <div class="stat-card stat-info">
-                    <div class="stat-label">
-                        {{ ucfirst($jenis) }}
+
+        @if(empty($saldo) || count($saldo) == 0)
+            <div class="bg-white border border-gray-200 rounded-xl p-6 text-center text-gray-500 mb-8">
+                Belum ada saldo simpanan.
+            </div>
+        @else
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                @foreach($saldo as $jenis => $jumlah)
+                    <div class="stat-card stat-info">
+                        <div class="stat-label">
+                            {{ ucfirst($jenis) }}
+                        </div>
+                        <div class="stat-value">
+                            Rp {{ number_format($jumlah, 0, ',', '.') }}
+                        </div>
                     </div>
-                    <div class="stat-value">
-                        Rp {{ number_format($jumlah, 0, ',', '.') }}
-                    </div>
-                </div>
-            @endforeach
-        </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 
     {{-- RIWAYAT SIMPANAN --}}

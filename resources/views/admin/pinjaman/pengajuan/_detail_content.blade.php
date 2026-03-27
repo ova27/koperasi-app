@@ -42,42 +42,39 @@
                         class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
             </div>
-
-            {{-- Alasan/Catatan Ketua (Penting jika menolak) --}}
-            <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan/Alasan (ditolak)</label>
-                <textarea name="alasan" rows="2" placeholder="Alasan jika ditolak..."
-                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-            </div>
         </div>
-
+    
+    
         {{-- Action Buttons --}}
         <div class="grid grid-cols-2 gap-2 mt-6">
             <button type="submit" 
                 class="bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-bold text-sm transition shadow-sm">
                 SETUJUI
             </button>
-            
+    </form>        
             {{-- Tombol Tolak memicu form yang berbeda atau method berbeda --}}
-            <button type="button" 
-                onclick="submitTolak()"
-                class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 py-2.5 rounded-lg font-bold text-sm transition">
-                TOLAK
-            </button>
-        </div>
+            <form method="POST" action="{{ route('admin.pinjaman.pengajuan.tolak', $pengajuan->id) }}">
+                @csrf
 
-        <button type="button" onclick="closeModalDetail()" 
-            class="w-full mt-3 py-2 text-xs text-gray-400 font-medium hover:text-gray-600 transition">
-            BATAL & TUTUP
-        </button>
-    </form>
+                <textarea name="alasan" required
+                    class="w-full border rounded p-1 text-sm"
+                    placeholder="Alasan jika ditolak..."></textarea>
+
+                <button type="submit"
+                    onclick="return confirm('Yakin ingin menolak?')"
+                    class="bg-red-500 text-white w-full py-2 rounded">
+                    TOLAK
+                </button>
+            </form>
+        </div>
+    
 </div>
 
 {{-- Hidden Form khusus Tolak --}}
-<form id="formTolak" action="{{ route('admin.pinjaman.pengajuan.tolak', $pengajuan->id) }}" method="POST" class="hidden">
+{{-- <form id="formTolak" action="{{ route('admin.pinjaman.pengajuan.tolak', $pengajuan->id) }}" method="POST" class="hidden">
     @csrf
     <input type="hidden" name="alasan_tolak" id="hidden_alasan_tolak">
-</form>
+</form> --}}
 
 <script>
     function formatRupiahKetua(element) {
@@ -101,12 +98,4 @@
         document.getElementById('approval_jumlah_asli').value = murni;
     }
 
-    function submitTolak() {
-        if (confirm('Yakin ingin menolak pengajuan ini?')) {
-            // Ambil catatan dari textarea form utama untuk dijadikan alasan tolak
-            const catatan = document.querySelector('textarea[name="catatan_ketua"]').value;
-            document.getElementById('hidden_alasan_tolak').value = catatan;
-            document.getElementById('formTolak').submit();
-        }
-    }
 </script>

@@ -33,6 +33,7 @@
                 <th>Tanggal</th>
                 <th>Keterangan</th>
                 <th>Jenis</th>
+                <th>Sumber</th>
                 <th class="text-end">Masuk</th>
                 <th class="text-end">Keluar</th>
             </tr>
@@ -48,7 +49,7 @@
                     <td>{{ $item->tanggal->format('d-m-Y') }}</td>
                     <td>{{ $item->keterangan }}</td>
                     <td>{{ ucfirst($item->kategori) }}</td>
-
+                    <td>{{ $item->anggota->nama ?? 'Tidak Diketahui' }}</td>
                     <td class="text-end text-green-600">
                         @if ($item->tipe === 'masuk')
                             @php $totalMasuk += $item->jumlah; @endphp
