@@ -78,19 +78,6 @@ Route::middleware(['auth','permission:view saldo'])
             ->name('laporan.arus-kas.export');
     });
 
-// EDIT ANGGOTA
-Route::middleware(['auth', 'permission:edit anggota'])
-    ->prefix('admin/anggota')
-    ->name('admin.anggota.')
-    ->group(function () {
-
-        Route::get('{anggota}/edit', [AnggotaController::class, 'edit'])
-            ->name('edit');
-
-        Route::put('{anggota}', [AnggotaController::class, 'update'])
-            ->name('update');
-    });
-
 /*
 |--------------------------------------------------------------------------
 | ADMIN / DATA UMUM
@@ -110,6 +97,14 @@ Route::middleware(['auth','permission:view anggota list'])
         Route::middleware('permission:view anggota list')
             ->get('/anggota/{anggota}', [AnggotaController::class, 'show'])
             ->name('anggota.show');
+        
+        // EDIT ANGGOTA
+        Route::middleware('permission:edit anggota')
+            ->get('/anggota/{anggota}/edit', [AnggotaController::class, 'edit'])
+            ->name('anggota.edit');
+        Route::middleware('permission:edit anggota')
+            ->put('/anggota/{anggota}', [AnggotaController::class, 'update'])
+            ->name('anggota.update');
 
         // NONAKTIFKAN (cuti / tugas_belajar / tidak_aktif)
         Route::middleware('can:nonaktifkan anggota')
@@ -301,6 +296,8 @@ Route::middleware(['auth', 'permission:manage users'])
 
         Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
+
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
     });
 
 /*

@@ -156,8 +156,15 @@ class AnggotaController extends Controller
             'status'        => $request->status,
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Data anggota berhasil diperbarui'
+            ]);
+        }
+
         return redirect()
-            ->route('admin.anggota.index', $anggota)
+            ->route('admin.anggota.index')
             ->with('success', 'Data anggota berhasil diperbarui');
     }
 

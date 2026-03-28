@@ -14,10 +14,18 @@ class UserController extends Controller
     public function index()
     {
         $this->authorize('manage users');
+        $search = request('search');
+        $users = User::with('roles', 'anggota')
+                ->when($search, function ($query, $search) {
+                    return $query->where('name', 'like', "%{$search}%")
+                                 ->orWhere('email', 'like', "%{$search}%");
+                })
+                ->paginate(10);
 
-        $users = User::with('roles', 'anggota')->orderBy('name')->get();
-
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index', [
+            'users' => $users,
+            'search' => $search
+        ]);
     }
 
     public function create()
@@ -74,9 +82,14 @@ class UserController extends Controller
             ->with('success', 'Pengguna berhasil ditambahkan');
     }
 
-    public function edit(User $user)
+    public function edit(Request $request, User $user)
     {
         $this->authorize('manage users');
+
+        // Jika request dari AJAX/modal
+        if ($request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return view('admin.users._edit_modal', compact('user'));
+        }
 
         $roles = Role::orderBy('name')->get();
 
@@ -149,10 +162,24 @@ class UserController extends Controller
             $anggota->update(['status' => 'keluar']);
         }
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()
-            ->route('admin.users.index')
+            ->back()
             ->with('success', 'Pengguna berhasil diperbarui');
+    }
+
+    public function destroy(User $user)
+    {
+        $this->authorize('manage users');
+
+        $user->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Pengguna berhasil dihapus');
     }
 
     /**

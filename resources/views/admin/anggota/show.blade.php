@@ -40,12 +40,17 @@
                 <div class="text-gray-500">NIP</div>
                 <div class="font-medium">{{ $anggota->nip }}</div>
             </div>
-            
+
             <div>
                 <div class="text-gray-500">Email</div>
                 <div class="font-medium">
                     {{ $anggota->user->email ?? '-' }}
                 </div>
+            </div>
+
+            <div>
+                <div class="text-gray-500">Jenis Kelamin</div>
+                <div class="font-medium">{{ $anggota->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</div>
             </div>
             
             <div>
@@ -68,6 +73,15 @@
                     {{ \Carbon\Carbon::parse($anggota->tanggal_masuk)->format('d-m-Y') }}
                 </div>
             </div>
+
+            @if($anggota->status === 'tidak_aktif')
+            <div>
+                <div class="text-gray-500">Tanggal Keluar</div>
+                <div class="font-medium">
+                    {{ $anggota->tanggal_keluar ? \Carbon\Carbon::parse($anggota->tanggal_keluar)->format('d-m-Y') : '-' }}
+                </div>
+            </div>
+            @endif
         </div>
     </div>
      <div>
@@ -80,192 +94,193 @@
 
     </div>
 
-    {{-- ================= RINGKASAN SIMPANAN ================= --}}
-    @if($canViewFullDetails)
-    @php
-        $pokok = $saldoSimpanan['pokok'] ?? 0;
-        $wajib = $saldoSimpanan['wajib'] ?? 0;
-        $sukarela = $saldoSimpanan['sukarela'] ?? 0;
-        $total = $pokok + $wajib + $sukarela;
-    @endphp
+    @if ($anggota->status === 'aktif')
+        {{-- ================= RINGKASAN SIMPANAN ================= --}}
+        @if($canViewFullDetails)
+        @php
+            $pokok = $saldoSimpanan['pokok'] ?? 0;
+            $wajib = $saldoSimpanan['wajib'] ?? 0;
+            $sukarela = $saldoSimpanan['sukarela'] ?? 0;
+            $total = $pokok + $wajib + $sukarela;
+        @endphp
 
-    <div class="bg-white border rounded-lg p-5">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="font-semibold">
-                Ringkasan Simpanan
-            </h2>
+        <div class="bg-white border rounded-lg p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-semibold">
+                    Ringkasan Simpanan
+                </h2>
 
-            <div class="flex gap-2">
-                @can('manage simpanan anggota')
-                    <a href="{{ route('admin.simpanan.create', $anggota) }}"
-                       class="text-sm text-blue-600 hover:underline">
-                        + Tambah Simpanan
-                    </a>
-                @endcan
+                <div class="flex gap-2">
+                    @can('manage simpanan anggota')
+                        <a href="{{ route('admin.simpanan.create', $anggota) }}"
+                        class="text-sm text-blue-600 hover:underline">
+                            + Tambah Simpanan
+                        </a>
+                    @endcan
 
-                @if ($anggota->status === 'aktif')
                     @can('nonaktifkan anggota')
                         <a href="{{ route('admin.anggota.keluar.confirm', $anggota) }}"
-                           class="text-sm bg-red-600 text-white px-3 py-1 rounded">
+                            class="text-sm bg-red-600 text-white px-3 py-1 rounded">
                             Proses Pensiun / Mutasi
                         </a>
                     @endcan
-                @endif
+                </div>
             </div>
+
+            <table class="w-full text-sm">
+                <tr>
+                    <td class="text-gray-600">Simpanan Pokok</td>
+                    <td class="text-right">
+                        Rp {{ number_format($pokok, 0, ',', '.') }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-gray-600">Simpanan Wajib</td>
+                    <td class="text-right">
+                        Rp {{ number_format($wajib, 0, ',', '.') }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-gray-600">Simpanan Sukarela</td>
+                    <td class="text-right">
+                        Rp {{ number_format($sukarela, 0, ',', '.') }}
+                    </td>
+                </tr>
+                <tr class="font-semibold border-t">
+                    <td>Total</td>
+                    <td class="text-right">
+                        Rp {{ number_format($total, 0, ',', '.') }}
+                    </td>
+                </tr>
+            </table>
         </div>
-
-        <table class="w-full text-sm">
-            <tr>
-                <td class="text-gray-600">Simpanan Pokok</td>
-                <td class="text-right">
-                    Rp {{ number_format($pokok, 0, ',', '.') }}
-                </td>
-            </tr>
-            <tr>
-                <td class="text-gray-600">Simpanan Wajib</td>
-                <td class="text-right">
-                    Rp {{ number_format($wajib, 0, ',', '.') }}
-                </td>
-            </tr>
-            <tr>
-                <td class="text-gray-600">Simpanan Sukarela</td>
-                <td class="text-right">
-                    Rp {{ number_format($sukarela, 0, ',', '.') }}
-                </td>
-            </tr>
-            <tr class="font-semibold border-t">
-                <td>Total</td>
-                <td class="text-right">
-                    Rp {{ number_format($total, 0, ',', '.') }}
-                </td>
-            </tr>
-        </table>
-    </div>
-    @endif
-
-    {{-- ================= AMBIL SIMPANAN ================= --}}
-    @if($canViewFullDetails)
-    @can('manage simpanan anggota')
-    <div class="bg-white border rounded-lg p-5">
-        <h2 class="font-semibold mb-4">
-            Pengambilan Simpanan Sukarela
-        </h2>
-
-        @if ($errors->any())
-            <div class="mb-3 text-sm text-red-600">
-                {{ $errors->first() }}
-            </div>
         @endif
 
-        <form method="POST"
-              action="{{ route('admin.simpanan.ambil', $anggota) }}"
-              class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @csrf
+        {{-- ================= AMBIL SIMPANAN ================= --}}
+        @if($canViewFullDetails)
+            @can('manage simpanan anggota')
+            <div class="bg-white border rounded-lg p-5">
+                <h2 class="font-semibold mb-4">
+                    Pengambilan Simpanan Sukarela
+                </h2>
 
-            <div>
-                <label class="block text-sm text-gray-600">Jumlah</label>
-                <input type="number" name="jumlah"
-                       class="border rounded w-full px-3 py-2"
-                       required>
-            </div>
+                @if ($errors->any())
+                    <div class="mb-3 text-sm text-red-600">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
 
-            <div>
-                <label class="block text-sm text-gray-600">Keterangan</label>
-                <input type="text" name="keterangan"
-                       class="border rounded w-full px-3 py-2"
-                       required>
-            </div>
+                <form method="POST"
+                    action="{{ route('admin.simpanan.ambil', $anggota) }}"
+                    class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @csrf
 
-            <div class="md:col-span-2">
-                <button class="bg-red-600 text-white px-4 py-2 rounded">
-                    Ambil Simpanan
-                </button>
+                    <div>
+                        <label class="block text-sm text-gray-600">Jumlah</label>
+                        <input type="number" name="jumlah"
+                            class="border rounded w-full px-3 py-2"
+                            required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-gray-600">Keterangan</label>
+                        <input type="text" name="keterangan"
+                            class="border rounded w-full px-3 py-2"
+                            required>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <button class="bg-red-600 text-white px-4 py-2 rounded">
+                            Ambil Simpanan
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
-    </div>
-    @endcan
+            @endcan
+        @endif
     @endif
 
     {{-- ================= RIWAYAT SIMPANAN ================= --}}
     @if($canViewFullDetails)
-    <div class="bg-white border rounded-lg p-5">
-        <h2 class="font-semibold mb-4">
-            Riwayat Simpanan
-        </h2>
+        <div class="bg-white border rounded-lg p-5">
+            <h2 class="font-semibold mb-4">
+                Riwayat Simpanan
+            </h2>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 border-b">
-                    <tr>
-                        <th class="px-3 py-2 text-left">Tanggal</th>
-                        <th class="px-3 py-2 text-left">Jenis</th>
-                        <th class="px-3 py-2 text-right">Jumlah</th>
-                        <th class="px-3 py-2 text-left">Sumber</th>
-                        <th class="px-3 py-2 text-left">Keterangan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($anggota->simpanans as $simpanan)
-                        <tr class="border-b">
-                            <td class="px-3 py-2">
-                                {{ \Carbon\Carbon::parse($simpanan->tanggal)->format('d-m-Y') }}
-                            </td>
-                            <td class="px-3 py-2 capitalize">
-                                {{ $simpanan->jenis_simpanan }}
-                            </td>
-                            <td class="px-3 py-2 text-right">
-                                Rp {{ number_format($simpanan->jumlah, 0, ',', '.') }}
-                            </td>
-                            <td class="px-3 py-2">
-                                {{ $simpanan->sumber }}
-                            </td>
-                            <td class="px-3 py-2">
-                                {{ $simpanan->keterangan ?? '-' }}
-                            </td>
-                        </tr>
-                    @empty
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b">
                         <tr>
-                            <td colspan="5"
-                                class="px-4 py-6 text-center text-gray-500">
-                                Belum ada transaksi simpanan
-                            </td>
+                            <th class="px-3 py-2 text-left">Tanggal</th>
+                            <th class="px-3 py-2 text-left">Jenis</th>
+                            <th class="px-3 py-2 text-right">Jumlah</th>
+                            <th class="px-3 py-2 text-left">Sumber</th>
+                            <th class="px-3 py-2 text-left">Keterangan</th>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse ($anggota->simpanans as $simpanan)
+                            <tr class="border-b">
+                                <td class="px-3 py-2">
+                                    {{ \Carbon\Carbon::parse($simpanan->tanggal)->format('d-m-Y') }}
+                                </td>
+                                <td class="px-3 py-2 capitalize">
+                                    {{ $simpanan->jenis_simpanan }}
+                                </td>
+                                <td class="px-3 py-2 text-right">
+                                    Rp {{ number_format($simpanan->jumlah, 0, ',', '.') }}
+                                </td>
+                                <td class="px-3 py-2">
+                                    {{ $simpanan->sumber }}
+                                </td>
+                                <td class="px-3 py-2">
+                                    {{ $simpanan->keterangan ?? '-' }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5"
+                                    class="px-4 py-6 text-center text-gray-500">
+                                    Belum ada transaksi simpanan
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
     @endif
 
-    {{-- ================= RINGKASAN PINJAMAN ================= --}}
-    @if($canViewFullDetails)
-    <div class="bg-white border rounded-lg p-5">
-        <h2 class="font-semibold mb-4">
-            Ringkasan Pinjaman
-        </h2>
+    @if($anggota->status === 'aktif')
+        {{-- ================= RINGKASAN PINJAMAN ================= --}}
+        @if($canViewFullDetails)
+            <div class="bg-white border rounded-lg p-5">
+                <h2 class="font-semibold mb-4">
+                    Ringkasan Pinjaman
+                </h2>
 
-        <table class="text-sm w-full">
-            <tr>
-                <td class="text-gray-600">Pinjaman Aktif</td>
-                <td class="text-right">
-                    {{ $ringkasanPinjaman['aktif'] }}
-                </td>
-            </tr>
-            <tr>
-                <td class="text-gray-600">Pinjaman Lunas</td>
-                <td class="text-right">
-                    {{ $ringkasanPinjaman['lunas'] }}
-                </td>
-            </tr>
-            <tr class="font-semibold border-t">
-                <td>Sisa Pinjaman</td>
-                <td class="text-right">
-                    Rp {{ number_format($ringkasanPinjaman['sisa'], 0, ',', '.') }}
-                </td>
-            </tr>
-        </table>
-    </div>
+                <table class="text-sm w-full">
+                    <tr>
+                        <td class="text-gray-600">Pinjaman Aktif</td>
+                        <td class="text-right">
+                            {{ $ringkasanPinjaman['aktif'] }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-gray-600">Pinjaman Lunas</td>
+                        <td class="text-right">
+                            {{ $ringkasanPinjaman['lunas'] }}
+                        </td>
+                    </tr>
+                    <tr class="font-semibold border-t">
+                        <td>Sisa Pinjaman</td>
+                        <td class="text-right">
+                            Rp {{ number_format($ringkasanPinjaman['sisa'], 0, ',', '.') }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        @endif
     @endif
-
 </div>
 @endsection

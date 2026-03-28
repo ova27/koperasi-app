@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
-@section('title', 'Daftar Anggota')
-@section('page-title', 'Daftar Anggota')
+@section('title', 'Data Anggota')
+@section('page-title', 'Data Anggota')
 
 @section('content')
 <div class="space-y-6">
@@ -34,6 +34,29 @@
             </div>
         </form>
     </div>
+
+    {{-- FLASH MESSAGE --}}
+    @if(session('success'))
+        <div id="flash-message" class="px-4 py-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center justify-between">
+            <span>{{ session('success') }}</span>
+            <button type="button" 
+                    onclick="closeFlashMessage()"
+                    class="text-green-700 hover:text-green-900 ml-4">
+                ×
+            </button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div id="flash-message" class="px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center justify-between">
+            <span>{{ session('error') }}</span>
+            <button type="button" 
+                    onclick="closeFlashMessage()"
+                    class="text-red-700 hover:text-red-900 ml-4">
+                ×
+            </button>
+        </div>
+    @endif
 
     {{-- TABEL --}}
     <div class="overflow-x-auto bg-white border rounded-lg">
@@ -161,7 +184,7 @@
     </div>
 
     {{-- PAGINATION --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 py-3">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2">
         <p class="text-sm text-gray-600">
             Menampilkan
             <span class="font-semibold text-gray-900">{{ $anggotas->firstItem() ?? 0 }}</span>
@@ -172,8 +195,8 @@
             anggota
         </p>
 
-        <div>
-            {{ $anggotas->links() }}
+        <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+            {{ $anggotas->links('vendor.pagination.custom') }}
         </div>
     </div>
 
@@ -184,6 +207,18 @@
         const input = document.getElementById('search');
         const form = document.getElementById('form-search-anggota');
         const clearBtn = document.getElementById('clear-search');
+        const flashMessage = document.getElementById('flash-message');
+        
+        if (flashMessage) {
+            // Auto close setelah 5 detik (5000 ms)
+            setTimeout(function() {
+                flashMessage.style.transition = 'opacity 0.3s ease-out';
+                flashMessage.style.opacity = '0';
+                setTimeout(function() {
+                    flashMessage.remove();
+                }, 300);
+            }, 5000);
+        }
 
         if (!input || !form || !clearBtn) return;
 
@@ -204,7 +239,7 @@
 
             timer = setTimeout(function () {
                 form.submit();
-            }, 300); // 300ms debounce
+            }, 10); // 10ms debounce
         });
 
         clearBtn.addEventListener('click', function () {
@@ -213,5 +248,15 @@
             form.submit();
         });
     });
+    function closeFlashMessage() {
+        const flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.transition = 'opacity 0.3s ease-out';
+            flashMessage.style.opacity = '0';
+            setTimeout(function() {
+                flashMessage.remove();
+            }, 300);
+        }
+    }
 </script>
 @endsection

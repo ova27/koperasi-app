@@ -15,8 +15,8 @@
 
             @if ($bolehAjukan)
                 <div class="bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm p-4">
-                    <h2 class="section-title">Form Pengajuan Pinjaman</h2>
-                    <hr class="my-4">
+                    <h2 class="section-title font-black">Form Pengajuan Pinjaman</h2>
+                    <hr class="my-2 mb-6 border-gray-200">
                     {{-- ERROR MESSAGE --}}
                     @error('pengajuan')
                         <div class="mb-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded text-sm">

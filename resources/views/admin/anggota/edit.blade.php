@@ -40,6 +40,13 @@
                        class="w-full border rounded px-3 py-2 bg-gray-100">
             </div>
 
+            <div>
+                <label class="block text-sm text-gray-600">Email</label>
+                <input disabled
+                       value="{{ $anggota->user->email ?? '-' }}"
+                       class="w-full border rounded px-3 py-2 bg-gray-100">
+            </div>
+
             {{-- NIP --}}
             <div>
                 <label class="block text-sm text-gray-600">NIP</label>
