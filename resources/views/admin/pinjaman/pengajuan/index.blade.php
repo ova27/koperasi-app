@@ -97,7 +97,7 @@
                 <span class="font-semibold text-gray-900">{{ $pengajuans->lastItem() ?? 0 }}</span>
                 dari
                 <span class="font-semibold text-gray-900">{{ $pengajuans->total() }}</span>
-                pengguna
+                pengajuan
             </p>
 
             <div class="flex justify-center sm:justify-end w-full sm:w-auto">
@@ -176,7 +176,7 @@
             <span class="font-semibold text-gray-900">{{ $riwayatApproval->lastItem() ?? 0 }}</span>
             dari
             <span class="font-semibold text-gray-900">{{ $riwayatApproval->total() }}</span>
-            pengguna
+            riwayat
         </p>
 
         <div class="flex justify-center sm:justify-end w-full sm:w-auto">
