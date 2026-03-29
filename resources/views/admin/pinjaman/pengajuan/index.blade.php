@@ -1,111 +1,137 @@
 @extends('layouts.main')
 
-@section('title', 'Data Pengajuan Pinjaman')
-
+@section('title', 'Daftar Pengajuan Pinjaman')
+@section('page-title', 'Daftar Pengajuan Pinjaman')
 @section('content')
+<div class="space-y-6 -mt-6">
 
-{{-- Toast Notification Container --}}
-<div id="toast-container" class="fixed top-5 right-5 z-[100] space-y-3">
-    
-    {{-- Toast Sukses --}}
-    @if (session('success'))
-        <div class="toast-item flex items-center p-4 w-full max-w-xs text-gray-500 bg-white rounded-lg shadow-lg border-l-4 border-green-500 animate-slide-in">
-            <div class="inline-flex flex-shrink-0 justify-center items-center w-8 h-8 text-green-500 bg-green-100 rounded-lg">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-            </div>
-            <div class="ml-3 text-sm font-normal">{{ session('success') }}</div>
+    {{-- FLASH MESSAGE --}}
+    @if(session('success'))
+        <div id="flash-message" class="px-4 py-4 mt-6 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center justify-between">
+            <span>{{ session('success') }}</span>
+            <button type="button" 
+                    onclick="closeFlashMessage()"
+                    class="text-green-700 hover:text-green-900 ml-4">
+                ×
+            </button>
         </div>
     @endif
 
-    {{-- Toast Error (Dari Service / Rule) --}}
-    @if ($errors->any())
-        <div class="toast-item flex items-center p-4 w-full max-w-xs text-gray-500 bg-white rounded-lg shadow-lg border-l-4 border-red-500 animate-slide-in">
-            <div class="inline-flex flex-shrink-0 justify-center items-center w-8 h-8 text-red-500 bg-red-100 rounded-lg">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-            </div>
-            <div class="ml-3 text-sm font-normal">
-                {{-- Menampilkan error pertama saja agar toast tidak terlalu panjang --}}
-                {{ $errors->first() }}
-            </div>
+    @if(session('error'))
+        <div id="flash-message" class="px-4 py-4 mt-6 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center justify-between">
+            <span>{{ session('error') }}</span>
+            <button type="button" 
+                    onclick="closeFlashMessage()"
+                    class="text-red-700 hover:text-red-900 ml-4">
+                ×
+            </button>
         </div>
     @endif
-
-</div>
 
 <style>
-@keyframes slideInToast {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-.animate-slide-in {
-    animation: slideInToast 0.4s ease-out forwards;
-}
+    @keyframes slideInToast {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    .animate-slide-in {
+        animation: slideInToast 0.4s ease-out forwards;
+    }
 </style>
 
-<div class="flex items-center justify-between mb-6">
-    <h1 class="text-xl font-bold">Daftar Pengajuan Pinjaman</h1>
-</div>
+<div>
+    <h2 class="section-title">
+        Pengajuan Pinjaman Menunggu Approval
+    </h2>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto mb-4">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-50 border-b">
+                <tr class="text-gray-600">
+                    <th class="p-3 border-b text-left">Tanggal Pengajuan</th>
+                    <th class="p-3 border-b text-left">Anggota</th>
+                    <th class="p-3 border-b text-left">Rencana Pinjam</th>
+                    <th class="p-3 border-b text-right">Jumlah</th>
+                    <th class="p-3 border-b text-center">Tenor</th>
+                    <th class="p-3 border-b text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                @forelse ($pengajuans as $p)
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-3 border-b text-gray-500">
+                            {{ $p->tanggal_pengajuan->format('d/m/Y') }}
+                        </td>
+                        <td class="p-3 border-b">{{ $p->anggota->nama }}</td>
+                        <td class="p-3 border-b">
+                            {{ \Carbon\Carbon::parse($p->bulan_pinjam)->translatedFormat('F Y') }}
+                        </td>
+                        <td class="p-3 border-b text-right font-semibold text-gray-800">
+                            Rp {{ number_format($p->jumlah_diajukan, 0, ',', '.') }}
+                        </td>
+                        <td class="p-3 border-b text-center">{{ $p->tenor }} Bulan</td>
+                        <td class="p-3 border-b text-center">
+                            {{-- Tombol Detail memanggil fungsi JS --}}
+                            <button 
+                                onclick="openModalDetail({{ $p->id }})"
+                                class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm">
+                                
+                                Approval
+                            </button>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-gray-400">Tidak ada pengajuan pending.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-{{-- 2. TABEL --}}
-<div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="w-full border-collapse">
-        <thead>
-            <tr class="bg-gray-50 text-gray-600 text-sm">
-                <th class="p-3 border-b text-left">Anggota</th>
-                <th class="p-3 border-b text-right">Jumlah</th>
-                <th class="p-3 border-b text-center">Tanggal</th>
-                <th class="p-3 border-b text-center">Aksi</th>
-            </tr>
-        </thead>
-        <tbody class="text-sm">
-            @forelse ($pengajuans as $p)
-                <tr class="hover:bg-gray-50 transition">
-                    <td class="p-3 border-b">{{ $p->anggota->nama }}</td>
-                    <td class="p-3 border-b text-right font-semibold text-gray-800">
-                        Rp {{ number_format($p->jumlah_diajukan, 0, ',', '.') }}
-                    </td>
-                    <td class="p-3 border-b text-center text-gray-500">
-                        {{ $p->tanggal_pengajuan->format('d/m/Y') }}
-                    </td>
-                    <td class="p-3 border-b text-center">
-                        {{-- Tombol Detail memanggil fungsi JS --}}
-                        <button onclick="openModalDetail({{ $p->id }})" 
-                                class="text-blue-600 hover:text-blue-800 font-medium underline">
-                            Detail
-                        </button>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="4" class="p-8 text-center text-gray-400">Tidak ada pengajuan pending.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+    @if($pengajuans->hasPages())
+        {{-- PAGINATION --}}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2 mb-4">
+            <p class="text-sm text-gray-600">
+                Menampilkan
+                <span class="font-semibold text-gray-900">{{ $pengajuans->firstItem() ?? 0 }}</span>
+                sampai
+                <span class="font-semibold text-gray-900">{{ $pengajuans->lastItem() ?? 0 }}</span>
+                dari
+                <span class="font-semibold text-gray-900">{{ $pengajuans->total() }}</span>
+                pengguna
+            </p>
+
+            <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+                {{ $pengajuans->links('vendor.pagination.custom') }}
+            </div>
+        </div>
+    @endif
+    
 </div>
 
 {{-- Tampilan Riwayat Approval --}}
-<div class="mt-12">
-    <h2 class="text-lg font-bold mb-4 text-gray-700">Riwayat Approval</h2>
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="w-full border-collapse">
-            <thead>
-                <tr class="bg-gray-100 text-gray-600 text-[11px] uppercase tracking-wider">
-                    <th class="p-3 border-b text-left font-bold">Anggota</th>
-                    <th class="p-3 border-b text-right font-bold">Jumlah</th>
-                    <th class="p-3 border-b text-center font-bold">Tenor</th>
-                    <th class="p-3 border-b text-center font-bold">Status</th>
-                    <th class="p-3 border-b text-center font-bold">Waktu Proses</th>
-                    <th class="p-3 border-b text-center font-bold">Aksi</th>
+<div class="pt-6 border-t border-gray-200">
+    <h2 class="section-title">Riwayat Approval</h2>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto mb-4">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-50 border-b">
+                <tr class="text-gray-600">
+                    <th class="px-4 py-3 text-left">Tanggal Pengajuan</th>
+                    <th class="px-4 py-3 text-left">Anggota</th>
+                    <th class="px-4 py-3 text-right">Jumlah</th>
+                    <th class="px-4 py-3 text-center">Tenor</th>
+                    <th class="px-4 py-3 text-center">Status</th>
+                    <th class="px-4 py-3 text-center">Waktu Proses</th>
+                    <th class="px-4 py-3 text-center">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="text-sm">
+            <tbody class="divide-y">
                 @forelse ($riwayatApproval as $r)
-                    <tr class="hover:bg-gray-50 border-b">
-                        <td class="p-3 font-medium text-gray-800">{{ $r->anggota->nama }}</td>
-                        <td class="p-3 text-right font-semibold">Rp {{ number_format($r->jumlah_diajukan, 0, ',', '.') }}</td>
-                        <td class="p-3 text-center text-gray-600">{{ $r->tenor }} Bulan</td>
-                        <td class="p-3 text-center">
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-4 py-3 text-gray-500">{{ $r->tanggal_pengajuan->format('d/m/Y') }}</td>
+                        <td class="px-4 py-3">{{ $r->anggota->nama }}</td>
+                        <td class="px-4 py-3 text-right">Rp {{ number_format($r->jumlah_diajukan, 0, ',', '.') }}</td>
+                        <td class="px-4 py-3 text-center">{{ $r->tenor }} Bulan</td>
+                        <td class="px-4 py-3 text-center">
                             @php
                                 $statusClass = [
                                     'disetujui' => 'bg-blue-100 text-blue-700',
@@ -117,28 +143,45 @@
                                 {{ $r->status }}
                             </span>
                         </td>
-                        <td class="p-3 text-center text-gray-500 text-xs">
+                        <td class="px-4 py-3 text-center">
                             {{-- Jam real-time Indonesia --}}
                             {{ $r->updated_at->timezone('Asia/Jakarta')->format('d/m/y H:i') }}
                         </td>
-                        <td class="p-3 text-center">
+                        <td class="px-4 py-3 text-center">
                             @if($r->status !== 'dicairkan')
                                 <button onclick="openModalDetail({{ $r->id }})" 
                                     class="text-blue-600 hover:text-blue-800 font-bold text-xs underline decoration-dotted">
                                     Ubah
                                 </button>
                             @else
-                                <span class="text-gray-300 text-[10px] italic">Locked</span>
+                                <span class="text-gray-500 text-[10px] italic">Sudah Dicairkan</span>
                             @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="p-8 text-center text-gray-400 italic text-xs">Belum ada riwayat.</td>
+                        <td colspan="12" class="px-4 py-10 text-center">Belum ada riwayat.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- PAGINATION --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2">
+        <p class="text-sm text-gray-600">
+            Menampilkan
+            <span class="font-semibold text-gray-900">{{ $riwayatApproval->firstItem() ?? 0 }}</span>
+            sampai
+            <span class="font-semibold text-gray-900">{{ $riwayatApproval->lastItem() ?? 0 }}</span>
+            dari
+            <span class="font-semibold text-gray-900">{{ $riwayatApproval->total() }}</span>
+            pengguna
+        </p>
+
+        <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+            {{ $riwayatApproval->links('vendor.pagination.custom') }}
+        </div>
     </div>
 </div>
 
@@ -157,6 +200,18 @@
 </div>
 
 <script>
+    const flashMessage = document.getElementById('flash-message');
+    if (flashMessage) {
+        // Auto close setelah 5 detik (5000 ms)
+        setTimeout(function() {
+            flashMessage.style.transition = 'opacity 0.3s ease-out';
+            flashMessage.style.opacity = '0';
+            setTimeout(function() {
+                flashMessage.remove();
+            }, 300);
+        }, 5000);
+    }
+
     document.querySelectorAll('.toast-item').forEach(toast => {
             setTimeout(() => {
                 toast.style.transition = "all 0.5s ease";
@@ -187,12 +242,6 @@
         document.getElementById('modalDetail').classList.add('hidden');
         document.getElementById('modalDetail').classList.remove('flex');
     }
-
-    // Auto-hide Toast
-    setTimeout(() => {
-        const toast = document.getElementById('toast-notif');
-        if(toast) toast.style.display = 'none';
-    }, 4000);
 
     function formatRupiahKetua(element) {
         let value = element.value.replace(/[^,\d]/g, "").toString();
@@ -235,6 +284,17 @@
         document.getElementById('inputAlasanTolak').value = val;
 
         return true; // lanjut submit
+    }
+
+    function closeFlashMessage() {
+        const flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.transition = 'opacity 0.3s ease-out';
+            flashMessage.style.opacity = '0';
+            setTimeout(function() {
+                flashMessage.remove();
+            }, 300);
+        }
     }
 </script>
 

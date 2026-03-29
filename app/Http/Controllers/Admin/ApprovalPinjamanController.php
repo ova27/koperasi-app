@@ -16,11 +16,11 @@ class ApprovalPinjamanController extends Controller
         $pengajuans = PengajuanPinjaman::with('anggota')
             ->where('status', 'diajukan')
             ->orderBy('tanggal_pengajuan')
-            ->get();
+            ->paginate(5);
 
         $riwayatApproval = PengajuanPinjaman::whereIn('status', ['disetujui', 'ditolak', 'dicairkan'])
                         ->orderBy('updated_at', 'desc')
-                        ->get();
+                        ->paginate(10);
 
         return view('admin.pinjaman.pengajuan.index', compact('pengajuans','riwayatApproval'));
     }

@@ -330,7 +330,7 @@
                     class="w-full border rounded p-2"></textarea>
             </div>
 
-            <div class="flex justify-end gap-2 mt-4">
+            <div class="flex justify-end mt-4">
                 <button type="button" onclick="closeEditModal()"
                     class="px-4 py-2 text-sm text-gray-500">
                     Batal

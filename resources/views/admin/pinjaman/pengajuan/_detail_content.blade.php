@@ -70,12 +70,6 @@
     
 </div>
 
-{{-- Hidden Form khusus Tolak --}}
-{{-- <form id="formTolak" action="{{ route('admin.pinjaman.pengajuan.tolak', $pengajuan->id) }}" method="POST" class="hidden">
-    @csrf
-    <input type="hidden" name="alasan_tolak" id="hidden_alasan_tolak">
-</form> --}}
-
 <script>
     function formatRupiahKetua(element) {
         // Logic yang sama persis dengan form anggota
