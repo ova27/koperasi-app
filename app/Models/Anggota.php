@@ -41,7 +41,7 @@ class Anggota extends Model
 
     public function pengajuanPinjamans()
     {
-        return $this->hasMany(PengajuanPinjaman::class);
+        return $this->hasMany(PengajuanPinjaman::class, 'anggota_id');
     }
 
     public function user()
@@ -49,4 +49,9 @@ class Anggota extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function pinjamanAktif()
+    {
+        return $this->hasOne(Pinjaman::class)
+            ->where('status', 'aktif'); // sesuaikan dengan field kamu
+    }
 }

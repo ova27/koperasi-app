@@ -152,6 +152,8 @@ Route::middleware(['auth','permission:view anggota list'])
                 Route::middleware('permission:reject pinjaman')
                     ->post('/pinjaman/pengajuan/{pengajuan}/tolak', [ApprovalPinjamanController::class, 'tolak'])
                     ->name('pinjaman.pengajuan.tolak');
+
+                Route::get('/pinjaman/{id}/preview', [ApprovalPinjamanController::class, 'showPreview']);
             });
 
         /*

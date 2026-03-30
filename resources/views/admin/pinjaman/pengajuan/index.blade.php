@@ -68,14 +68,24 @@
                             Rp {{ number_format($p->jumlah_diajukan, 0, ',', '.') }}
                         </td>
                         <td class="p-3 border-b text-center">{{ $p->tenor }} Bulan</td>
-                        <td class="p-3 border-b text-center">
+                        <td class="p-3 border-b text-center space-x-0">
                             {{-- Tombol Detail memanggil fungsi JS --}}
                             <button 
                                 onclick="openModalDetail({{ $p->id }})"
+                                title="Approval"
                                 class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm">
-                                
                                 Approval
                             </button>
+                            
+                            {{-- Tombol Preview (jika ada pinjaman aktif) --}}
+                            @if($p->anggota && $p->anggota->pinjamanAktif)
+                                <button 
+                                    onclick="openModalPreview({{ $p->anggota->pinjamanAktif->id }})"
+                                    title="Lihat Pinjaman Aktif"
+                                    class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
+                                    Detail
+                                </button>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -147,15 +157,28 @@
                             {{-- Jam real-time Indonesia --}}
                             {{ $r->updated_at->timezone('Asia/Jakarta')->format('d/m/y H:i') }}
                         </td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-4 py-3 text-center space-x-0">
                             @if($r->status !== 'dicairkan')
                                 <button onclick="openModalDetail({{ $r->id }})" 
-                                    class="text-blue-600 hover:text-blue-800 font-bold text-xs underline decoration-dotted">
-                                    Ubah
+                                    class="inline-flex items-center justify-center rounded-md border border-amber-200 bg-amber-50 p-1 text-xs text-amber-700 transition hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    title="Ubah Persetujuan">
+                                    <span aria-hidden="true">✏️</span>
                                 </button>
+
+                                {{-- Tombol Preview (jika ada pinjaman aktif) --}}
+                                @if($r->anggota && $r->anggota->pinjamanAktif)
+                                    <button 
+                                        onclick="openModalPreview({{ $r->anggota->pinjamanAktif->id }})"
+                                        title="Lihat Pinjaman Aktif"
+                                        class="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 p-1 text-xs text-blue-700 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                        <span aria-hidden="true">👁️</span>
+                                    </button>
+                                @endif
                             @else
                                 <span class="text-gray-500 text-[10px] italic">Sudah Dicairkan</span>
                             @endif
+
+                            
                         </td>
                     </tr>
                 @empty
@@ -185,7 +208,7 @@
     </div>
 </div>
 
-{{-- 3. MODAL STRUCTURE --}}
+{{-- MODAL APPROVAL --}}
 <div id="modalDetail" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-lg rounded-lg shadow-2xl overflow-hidden transform transition-all">
         <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
@@ -194,6 +217,18 @@
         </div>
         <div id="modalBody" class="p-6">
             {{-- Konten dari AJAX akan muncul di sini --}}
+            <div class="flex justify-center italic text-gray-500">Memuat data...</div>
+        </div>
+    </div>
+</div>
+{{-- MODAL PREVIEW PINJAMAN --}}
+<div id="modalPreview" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-lg rounded-lg shadow-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+            <h3 class="font-bold text-gray-800">Pinjaman Aktif</h3>
+            <button onclick="closeModalPreview()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <div id="modalPreviewBody" class="p-6">
             <div class="flex justify-center italic text-gray-500">Memuat data...</div>
         </div>
     </div>
@@ -241,6 +276,27 @@
     function closeModalDetail() {
         document.getElementById('modalDetail').classList.add('hidden');
         document.getElementById('modalDetail').classList.remove('flex');
+    }
+
+    function openModalPreview(id) {
+        const modal = document.getElementById('modalPreview');
+        const body = document.getElementById('modalPreviewBody');
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        body.innerHTML = '<div class="flex justify-center py-4">Loading...</div>';
+
+        fetch(`/admin/pinjaman/${id}/preview`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.text())
+        .then(html => { body.innerHTML = html; })
+        .catch(() => { body.innerHTML = '<span class="text-red-500">Gagal mengambil data.</span>'; });
+    }
+
+    function closeModalPreview() {
+        document.getElementById('modalPreview').classList.add('hidden');
+        document.getElementById('modalPreview').classList.remove('flex');
     }
 
     function formatRupiahKetua(element) {

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PengajuanPinjaman;
+use App\Models\Pinjaman;
+
 use App\Services\PinjamanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -87,5 +89,18 @@ class ApprovalPinjamanController extends Controller
         return redirect()
             ->route('admin.pinjaman.pengajuan.index')
             ->with('success', 'Pengajuan pinjaman ditolak');
+    }
+
+    public function showPreview($id)
+    {
+        $pinjaman = Pinjaman::with('anggota')->findOrFail($id);
+
+        // ambil pengajuan terakhir (atau sesuai kebutuhan)
+        $pengajuan = $pinjaman->anggota
+            ->pengajuanPinjamans()
+            ->latest()
+            ->first();
+
+        return view('admin.pinjaman.pengajuan._preview', compact('pinjaman', 'pengajuan'));
     }
 }
