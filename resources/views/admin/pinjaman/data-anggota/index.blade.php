@@ -321,7 +321,7 @@
 </div>
 
 {{-- MODAL PELUNASAN CEPAT --}}
-<div id="pelunasamModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+<div id="pelunasamModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center">
     <div class="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-bold text-gray-900 mb-4">Pelunasan Cepat</h3>
         <p class="text-gray-600 mb-2">

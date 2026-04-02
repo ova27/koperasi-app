@@ -1,11 +1,12 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Artisan;
 
 return new class extends Migration {
     public function up()
     {
-        \Artisan::call('tinker', [
+        Artisan::call('tinker', [
             '--execute' => <<<'PHP'
 $bendahara = \Spatie\Permission\Models\Role::where('name', 'bendahara')->first();
 if ($bendahara) {

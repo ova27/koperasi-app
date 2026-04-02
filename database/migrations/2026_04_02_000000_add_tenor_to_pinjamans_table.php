@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::table('pinjamans', function (Blueprint $table) {
             $table->integer('tenor')->after('sisa_pinjaman')->nullable();
+            
         });
     }
 
