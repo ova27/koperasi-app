@@ -113,24 +113,12 @@
             @endcanany
 
 
-            {{-- ================= PROSES & APPROVAL ================= --}}
-            @can('view pengajuan pinjaman')
-            <li class="menu-header">Proses & Approval</li>
-
-            <li class="menu-item">
-                <a href="{{ route('admin.pinjaman.pengajuan.index') }}"
-                class="{{ request()->routeIs('admin.pinjaman.pengajuan.*') ? 'active' : '' }}">
-                    Pengajuan Pinjaman
-                </a>
-            </li>
-            @endcan
-
-
             {{-- ================= TRANSAKSI ================= --}}
             @canany([
                 'manage simpanan anggota',
                 'pencairan pinjaman',
-                'manage cicilan pinjaman'
+                'manage cicilan pinjaman',
+                'view pengajuan pinjaman'
             ])
             <li class="menu-header">Transaksi</li>
 
@@ -143,6 +131,25 @@
                 </li>
                 @endcan
 
+                @can('view pengajuan pinjaman')
+                <li class="menu-item">
+                    <a href="{{ route('admin.pinjaman.data-anggota.index') }}"
+                    class="{{ request()->routeIs('admin.pinjaman.data-anggota.*') ? 'active' : '' }}">
+                    Pinjaman Anggota
+                    </a>
+                </li>
+                @endcan
+
+                {{-- ================= PROSES & APPROVAL ================= --}}
+                @can('view pengajuan pinjaman')
+                <li class="menu-item">
+                    <a href="{{ route('admin.pinjaman.pengajuan.index') }}"
+                    class="{{ request()->routeIs('admin.pinjaman.pengajuan.*') ? 'active' : '' }}">
+                        Pengajuan Pinjaman Anggota
+                    </a>
+                </li>
+                @endcan
+
                 @can('pencairan pinjaman')
                 <li class="menu-item">
                     <a href="{{ route('admin.pinjaman.pencairan.index') }}"
@@ -151,15 +158,7 @@
                     </a>
                 </li>
                 @endcan
-
-                @can('manage cicilan pinjaman')
-                <li class="menu-item">
-                    <a href="{{ route('admin.pinjaman.aktif.index') }}"
-                    class="{{ request()->routeIs('admin.pinjaman.aktif.*') ? 'active' : '' }}">
-                        Cicilan Pinjaman
-                    </a>
-                </li>
-                @endcan
+                
             @endcanany
 
 

@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Pinjaman extends Model
 {
     protected $table = 'pinjamans';
+
     protected $casts = [
         'tanggal_pinjam' => 'date',
+        'tenor' => 'integer',
     ];
 
     protected $fillable = [
@@ -16,7 +18,9 @@ class Pinjaman extends Model
         'tanggal_pinjam',
         'jumlah_pinjaman',
         'sisa_pinjaman',
+        'tenor',
         'status',
+        'keterangan',
     ];
 
     public function anggota()

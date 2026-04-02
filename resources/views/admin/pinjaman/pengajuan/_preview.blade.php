@@ -28,10 +28,10 @@
         </div>
 
         <div class="bg-white border rounded p-3">
-            <div class="text-xs text-gray-500">Tanggal Cair</div>
+            <div class="text-xs text-gray-500">Tanggal Pencairan</div>
             <div class="font-semibold">
-                {{ $pinjaman->tanggal_cair 
-                    ? \Carbon\Carbon::parse($pinjaman->tanggal_cair)->format('d/m/Y') 
+                {{  $pengajuan->tanggal_pencairan           
+                    ? \Carbon\Carbon::parse($pinjaman->tanggal_pencairan)->format('d/m/Y') 
                     : '-' }}
             </div>
         </div>
@@ -42,7 +42,7 @@
     <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-xs">
 
         <div class="flex justify-between">
-            <span>Total Pinjaman</span>
+            <span>Total Pinjaman Aktif</span>
             <span class="font-semibold">
                 Rp {{ number_format($pinjaman->jumlah_pinjaman ?? $pinjaman->jumlah_disetujui ?? 0, 0, ',', '.') }}
             </span>
@@ -52,13 +52,6 @@
             <span>Tenor</span>
             <span class="font-semibold">
                 {{ $pengajuan->tenor ?? '-' }} Bulan
-            </span>
-        </div>
-
-        <div class="flex justify-between">
-            <span>Sudah Dibayar</span>
-            <span class="font-semibold text-green-600">
-                Rp {{ number_format($pinjaman->total_dibayar ?? 0, 0, ',', '.') }}
             </span>
         </div>
 

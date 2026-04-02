@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\{
     ApprovalPinjamanController,
     PencairanPinjamanController,
     CicilanPinjamanController,
+    PinjamanAnggotaController,
     SaldoController,
     ArusKasKoperasiController,
     ArusOperasionalController,
@@ -187,6 +188,29 @@ Route::middleware(['auth','permission:view anggota list'])
 
                 Route::post('/pinjaman/pencairan/{pengajuan}', [PencairanPinjamanController::class, 'process'])
                     ->name('pinjaman.pencairan.process');
+            });
+
+        /*
+        | DATA PINJAMAN ANGGOTA (KETUA & BENDAHARA)
+        */
+        Route::middleware('permission:view pengajuan pinjaman')
+            ->prefix('/pinjaman/data-anggota')
+            ->name('pinjaman.data-anggota.')
+            ->group(function () {
+
+                Route::get('/', [PinjamanAnggotaController::class, 'index'])
+                    ->name('index');
+
+                Route::get('/{pinjaman}', [PinjamanAnggotaController::class, 'show'])
+                    ->name('show');
+
+                Route::middleware('permission:edit pinjaman')
+                    ->get('/{pinjaman}/edit', [PinjamanAnggotaController::class, 'edit'])
+                    ->name('edit');
+
+                Route::middleware('permission:edit pinjaman')
+                    ->put('/{pinjaman}', [PinjamanAnggotaController::class, 'update'])
+                    ->name('update');
             });
 
         Route::middleware('permission:manage cicilan pinjaman')

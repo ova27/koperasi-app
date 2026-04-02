@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Pinjaman;
-use App\Models\TransaksiPinjaman;
+use App\Models\PengajuanPinjaman;
 use Illuminate\Support\Facades\DB;
 
 class BackfillSisaTransaksiPinjaman extends Command
@@ -59,6 +59,20 @@ class BackfillSisaTransaksiPinjaman extends Command
                     'sisa_pinjaman' => $sisa,
                     'status' => $sisa === 0 ? 'lunas' : 'aktif',
                 ]);
+
+                // Backfill tenor jika belum ada (pakai tenor top-up/dicairkan/approved terbaru)
+                if (is_null($pinjaman->tenor)) {
+                    $pengajuan = PengajuanPinjaman::where('anggota_id', $pinjaman->anggota_id)
+                        ->whereIn('status', ['dicairkan', 'disetujui'])
+                        ->orderByDesc('tanggal_pencairan')
+                        ->orderByDesc('tanggal_persetujuan')
+                        ->first();
+
+                    if ($pengajuan && $pengajuan->tenor) {
+                        $pinjaman->update(['tenor' => $pengajuan->tenor]);
+                        $this->line("  -> tenor diisi dari pengajuan {$pengajuan->id} ({$pengajuan->tenor} bulan)");
+                    }
+                }
             }
         });
 

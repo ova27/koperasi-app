@@ -114,7 +114,7 @@ class PinjamanService
             'bulan_pinjam'    => $data['bulan_pinjam'],    
             'status'          => 'disetujui',
             'disetujui_oleh'  => $userId,
-            'tgl_persetujuan' => now(), 
+            'tanggal_persetujuan' => now(), 
         ]);
     }
 
@@ -145,6 +145,7 @@ class PinjamanService
                 $pinjaman->update([
                     'jumlah_pinjaman' => $pinjaman->jumlah_pinjaman + $pengajuan->jumlah_diajukan,
                     'sisa_pinjaman'   => $sisaBaru,
+                    'tenor'           => $pengajuan->tenor, // tenor top-up jadi acuan cicilan berikutnya
                 ]);
 
                 TransaksiPinjaman::create([
@@ -163,6 +164,7 @@ class PinjamanService
                     'tanggal_pinjam'  => now(),
                     'jumlah_pinjaman' => $pengajuan->jumlah_diajukan,
                     'sisa_pinjaman'   => $pengajuan->jumlah_diajukan,
+                    'tenor'           => $pengajuan->tenor,
                     'status'          => 'aktif',
                 ]);
 
@@ -215,6 +217,17 @@ class PinjamanService
 
         if ($jumlah <= 0) {
             throw new Exception('Jumlah cicilan tidak valid');
+        }
+
+        if ($jumlah > $pinjaman->sisa_pinjaman) {
+            throw new Exception('Jumlah cicilan tidak boleh lebih dari sisa pinjaman');
+        }
+
+        if ($pinjaman->tenor && $pinjaman->tenor > 0) {
+            $minCicilan = (int) ceil($pinjaman->sisa_pinjaman / $pinjaman->tenor);
+            if ($jumlah < $minCicilan) {
+                throw new Exception('Jumlah cicilan minimal Rp ' . number_format($minCicilan, 0, ',', '.') . ' berdasarkan tenor sekarang');
+            }
         }
 
         DB::transaction(function () use ($pinjaman, $jumlah, $keterangan) {

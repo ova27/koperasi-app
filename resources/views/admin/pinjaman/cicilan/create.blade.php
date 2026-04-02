@@ -10,6 +10,10 @@
 <div class="mb-4">
     <p><strong>Nama:</strong> {{ $pinjaman->anggota->nama }}</p>
     <p><strong>Sisa Pinjaman:</strong> Rp {{ number_format($pinjaman->sisa_pinjaman) }}</p>
+    <p><strong>Tenor Berlaku:</strong> {{ $pinjaman->tenor ?? 'N/A' }} bulan</p>
+    @if(!is_null($suggestedCicilan))
+        <p><strong>Cicilan Rekomendasi:</strong> Rp {{ number_format($suggestedCicilan, 0, ',', '.') }} / bulan</p>
+    @endif
 </div>
 
 <form method="POST" action="{{ route('admin.pinjaman.cicil.store', $pinjaman) }}">

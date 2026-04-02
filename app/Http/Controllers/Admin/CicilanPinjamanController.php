@@ -30,7 +30,12 @@ class CicilanPinjamanController extends Controller
                 ->withErrors('Pinjaman tidak aktif atau sudah lunas.');
         }
 
-        return view('admin.pinjaman.cicilan.create', compact('pinjaman'));
+        $suggestedCicilan = null;
+        if ($pinjaman->tenor > 0) {
+            $suggestedCicilan = (int) ceil($pinjaman->sisa_pinjaman / $pinjaman->tenor);
+        }
+
+        return view('admin.pinjaman.cicilan.create', compact('pinjaman', 'suggestedCicilan'));
     }
 
     public function store(
@@ -51,14 +56,32 @@ class CicilanPinjamanController extends Controller
             'keterangan' => 'nullable|string|max:255',
         ]);
 
+        // Validasi tenor & minimal cicilan here untuk hasil pesan UI lebih baik
+        if ($pinjaman->tenor && $pinjaman->tenor > 0) {
+            $minCicilan = (int) ceil($pinjaman->sisa_pinjaman / $pinjaman->tenor);
+            if ((int) $request->jumlah < $minCicilan) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['jumlah' => 'Jumlah cicilan minimal Rp ' . number_format($minCicilan, 0, ',', '.') . ' berdasarkan tenor saat ini']);
+            }
+        }
+
+        if ((int) $request->jumlah > $pinjaman->sisa_pinjaman) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['jumlah' => 'Jumlah cicilan tidak boleh lebih dari sisa pinjaman']);
+        }
+
         $service->cicil(
             $pinjaman,
             (int) $request->jumlah,
             $request->keterangan
         );
 
+        // Jika berasal dari data pinjaman anggota, kembali ke sana agar perubahan
+        // pelunasan langsung terlihat di tabel Pinjaman Lunas Anggota.
         return redirect()
-            ->route('admin.pinjaman.aktif.index')
+            ->to(url()->previous() ?: route('admin.pinjaman.data-anggota.index'))
             ->with('success', 'Cicilan berhasil disimpan');
     }
 

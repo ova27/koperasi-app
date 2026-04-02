@@ -29,7 +29,7 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Tenor (Bulan)</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Tenor Realisasi (Bulan)</label>
                     <input type="number" name="tenor" value="{{ $pengajuan->tenor }}" 
                         class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
