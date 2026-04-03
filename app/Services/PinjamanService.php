@@ -146,6 +146,7 @@ class PinjamanService
                     'jumlah_pinjaman' => $pinjaman->jumlah_pinjaman + $pengajuan->jumlah_diajukan,
                     'sisa_pinjaman'   => $sisaBaru,
                     'tenor'           => $pengajuan->tenor, // tenor top-up jadi acuan cicilan berikutnya
+                    'cicilan_per_bulan' => ceil($sisaBaru / $pengajuan->tenor),
                 ]);
 
                 TransaksiPinjaman::create([
@@ -165,6 +166,7 @@ class PinjamanService
                     'jumlah_pinjaman' => $pengajuan->jumlah_diajukan,
                     'sisa_pinjaman'   => $pengajuan->jumlah_diajukan,
                     'tenor'           => $pengajuan->tenor,
+                    'cicilan_per_bulan' => ceil($pengajuan->jumlah_diajukan / $pengajuan->tenor),
                     'status'          => 'aktif',
                 ]);
 

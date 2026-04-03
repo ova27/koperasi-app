@@ -29,13 +29,18 @@ class ApprovalPinjamanController extends Controller
 
     public function show(PengajuanPinjaman $pengajuan)
     {
+        $pinjaman = Pinjaman::where('anggota_id', $pengajuan->anggota_id)
+                    ->where('status', 'aktif')
+                    ->latest()
+                    ->first();
+
         // Jika request adalah AJAX, kirimkan view khusus detail saja
         if (request()->ajax()) {
-            return view('admin.pinjaman.pengajuan._detail_content', compact('pengajuan'));
+            return view('admin.pinjaman.pengajuan._detail_content', compact('pengajuan', 'pinjaman'));
         }
 
         // Fallback jika diakses manual (opsional)
-        return view('admin.pinjaman.pengajuan.show', compact('pengajuan'));
+        return view('admin.pinjaman.pengajuan.show', compact('pengajuan', 'pinjaman'));
     }
 
     public function setujui(
@@ -77,12 +82,12 @@ class ApprovalPinjamanController extends Controller
         }
 
         $request->validate([
-            'alasan' => 'required|string|max:255',
+            'alasan_tolak' => 'required|string|max:255',
         ]);
 
         $pengajuan->update([
             'status' => 'ditolak',
-            'keterangan' => $request->alasan,
+            'alasan_tolak' => $request->alasan_tolak,
             'tgl_persetujuan' => now(),
         ]);
 

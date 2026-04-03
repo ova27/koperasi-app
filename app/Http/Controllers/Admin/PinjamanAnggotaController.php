@@ -12,15 +12,15 @@ class PinjamanAnggotaController extends Controller
     {
         $this->authorize('view pengajuan pinjaman'); // Ketua & Bendahara only
         
-        $pinjamansAktif = Pinjaman::with('anggota')
+        $pinjamansAktif = Pinjaman::with(['anggota', 'transaksi'])
             ->where('status', 'aktif')
             ->orderBy('tanggal_pinjam', 'desc')
-            ->paginate(5, ['*'], 'aktif_page');
+            ->paginate(10, ['*'], 'aktif_page');
 
-        $pinjamansLunas = Pinjaman::with('anggota')
-            ->where('status', 'lunas')
-            ->orderBy('tanggal_pinjam', 'desc')
-            ->paginate(5, ['*'], 'lunas_page');
+        $pinjamansLunas = Pinjaman::with(['anggota', 'transaksi'])
+                        ->where('status', 'lunas')
+                        ->orderByDesc('updated_at') // ✅ pakai ini
+                        ->paginate(10, ['*'], 'lunas_page');
 
         return view('admin.pinjaman.data-anggota.index', compact('pinjamansAktif', 'pinjamansLunas'));
     }
@@ -31,7 +31,7 @@ class PinjamanAnggotaController extends Controller
         
         $pinjamanLunas = Pinjaman::with(['anggota', 'transaksi'])
             ->where('status', 'lunas')
-            ->orderBy('tanggal_pinjam', 'desc')
+            ->orderByDesc('updated_at')
             ->paginate(15);
 
         return view('admin.pinjaman.data-anggota.lunas', compact('pinjamanLunas'));
@@ -56,16 +56,24 @@ class PinjamanAnggotaController extends Controller
         $this->authorize('edit pinjaman');
 
         $request->validate([
-            'tenor' => 'nullable|integer|min:1|max:60',
+            'tenor' => 'nullable|integer|min:1|max:20',
             'keterangan' => 'nullable|string|max:500',
         ]);
 
+        $tenorLama = $pinjaman->tenor;
+        $tenorBaru = $request->tenor ?? $tenorLama;
+
+        $cicilanBaru = $tenorBaru > 0
+            ? ceil($pinjaman->sisa_pinjaman / $tenorBaru)
+            : $pinjaman->cicilan_per_bulan;
+
         $pinjaman->update([
-            'tenor' => $request->tenor ?? $pinjaman->tenor,
+            'tenor' => $tenorBaru,
+            'cicilan_per_bulan' => $cicilanBaru,
             'keterangan' => $request->keterangan,
         ]);
 
-        return redirect()
+       return redirect()
             ->route('admin.pinjaman.data-anggota.index')
             ->with('success', 'Data pinjaman berhasil diperbarui');
     }

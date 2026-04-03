@@ -69,28 +69,22 @@
                         </td>
                         <td class="p-3 border-b text-center">{{ $p->tenor }} Bulan</td>
                         <td class="p-3 border-b text-center space-x-0">
-                            {{-- Tombol Detail memanggil fungsi JS --}}
+                            {{-- Tombol Approval --}}
                             <button 
                                 onclick="openModalDetail({{ $p->id }})"
                                 title="Approval"
                                 class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm">
                                 Approval
                             </button>
-                            
-                            {{-- Tombol Preview (jika ada pinjaman aktif) --}}
-                            @if($p->anggota && $p->anggota->pinjamanAktif)
-                                <button 
-                                    onclick="openModalPreview({{ $p->anggota->pinjamanAktif->id }})"
-                                    title="Lihat Pinjaman Aktif"
-                                    class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
-                                    Detail
-                                </button>
-                            @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="p-8 text-center text-gray-400">Tidak ada pengajuan pending.</td>
+                        <tr>
+                            <td colspan="6" class="px-4 py-4 text-center text-gray-500">
+                                Tidak ada pengajuan pending.
+                            </td>
+                        </tr>
                     </tr>
                 @endforelse
             </tbody>
@@ -164,16 +158,6 @@
                                     title="Ubah Persetujuan">
                                     <span aria-hidden="true">✏️</span>
                                 </button>
-
-                                {{-- Tombol Preview (jika ada pinjaman aktif) --}}
-                                @if($r->anggota && $r->anggota->pinjamanAktif)
-                                    <button 
-                                        onclick="openModalPreview({{ $r->anggota->pinjamanAktif->id }})"
-                                        title="Lihat Pinjaman Aktif"
-                                        class="inline-flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 p-1 text-xs text-blue-700 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                        <span aria-hidden="true">👁️</span>
-                                    </button>
-                                @endif
                             @else
                                 <span class="text-gray-500 text-[10px] italic">Sudah Dicairkan</span>
                             @endif
@@ -210,26 +194,26 @@
 
 {{-- MODAL APPROVAL --}}
 <div id="modalDetail" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-lg rounded-lg shadow-2xl overflow-hidden transform transition-all">
-        <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
-            <h3 class="font-bold text-gray-800">Detail Pengajuan</h3>
-            <button onclick="closeModalDetail()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+    <div class="bg-white w-full max-w-md rounded-lg shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+        <div class="px-4 py-3 border-b flex justify-between items-center bg-gray-50 flex-shrink-0">
+            <h3 class="font-bold text-gray-800 text-sm">Detail Pengajuan Pinjaman</h3>
+            <button onclick="closeModalDetail()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>
-        <div id="modalBody" class="p-6">
+        <div id="modalBody" class="flex-1 overflow-y-auto">
             {{-- Konten dari AJAX akan muncul di sini --}}
-            <div class="flex justify-center italic text-gray-500">Memuat data...</div>
+            <div class="flex justify-center italic text-gray-500 p-4">Memuat data...</div>
         </div>
     </div>
 </div>
 {{-- MODAL PREVIEW PINJAMAN --}}
 <div id="modalPreview" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-lg rounded-lg shadow-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
-            <h3 class="font-bold text-gray-800">Pinjaman Aktif</h3>
-            <button onclick="closeModalPreview()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+    <div class="bg-white w-full max-w-md rounded-lg shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+        <div class="px-4 py-3 border-b flex justify-between items-center bg-gray-50 flex-shrink-0">
+            <h3 class="font-bold text-gray-800 text-sm">Pinjaman Aktif</h3>
+            <button onclick="closeModalPreview()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>
-        <div id="modalPreviewBody" class="p-6">
-            <div class="flex justify-center italic text-gray-500">Memuat data...</div>
+        <div id="modalPreviewBody" class="flex-1 overflow-y-auto">
+            <div class="flex justify-center italic text-gray-500 p-4">Memuat data...</div>
         </div>
     </div>
 </div>
@@ -269,7 +253,29 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(res => res.text())
-        .then(html => { body.innerHTML = html; })
+        .then(html => { 
+            body.innerHTML = html;
+            
+            // Attach event listeners after content is loaded
+            const modal = document.getElementById('modalDetail');
+            modal.addEventListener('click', function(e) {
+                if (e.target.classList.contains('toggle-reject-btn') || e.target.closest('.toggle-reject-btn')) {
+                    const form = document.getElementById('rejectForm');
+                    if (form) form.classList.toggle('hidden');
+                }
+            });
+            
+            const formApproval = document.getElementById('formApproval');
+            if (formApproval) {
+                formApproval.addEventListener('submit', function() {
+                    const btn = document.getElementById('btnApprove');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<svg class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Memproses...';
+                    }
+                });
+            }
+        })
         .catch(() => { body.innerHTML = '<span class="text-red-500">Gagal mengambil data.</span>'; });
     }
 

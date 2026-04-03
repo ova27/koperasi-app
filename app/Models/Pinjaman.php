@@ -19,6 +19,7 @@ class Pinjaman extends Model
         'jumlah_pinjaman',
         'sisa_pinjaman',
         'tenor',
+        'cicilan_per_bulan',
         'status',
         'keterangan',
     ];

@@ -216,9 +216,6 @@ Route::middleware(['auth','permission:view anggota list'])
         Route::middleware('permission:manage cicilan pinjaman')
             ->group(function () {
 
-                Route::get('/pinjaman/aktif', [CicilanPinjamanController::class, 'index'])
-                    ->name('pinjaman.aktif.index');
-
                 Route::get('/pinjaman/{pinjaman}/cicil', [CicilanPinjamanController::class, 'create'])
                     ->name('pinjaman.cicil.create');
 

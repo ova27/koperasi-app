@@ -20,6 +20,7 @@ class PengajuanPinjaman extends Model
         'dicairkan_oleh',
         'tanggal_pengajuan',
         'tanggal_persetujuan',
+        'alasan_tolak',
         'tanggal_pencairan',
     ];
 

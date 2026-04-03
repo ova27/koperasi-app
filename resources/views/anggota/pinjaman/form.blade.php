@@ -82,10 +82,10 @@
                                 Keterangan
                             </label>
                             <textarea
-                                name="keterangan"
+                                name="tujuan"
                                 rows="2"
                                 class="w-full border border-gray-300 rounded-md p-2"
-                                placeholder="Keterangan">{{ old('keterangan') }}</textarea>
+                                placeholder="Keterangan">{{ old('tujuan') }}</textarea>
                         </div>
 
                         <div class="mt-6">
@@ -214,9 +214,18 @@
                                 </td>
 
                                 <td class="px-4 py-3 text-center align-middle">
-                                    <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $badge }}">
-                                        {{ ucfirst($item->status) }}
-                                    </span>
+                                    @if ($item->status === 'ditolak')
+                                        <button 
+                                            type="button" 
+                                            onclick="showAlasanTolak('{{ addslashes($item->alasan_tolak ?? 'Tidak ada alasan') }}')"
+                                            class="px-3 py-1 rounded-full text-xs font-semibold {{ $badge }} hover:opacity-80 transition">
+                                            {{ ucfirst($item->status) }}
+                                        </button>
+                                    @else
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $badge }}">
+                                            {{ ucfirst($item->status) }}
+                                        </span>
+                                    @endif
                                 </td>
 
                                 <td class="px-4 py-3 text-center align-middle">
@@ -230,7 +239,7 @@
                                                     {{ $item->jumlah_diajukan }}, 
                                                     {{ $item->tenor }}, 
                                                     '{{ \Carbon\Carbon::parse($item->bulan_pinjam)->format('Y-m') }}', 
-                                                    '{{ addslashes($item->keterangan) }}')"
+                                                    '{{ addslashes($item->tujuan) }}')"
                                                     class="w-9 h-9 flex items-center justify-center
                                                         rounded-lg bg-blue-50 text-blue-600
                                                         hover:bg-blue-100 transition
@@ -325,8 +334,8 @@
 
             {{-- KETERANGAN --}}
             <div class="mb-3">
-                <label class="text-sm">Keterangan</label>
-                <textarea name="keterangan" id="edit_keterangan"
+                <label class="text-sm">Catatan</label>
+                <textarea name="tujuan" id="edit_tujuan"
                     class="w-full border rounded p-2"></textarea>
             </div>
 
@@ -365,7 +374,7 @@ function formatRupiah(el) {
     } el.value = value ? 'Rp ' + rupiah : ''; 
     document.getElementById('jumlah_asli').value = value; 
 }
-function openEditModal(id, jumlah, tenor, bulan, keterangan) {
+function openEditModal(id, jumlah, tenor, bulan, tujuan) {
 
     // set action form
     document.getElementById('formEdit').action = `/anggota/pinjaman/${id}`;
@@ -376,7 +385,7 @@ function openEditModal(id, jumlah, tenor, bulan, keterangan) {
 
     document.getElementById('edit_tenor').value = tenor;
     document.getElementById('edit_bulan').value = bulan;
-    document.getElementById('edit_keterangan').value = keterangan;
+    document.getElementById('edit_tujuan').value = tujuan;
 
     // tampilkan modal
     document.getElementById('modalEdit').classList.remove('hidden');
@@ -410,9 +419,15 @@ function formatRupiahEdit(el) {
             {{ session('edit_id') }},
             {{ old('jumlah_diajukan', 0) }},
             {{ old('tenor', 1) }},
-            '{{ old('bulan_pinjam') }}',
-            '{{ old('keterangan') }}'
+            {{ old('bulan_pinjam') }},
+            {{ old('tujuan') }}
         );
     });
 </script>
 @endif
+
+<script>
+    function showAlasanTolak(alasan) {
+        alert('Alasan Ditolak:\n' + alasan);
+    }
+</script>

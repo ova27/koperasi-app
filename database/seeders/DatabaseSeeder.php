@@ -169,6 +169,9 @@ class DatabaseSeeder extends Seeder
             'manage cicilan pinjaman',
 
             'view pengajuan pinjaman',
+            'approve pinjaman',
+            'reject pinjaman',
+            'cancel pinjaman',
 
             'view laporan simpanan bulanan',
             'export laporan simpanan',

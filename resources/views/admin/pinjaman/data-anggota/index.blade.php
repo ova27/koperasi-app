@@ -77,7 +77,7 @@
                                             onclick="window.location.href='{{ route('admin.pinjaman.data-anggota.edit', $pinjaman) }}'"
                                             title="Edit"
                                             class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
-                                            Edit
+                                            Ubah
                                         </button>
                                     @endif
                                 @endcan
@@ -85,10 +85,10 @@
                                 {{-- CICIL & PELUNASAN CEPAT (Bendahara Only) --}}
                                 @can('manage cicilan pinjaman')
                                     @if($pinjaman->status === 'aktif')
-                                        <button 
-                                            onclick="window.location.href='{{ route('admin.pinjaman.cicil.create', $pinjaman) }}'"
-                                            title="Cicil"
-                                            class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm">
+                                        <button onclick='openCicilanModal(@json($pinjaman))'
+                                            title="Input Cicilan"
+                                            class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm"
+                                            >
                                             Cicil
                                         </button>
 
@@ -115,8 +115,19 @@
 
         {{-- PAGINATION PINJAMAN AKTIF --}}
         @if($pinjamansAktif->hasPages())
-            <div class="flex items-center justify-center gap-2 mt-4">
-                {{ $pinjamansAktif->appends(request()->except('aktif_page'))->links() }}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2 mt-2">
+                <p class="text-sm text-gray-600">
+                    Menampilkan
+                    <span class="font-semibold text-gray-900">{{ $pinjamansAktif->firstItem() ?? 0 }}</span>
+                    sampai
+                    <span class="font-semibold text-gray-900">{{ $pinjamansAktif->lastItem() ?? 0 }}</span>
+                    dari
+                    <span class="font-semibold text-gray-900">{{ $pinjamansAktif->total() }}</span>
+                    pinjaman aktif
+                </p>
+                <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+                    {{ $pinjamansAktif->links('vendor.pagination.custom') }}
+                </div>
             </div>
         @endif
     </div>
@@ -152,11 +163,7 @@
                             </td>
 
                             <td class="p-3 border-b text-gray-500">
-                                @php
-                                    $tanggalLunas = $pinjaman->transaksi->where('jenis', 'cicilan')->sortByDesc('tanggal')->first()?->tanggal
-                                        ?: $pinjaman->transaksi->where('jenis', 'pelunasan')->sortByDesc('tanggal')->first()?->tanggal;
-                                @endphp
-                                {{ $tanggalLunas ? \Carbon\Carbon::parse($tanggalLunas)->format('d M Y') : '-' }}
+                                {{ $pinjaman->updated_at->translatedFormat('d M Y H:i') }}
                             </td>
 
                             <td class="p-3 border-b text-right font-semibold text-gray-800">
@@ -312,20 +319,151 @@
 
         {{-- PAGINATION PINJAMAN LUNAS --}}
         @if($pinjamansLunas->hasPages())
-            <div class="flex items-center justify-center gap-2 mt-4">
-                {{ $pinjamansLunas->appends(request()->except('lunas_page'))->links() }}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2 mt-2">
+                <p class="text-sm text-gray-600">
+                    Menampilkan
+                    <span class="font-semibold text-gray-900">{{ $pinjamansLunas->firstItem() ?? 0 }}</span>
+                    sampai
+                    <span class="font-semibold text-gray-900">{{ $pinjamansLunas->lastItem() ?? 0 }}</span>
+                    dari
+                    <span class="font-semibold text-gray-900">{{ $pinjamansLunas->total() }}</span>
+                    pinjaman lunas
+                </p>
+                <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+                    {{ $pinjamansLunas->links('vendor.pagination.custom') }}
+                </div>
             </div>
         @endif
     </div>
 
 </div>
 
+{{-- MODAL CICILAN --}}
+<div id="cicilanModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-6">
+
+        {{-- TITLE --}}
+        <h3 class="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">
+            Input Cicilan
+        </h3>
+
+        <div id="infoPerubahanTenor" class="text-left hidden mt-3 px-1 mb-2 text-xs text-gray-600 space-y-2"></div>
+        {{-- INFO PINJAMAN --}}
+        <div class="bg-gray-50 rounded-xl p-4 space-y-1 mb-4 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-500">Nama</span>
+                <span id="cicilanAnggota" class="font-semibold text-gray-800"></span>
+            </div>
+
+            <div class="flex justify-between">
+                <span class="text-gray-500">Jumlah Pinjaman</span>
+                <span id="cicilanJumlah"></span>
+            </div>
+            
+            <div class="flex justify-between">
+                <span class="text-gray-500">Tenor</span>
+                <span class="font-semibold text-gray-800">
+                    <span id="cicilanTenor"></span> bulan
+                </span>
+            </div>
+
+            <div class="flex justify-between">
+                <span class="text-gray-500">Sisa Pinjaman</span>
+                <span id="cicilanSisa" class="font-semibold text-red-500"></span>
+            </div>
+
+            <div class="flex justify-between border-t pt-2">
+                <span class="text-gray-500">Cicilan / bulan</span>
+                <span id="cicilanRekomendasi" class="font-semibold text-green-600"></span>
+            </div>
+
+        </div>
+
+        {{-- RIWAYAT CICILAN --}}
+        <div class="mb-5">
+            <button
+                type="button"
+                onclick="toggleRiwayatCicilan()"
+                class="w-full flex items-center justify-between text-sm font-semibold text-gray-700 mb-2">
+
+                <span>Riwayat Cicilan</span>
+
+                <svg id="iconRiwayat" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div id="riwayatWrapper" class="hidden bg-gray-50 rounded-xl border border-gray-200 max-h-40 overflow-y-auto">
+                <table class="w-full text-xs">
+                    <thead class="bg-gray-100 text-gray-500 sticky top-0">
+                        <tr>
+                            <th class="px-3 py-2 text-left">Tanggal</th>
+                            <th class="px-3 py-2 text-center">Jenis</th>
+                            <th class="px-3 py-2 text-center">Jumlah</th>
+                            <th class="px-3 py-2 text-center">Info</th>
+                        </tr>
+                    </thead>
+                    <tbody id="riwayatCicilanBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- FORM --}}
+        <form id="cicilanForm" method="POST" class="space-y-4">
+            @csrf
+
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">
+                    Jumlah Cicilan
+                </label>
+                <input
+                    type="text"
+                    id="inputCicilanJumlah"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                    placeholder="Rp 0"
+                    required
+                >
+                <input type="hidden" name="jumlah" id="jumlahHidden">
+            </div>
+
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">
+                    Keterangan
+                </label>
+                <input
+                    type="text"
+                    name="keterangan"
+                    id="cicilanKeterangan"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                    placeholder="Opsional"
+                >
+            </div>
+
+            {{-- ACTION --}}
+            <div class="flex gap-3 justify-end pt-1">
+                <button
+                    type="button"
+                    onclick="closeCicilanModal()"
+                    class="px-3 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+                    Batal
+                </button>
+
+                <button
+                    type="submit"
+                    class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition shadow-sm">
+                    Simpan
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
 {{-- MODAL PELUNASAN CEPAT --}}
-<div id="pelunasamModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 items-center justify-center">
+<div id="pelunasamModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
     <div class="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-bold text-gray-900 mb-4">Pelunasan Cepat</h3>
         <p class="text-gray-600 mb-2">
-            Anggota: <span id="pelunsaanAnggota" class="font-semibold text-gray-900"></span>
+            Anggota: <span id="pelunasanAnggota" class="font-semibold text-gray-900"></span>
         </p>
         <p class="text-gray-600 mb-6">
             Jumlah Sisa: <span id="pelunasanJumlah" class="font-semibold text-red-600"></span>
@@ -336,17 +474,16 @@
 
             <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Jumlah Pelunasan (diharapkan nilai penuh)
+                    Jumlah Pelunasan
                 </label>
                 <input
-                    type="number"
-                    name="jumlah"
-                    id="pelunsaanJumlahInput"
-                    min="1"
+                    type="text"
+                    name="jumlah_display"
+                    id="pelunasanJumlahInput"
                     readonly
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     placeholder="Rp 0">
-                <input type="hidden" id="pelunsaanJumlahSisa" value="0">
+                <input type="hidden" id="pelunasanJumlahSisa" name="jumlah" value="0">
             </div>
 
             <div class="flex gap-3 justify-end">
@@ -366,98 +503,335 @@
     </div>
 </div>
 
+{{-- SCRIPT FLASH MESSAGE --}}
 <script>
-// Close flash message
-function closeFlashMessage() {
-    const flashMessage = document.getElementById('flash-message');
-    if (flashMessage) {
-        flashMessage.style.display = 'none';
-    }
-    // Auto close after 5 seconds
-    setTimeout(() => {
+    function closeFlashMessage() {
+        const flashMessage = document.getElementById('flash-message');
         if (flashMessage) {
             flashMessage.style.display = 'none';
         }
-    }, 5000);
-}
-
-// Auto close flash message on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const flashMessage = document.getElementById('flash-message');
-    if (flashMessage) {
+        // Auto close after 5 seconds
         setTimeout(() => {
-            flashMessage.style.display = 'none';
+            if (flashMessage) {
+                flashMessage.style.display = 'none';
+            }
         }, 5000);
     }
-});
 
-function confirmPelunasan(pinjamanId, anggotaNama, sisaPinjaman) {
-    document.getElementById('pelunsaanAnggota').textContent = anggotaNama;
-    document.getElementById('pelunasanJumlah').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(sisaPinjaman);
-    const jumlahInput = document.getElementById('pelunsaanJumlahInput');
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            setTimeout(() => {
+                flashMessage.style.display = 'none';
+            }, 5000);
+        }
+    });
+</script>
 
-    jumlahInput.value = sisaPinjaman;
-    jumlahInput.min = 1;
-    jumlahInput.max = sisaPinjaman;
+{{-- SCRIPT RIWAYAT CICILAN, PELUNASAN --}}
+<script>
+    let tenorAwal = 0;
+    let jumlahPinjamanGlobal = 0;
+    let sisaPinjamanGlobal = 0;
 
-    const form = document.getElementById('pelunsaanForm');
-    form.action = `/admin/pinjaman/${pinjamanId}/cicil`;
-    form.method = 'POST';
+    function openCicilanModal(pinjaman) {
 
-    document.getElementById('pelunsaanJumlahSisa').value = sisaPinjaman;
-    document.getElementById('pelunasamModal').classList.remove('hidden');
-}
+        const anggotaNama = pinjaman.anggota?.nama ?? '-';
+        const jumlahPinjaman = pinjaman.jumlah_pinjaman ?? 0;
+        const sisaPinjaman = pinjaman.sisa_pinjaman ?? 0;
+        const tenor = pinjaman.tenor ?? 0;
+        const pinjamanId = pinjaman.id;
 
-function closePelunasamModal() {
-    document.getElementById('pelunasamModal').classList.add('hidden');
-}
+        // simpan global (untuk detect perubahan tenor)
+        tenorAwal = tenor;
+        jumlahPinjamanGlobal = jumlahPinjaman;
+        sisaPinjamanGlobal = sisaPinjaman;
 
-// Submit form validation
-document.getElementById('pelunsaanForm')?.addEventListener('submit', function(e) {
-    const jumlah = parseInt(document.getElementById('pelunsaanJumlahInput').value);
-    const sisa = parseInt(document.getElementById('pelunsaanJumlahSisa').value);
+        // =========================
+        // INFO PINJAMAN
+        // =========================
+        document.getElementById('cicilanAnggota').textContent = anggotaNama;
+        document.getElementById('cicilanJumlah').textContent = formatRupiah(jumlahPinjaman);
+        document.getElementById('cicilanSisa').textContent = formatRupiah(sisaPinjaman);
+        
+        // =========================
+        // AMBIL STRUKTUR TERAKHIR
+        // =========================
+        let tenorAcuan = tenor;
+        const infoBox = document.getElementById('infoPerubahanTenor');
+        let html = '';
 
-    if (!jumlah || jumlah <= 0) {
-        e.preventDefault();
-        alert('Jumlah pelunasan harus lebih dari 0');
-        return;
+        if (pinjaman.updated_at) {
+
+            html = `
+                <div class="text-[11px] text-gray-400">
+                    Update terakhir: ${formatTanggal(pinjaman.updated_at)}
+                </div>
+            `;
+
+            infoBox.innerHTML = html;
+            infoBox.classList.remove('hidden');
+
+        } else {
+            infoBox.classList.add('hidden');
+        }
+
+        // =========================
+        // HITUNG CICILAN REAL
+        // =========================
+        let cicilanTetap = pinjaman.cicilan_per_bulan ?? 0;
+        document.getElementById('cicilanTenor').textContent = tenorAcuan || 'N/A';
+        document.getElementById('cicilanRekomendasi').textContent = formatRupiah(cicilanTetap);
+
+        setDefaultCicilan(cicilanTetap);
+
+        // =========================
+        // FORM
+        // =========================
+        const form = document.getElementById('cicilanForm');
+        form.action = `/admin/pinjaman/${pinjamanId}/cicil`;
+
+        // =========================
+        // RIWAYAT CICILAN (FULL LOGIC)
+        // =========================
+        const tbody = document.getElementById('riwayatCicilanBody');
+        tbody.innerHTML = '';
+
+        if (!pinjaman.transaksi || pinjaman.transaksi.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center py-3 text-gray-400 italic">
+                        Belum ada transaksi
+                    </td>
+                </tr>
+            `;
+        } else {
+
+            // 🔥 SORT SEPERTI DI BLADE
+            const pencairan = pinjaman.transaksi
+                .filter(t => t.jenis === 'pencairan')
+                .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+            const lainnya = pinjaman.transaksi
+                .filter(t => t.jenis !== 'pencairan')
+                .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+            let previousSisa = 0;
+
+            // =========================
+            // 1. PENCAIRAN DULU
+            // =========================
+            pencairan.forEach(t => {
+
+                const row = `
+                    <tr class="border-t">
+                        <td class="px-3 py-2">
+                            ${formatTanggal(t.updated_at)}
+                        </td>
+                        <td class="px-3 py-2 text-center text-blue-600 font-medium">
+                            Pencairan
+                        </td>
+                        <td class="px-3 py-2 text-right font-medium">
+                            ${formatRupiah(t.jumlah)}
+                        </td>
+                    </tr>
+                `;
+
+                previousSisa = t.sisa_setelah ?? 0;
+
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // =========================
+            // 2. TRANSAKSI LAIN (CICILAN, TOPUP, DLL)
+            // =========================
+            let cicilanKe = 0;
+            lainnya.forEach(t => {
+            const jenis = t.jenis;
+
+            // =========================
+            // RESET CICILAN
+            // =========================
+            if (jenis === 'topup' || jenis === 'ubah_tenor') {
+                cicilanKe = 0;
+            }
+
+            let label;
+
+            if (jenis === 'cicilan') {
+                cicilanKe++;
+                label = `Cicilan ke-${cicilanKe}`;
+            } 
+            else if (jenis === 'topup') {
+                label = 'Topup';
+            } 
+            else if (jenis === 'pelunasan') {
+                label = 'Pelunasan';
+            } 
+            else {
+                label = capitalize(jenis);
+            }
+
+            const warna = {
+                cicilan: 'text-green-600',
+                topup: 'text-purple-600',
+                pelunasan: 'text-gray-600',
+                ubah_tenor: 'text-blue-600'
+            };
+
+            const row = `
+                <tr class="border-t">
+                    <td class="px-3 py-2">
+                        ${formatTanggal(t.updated_at)}
+                    </td>
+                    <td class="px-3 py-2 text-center font-medium ${warna[jenis] || ''}">
+                        ${label}
+                    </td>
+                    <td class="px-3 py-2 text-right font-medium">
+                        ${formatRupiah(t.jumlah)}
+                    </td>
+                    <td class="px-3 py-2">
+                        ${keterangan = t.keterangan ? `<span class="text-xs text-gray-500 italic">${t.keterangan}</span>` : '' }
+                    </td>
+                </tr>
+            `;
+
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+        }
+
+        document.getElementById('cicilanModal').classList.remove('hidden');
     }
 
-    if (jumlah !== sisa) {
-        e.preventDefault();
-        alert('Untuk pelunasan cepat, jumlah harus sama dengan sisa pinjaman.');
+    function capitalize(text) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
     }
-});
 
-// Toggle expandable transaction history
-function toggleCicilan(pinjamanId) {
-    const cicilanRow = document.getElementById(`cicilan-${pinjamanId}`);
-    const btnLihat = document.getElementById(`btn-lihat-${pinjamanId}`);
-    const iconLihat = document.getElementById(`icon-lihat-${pinjamanId}`);
-
-    if (cicilanRow.classList.contains('hidden')) {
-        // Show the row
-        cicilanRow.classList.remove('hidden');
-        btnLihat.classList.remove('bg-gray-500', 'hover:bg-gray-600');
-        btnLihat.classList.add('bg-gray-700', 'hover:bg-gray-800');
-        btnLihat.innerHTML = `
-            <svg class="w-3 h-3 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-            </svg>
-            Tutup
-        `;
-    } else {
-        // Hide the row
-        cicilanRow.classList.add('hidden');
-        btnLihat.classList.remove('bg-gray-700', 'hover:bg-gray-800');
-        btnLihat.classList.add('bg-gray-500', 'hover:bg-gray-600');
-        btnLihat.innerHTML = `
-            <svg class="w-3 h-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-            Lihat
-        `;
+    function closeCicilanModal() {
+        document.getElementById('cicilanModal').classList.add('hidden');
     }
-}
+
+    function formatTanggal(tgl) {
+        const date = new Date(tgl);
+
+        const tanggal = date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+
+        const waktu = date.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        return `${tanggal} ${waktu}`;
+    }
+
+    function confirmPelunasan(pinjamanId, anggotaNama, sisaPinjaman) {
+        document.getElementById('pelunasanAnggota').textContent = anggotaNama;
+        document.getElementById('pelunasanJumlah').textContent = formatRupiah(sisaPinjaman);
+        
+        const jumlahInput = document.getElementById('pelunasanJumlahInput');
+        jumlahInput.value = formatRupiah(sisaPinjaman);
+        jumlahInput.min = 1;
+        jumlahInput.max = sisaPinjaman;
+
+        const form = document.getElementById('pelunsaanForm');
+        form.action = `/admin/pinjaman/${pinjamanId}/cicil`;
+        form.method = 'POST';
+
+        document.getElementById('pelunasanJumlahSisa').value = sisaPinjaman;
+        document.getElementById('pelunasamModal').classList.remove('hidden');
+    }
+
+    function closePelunasamModal() {
+        document.getElementById('pelunasamModal').classList.add('hidden');
+    }
+
+    // Submit form validation
+    document.getElementById('pelunsaanForm')?.addEventListener('submit', function(e) {
+        const jumlah = parseInt(document.getElementById('pelunsaanJumlahInput').value);
+        const sisa = parseInt(document.getElementById('pelunsaanJumlahSisa').value);
+
+        if (!jumlah || jumlah <= 0) {
+            e.preventDefault();
+            alert('Jumlah pelunasan harus lebih dari 0');
+            return;
+        }
+
+        if (jumlah !== sisa) {
+            e.preventDefault();
+            alert('Untuk pelunasan cepat, jumlah harus sama dengan sisa pinjaman.');
+        }
+    });
+
+    // Toggle expandable transaction history
+    function toggleCicilan(pinjamanId) {
+        const cicilanRow = document.getElementById(`cicilan-${pinjamanId}`);
+        const btnLihat = document.getElementById(`btn-lihat-${pinjamanId}`);
+        const iconLihat = document.getElementById(`icon-lihat-${pinjamanId}`);
+
+        if (cicilanRow.classList.contains('hidden')) {
+            // Show the row
+            cicilanRow.classList.remove('hidden');
+            btnLihat.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+            btnLihat.classList.add('bg-gray-700', 'hover:bg-gray-800');
+            btnLihat.innerHTML = `
+                <svg class="w-3 h-3 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                </svg>
+                Tutup
+            `;
+        } else {
+            // Hide the row
+            cicilanRow.classList.add('hidden');
+            btnLihat.classList.remove('bg-gray-700', 'hover:bg-gray-800');
+            btnLihat.classList.add('bg-gray-500', 'hover:bg-gray-600');
+            btnLihat.innerHTML = `
+                <svg class="w-3 h-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+                Lihat
+            `;
+        }
+    }
+
+    function toggleRiwayatCicilan() {
+        const wrapper = document.getElementById('riwayatWrapper');
+        const icon = document.getElementById('iconRiwayat');
+
+        wrapper.classList.toggle('hidden');
+
+        // rotate icon
+        icon.classList.toggle('rotate-180');
+    }
+
+    function setDefaultCicilan(nominal) {
+        const input = document.getElementById('inputCicilanJumlah');
+        const hidden = document.getElementById('jumlahHidden');
+
+        hidden.value = nominal;
+        input.value = formatRupiah(nominal.toString());
+    }
+
+    function formatRupiah(angka) {
+        return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka || 0);
+    }
+
+    const input = document.getElementById('inputCicilanJumlah');
+    const hidden = document.getElementById('jumlahHidden');
+
+    input.addEventListener('input', function(e) {
+        let value = e.target.value;
+
+        // simpan angka asli (tanpa Rp & titik)
+        let numeric = value.replace(/[^0-9]/g, '');
+
+        hidden.value = numeric;
+
+        // tampilkan versi rupiah
+        e.target.value = formatRupiah(numeric);
+    });
 </script>
 @endsection

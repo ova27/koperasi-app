@@ -9,17 +9,6 @@ use Illuminate\Http\Request;
 
 class CicilanPinjamanController extends Controller
 {
-    public function index()
-    {
-        $this->authorize('manage cicilan pinjaman');
-        $pinjamans = Pinjaman::with('anggota')
-            ->where('status', 'aktif')
-            ->orderBy('tanggal_pinjam')
-            ->get();
-
-        return view('admin.pinjaman.cicilan.index', compact('pinjamans'));
-    }
-
     public function create(Pinjaman $pinjaman)
     {
         $this->authorize('manage cicilan pinjaman');

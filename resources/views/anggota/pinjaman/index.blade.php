@@ -74,6 +74,11 @@
                             <th class="px-4 py-3 text-right w-[20%]">
                                 Jumlah
                             </th>
+                            <th class="px-4 py-3 text-right w-[15%]">
+                                Tenor
+                            </th>
+                            <th class="px-4 py-3 text-right w-[15%]">
+                                Cicilan/Bulan
                             <th class="px-4 py-3 text-right w-[20%]">
                                 Sisa
                             </th>
@@ -114,7 +119,12 @@
                                 <td class="px-4 py-2 text-right font-medium">
                                     Rp {{ number_format($p->jumlah_pinjaman, 0, ',', '.') }}
                                 </td>
-
+                                <td class="px-4 py-2 text-right">
+                                    {{ $p->tenor }} bulan
+                                </td>
+                                <td class="px-4 py-2 text-right">
+                                    Rp {{ number_format($p->cicilan_per_bulan, 0, ',', '.') }}
+                                </td>
                                 <td class="px-4 py-2 text-right font-medium">
                                     Rp {{ number_format($p->sisa_pinjaman, 0, ',', '.') }}
                                 </td>
@@ -141,7 +151,7 @@
                             {{-- ========================= --}}
                             @if($p->transaksi->isNotEmpty())
                                 <tr id="cicilan-{{ $p->id }}" class="hidden">
-                                    <td colspan="5" class="px-6 py-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg shadow-inner">
+                                    <td colspan="8" class="px-6 py-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg shadow-inner">
 
                                         <div class="text-sm font-semibold mb-3 text-gray-700">
                                             Riwayat Transaksi

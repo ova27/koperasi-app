@@ -46,7 +46,7 @@ class PengajuanPinjamanController extends Controller
             'jumlah_diajukan' => 'required|integer|min:100000',
             'tenor'           => 'required|integer|min:1|max:20', 
             'bulan_pinjam'    => 'required',                     
-            'keterangan'      => 'nullable|string',
+            'tujuan'          => 'nullable|string',
         ]);
 
         $this->authorize('create pinjaman');
@@ -60,7 +60,7 @@ class PengajuanPinjamanController extends Controller
                 tenor       : (int) $request->tenor,        
                 bulan       : $request->bulan_pinjam,       
                 userId      : Auth::id(),
-                tujuan      : $request->keterangan
+                tujuan      : $request->tujuan
             );
 
             return redirect()
@@ -104,7 +104,7 @@ class PengajuanPinjamanController extends Controller
             'jumlah_diajukan' => 'required|integer|min:1',
             'tenor'           => 'required|integer|min:1|max:20', 
             'bulan_pinjam'    => 'required|date_format:Y-m|after_or_equal:' . now()->format('Y-m'),
-            'keterangan'      => 'nullable|string', 
+            'tujuan'          => 'nullable|string', 
         ]);
 
         try {
@@ -113,7 +113,7 @@ class PengajuanPinjamanController extends Controller
                 $request->jumlah_diajukan,
                 $request->tenor,
                 $request->bulan_pinjam,
-                $request->keterangan // Pastikan ini juga diganti
+                $request->tujuan // Pastikan ini juga diganti
             );
 
             return redirect()
