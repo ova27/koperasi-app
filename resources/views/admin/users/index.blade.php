@@ -168,7 +168,7 @@
             <span class="font-semibold text-gray-900">{{ $users->lastItem() ?? 0 }}</span>
             dari
             <span class="font-semibold text-gray-900">{{ $users->total() }}</span>
-            pengguna
+            data
         </p>
 
         <div class="flex justify-center sm:justify-end w-full sm:w-auto">

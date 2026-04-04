@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
+use App\Models\ArusKas;
+use App\Models\Simpanan;
 use App\Services\SimpananService;
 use Illuminate\Http\Request;
-use App\Models\ArusKas;
 
 class SimpananController extends Controller
 {
@@ -30,7 +31,7 @@ class SimpananController extends Controller
         return view('admin.simpanan.index', compact(
             'bulan',
             'sudahGenerateWajib',
-            'anggotas'
+            'anggotas',
         ));
     }
 
@@ -106,21 +107,42 @@ class SimpananController extends Controller
         }
     }
 
+    public function saldo($anggotaId)
+    {
+        $pokok = Simpanan::where('anggota_id', $anggotaId)
+            ->where('jenis_simpanan', 'pokok')
+            ->sum('jumlah');
+
+        $wajib = Simpanan::where('anggota_id', $anggotaId)
+            ->where('jenis_simpanan', 'wajib')
+            ->sum('jumlah');
+
+        $sukarela = Simpanan::where('anggota_id', $anggotaId)
+            ->where('jenis_simpanan', 'sukarela')
+            ->sum('jumlah');
+
+        return response()->json([
+            'pokok' => $pokok,
+            'wajib' => $wajib,
+            'sukarela' => $sukarela,
+            'total' => $pokok + $wajib + $sukarela,
+        ]);
+    }
 
     public function ambil(
         Request $request, 
-        Anggota $anggota, 
         SimpananService $service
     ){
         $this->authorize('manage simpanan anggota');
         $request->validate([
+            'anggota_id' => 'required|exists:anggotas,id',
             'jumlah' => 'required|integer|min:1',
             'keterangan' => 'required|string|max:255',
         ]);
 
         try {
             $service->ambil(
-                $anggota->id,
+                $request->anggota_id,
                 $request->jumlah,
                 'manual',
                 $request->keterangan

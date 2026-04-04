@@ -248,8 +248,8 @@ class SimpananService
     }
 
     public function kembalikanSemuaSimpanan(
-        int $anggotaId,
-        string $alasan // pensiun | mutasi
+        $anggotaId,
+        $alasan
     ): void {
         if (!in_array($alasan, ['pensiun', 'mutasi'])) {
             throw new Exception('Alasan pengembalian tidak valid');
@@ -273,7 +273,7 @@ class SimpananService
                         'jumlah'         => -$saldo->total,
                         'sumber'         => 'manual',
                         'alasan'         => $alasan,
-                        'keterangan'     => 'Pengembalian simpanan karena ' . $alasan,
+                        'keterangan'     =>'Pengembalian simpanan karena ' . $alasan,
                     ]);
 
                     ArusKas::create([

@@ -50,4 +50,8 @@ class PengajuanPinjaman extends Model
         return $this->belongsTo(User::class, 'dicairkan_oleh');
     }
 
+    public function pinjaman()
+    {
+        return $this->hasOne(Pinjaman::class, 'pengajuan_id');
+    }
 }

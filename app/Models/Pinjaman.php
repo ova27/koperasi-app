@@ -14,6 +14,7 @@ class Pinjaman extends Model
     ];
 
     protected $fillable = [
+        'pengajuan_id',
         'anggota_id',
         'tanggal_pinjam',
         'jumlah_pinjaman',
@@ -33,4 +34,10 @@ class Pinjaman extends Model
     {
         return $this->hasMany(TransaksiPinjaman::class);
     }
+
+    public function pengajuan()
+    {
+        return $this->belongsTo(PengajuanPinjaman::class, 'pengajuan_id');
+    }
+
 }

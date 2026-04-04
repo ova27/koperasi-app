@@ -13,14 +13,15 @@ class AnggotaExitService
     ) {}
 
     public function keluar(
-        int $anggotaId,
-        string $alasanKeluar // pensiun | mutasi
+        $anggotaId,
+        $alasan,
+        $keterangan = null
     ): void {
-        if (!in_array($alasanKeluar, ['pensiun', 'mutasi'])) {
+        if (!in_array($alasan, ['pensiun', 'mutasi'])) {
             throw new Exception('Alasan keluar tidak valid');
         }
 
-        DB::transaction(function () use ($anggotaId, $alasanKeluar) {
+        DB::transaction(function () use ($anggotaId, $alasan, $keterangan) {
 
             $anggota = Anggota::findOrFail($anggotaId);
 
@@ -39,7 +40,7 @@ class AnggotaExitService
 
             // 💰 KEMBALIKAN SEMUA SIMPANAN
             $this->simpananService
-                ->kembalikanSemuaSimpanan($anggotaId, $alasanKeluar);
+                ->kembalikanSemuaSimpanan($anggotaId, $alasan, $keterangan);
 
             // 🔁 UPDATE STATUS ANGGOTA
             $anggota->update([

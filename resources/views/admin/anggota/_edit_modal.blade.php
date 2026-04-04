@@ -79,7 +79,7 @@
                     <option value="tugas_belajar" @selected($anggota->status === 'tugas_belajar')>
                         Tugas Belajar
                     </option>
-                    <option value="tidak_aktif" @selected($anggota->status === 'tidak_aktif')>
+                    <option disabled value="tidak_aktif" @selected($anggota->status === 'tidak_aktif')>
                         Pensiun / Mutasi
                     </option>
                 </select>

@@ -131,8 +131,9 @@
 
                         {{-- STATUS --}}
                         <td class="px-4 py-3 text-center">
-                            {{-- versi component --}}
-                            <x-status-anggota :status="$anggota->status" />
+                        <x-status-anggota 
+                            :status="$anggota->status"
+                            :alasan="$alasanKeluarMap[$anggota->id] ?? null"/>
                         </td>
 
                         {{-- AKSI --}}
@@ -192,7 +193,7 @@
             <span class="font-semibold text-gray-900">{{ $anggotas->lastItem() ?? 0 }}</span>
             dari
             <span class="font-semibold text-gray-900">{{ $anggotas->total() }}</span>
-            anggota
+            data
         </p>
 
         <div class="flex justify-center sm:justify-end w-full sm:w-auto">

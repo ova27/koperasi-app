@@ -124,12 +124,12 @@ Route::middleware(['auth','permission:view anggota list'])
                 Route::post('/anggota/{anggota}/simpanan', [SimpananController::class, 'store'])
                     ->name('simpanan.store');
 
-                Route::post('/anggota/{anggota}/simpanan/ambil', [SimpananController::class, 'ambil'])
+                Route::post('/simpanan/ambil', [SimpananController::class, 'ambil'])
                     ->name('simpanan.ambil');
 
-                Route::get('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'confirm'])
-                    ->name('anggota.keluar.confirm');
-
+                Route::get('/simpanan/saldo/{anggota}', [SimpananController::class, 'saldo'])
+                    ->name('simpanan.saldo');
+                
                 Route::post('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'process'])
                     ->name('anggota.keluar.process');
             });
@@ -188,6 +188,9 @@ Route::middleware(['auth','permission:view anggota list'])
 
                 Route::post('/pinjaman/pencairan/{pengajuan}', [PencairanPinjamanController::class, 'process'])
                     ->name('pinjaman.pencairan.process');
+
+                Route::patch('/pinjaman/pencairan/{pengajuan}/batal', [PencairanPinjamanController::class, 'batalPencairan'])
+                    ->name('pinjaman.pencairan.batal');
             });
 
         /*

@@ -17,7 +17,6 @@ class SimpananSayaController extends Controller
 
         // Get all simpanan for saldo calculation
         $allSimpanan = Simpanan::where('anggota_id', $anggota->id)
-            ->orderByDesc('tanggal')
             ->get();
     
         $saldo = $allSimpanan

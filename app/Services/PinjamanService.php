@@ -104,7 +104,7 @@ class PinjamanService
         array $data = []
     ):void {
         
-        if (!in_array($pengajuan->status, ['diajukan', 'ditolak'])) {
+        if (!in_array($pengajuan->status, ['diajukan', 'ditolak', 'disetujui'])) {
             throw new Exception('Pengajuan tidak valid atau sudah dicairkan');
         }
 
@@ -121,7 +121,6 @@ class PinjamanService
     /* ======================================================
      *  PENCAIRAN
      * ====================================================== */
-
     public function cairkan(
         PengajuanPinjaman $pengajuan,
         int $userId
@@ -132,36 +131,69 @@ class PinjamanService
 
         DB::transaction(function () use ($pengajuan, $userId) {
 
-            // cek pinjaman aktif
-            $pinjaman = Pinjaman::where('anggota_id', $pengajuan->anggota_id)
+            // 1. CEK PINJAMAN DARI PENGAJUAN INI (RE-CAIR)
+            $pinjamanByPengajuan = Pinjaman::where('pengajuan_id', $pengajuan->id)->first();
+
+            // 2. CEK PINJAMAN AKTIF (UNTUK TOP-UP)
+            $pinjamanAktif = Pinjaman::where('anggota_id', $pengajuan->anggota_id)
                 ->where('status', 'aktif')
                 ->first();
 
-            if ($pinjaman) {
+            if ($pinjamanByPengajuan) {
+
+                // =========================
+                // RE-CAIR (DARI BATAL)
+                // =========================
+                if ($pinjamanByPengajuan->status === 'dibatalkan') {
+
+                    $pinjamanByPengajuan->update([
+                        'status'            => 'aktif',
+                        'jumlah_pinjaman'   => $pengajuan->jumlah_diajukan,
+                        'sisa_pinjaman'     => $pengajuan->jumlah_diajukan,
+                        'tenor'             => $pengajuan->tenor,
+                        'cicilan_per_bulan' => ceil($pengajuan->jumlah_diajukan / $pengajuan->tenor),
+                    ]);
+
+                    $pinjaman = $pinjamanByPengajuan;
+
+                } else {
+                    throw new Exception('Pinjaman sudah pernah dicairkan.');
+                }
+
+            } elseif ($pinjamanAktif) {
+
+                // =========================
                 // TOP-UP
-                $sisaSebelumnya = $pinjaman->sisa_pinjaman;
+                // =========================
+                $sisaSebelumnya = $pinjamanAktif->sisa_pinjaman;
                 $sisaBaru = $sisaSebelumnya + $pengajuan->jumlah_diajukan;
 
-                $pinjaman->update([
-                    'jumlah_pinjaman' => $pinjaman->jumlah_pinjaman + $pengajuan->jumlah_diajukan,
+                $pinjamanAktif->update([
+                    'jumlah_pinjaman' => $pinjamanAktif->jumlah_pinjaman + $pengajuan->jumlah_diajukan,
                     'sisa_pinjaman'   => $sisaBaru,
-                    'tenor'           => $pengajuan->tenor, // tenor top-up jadi acuan cicilan berikutnya
+                    'tenor'           => $pengajuan->tenor,
                     'cicilan_per_bulan' => ceil($sisaBaru / $pengajuan->tenor),
                 ]);
 
                 TransaksiPinjaman::create([
-                    'pinjaman_id'  => $pinjaman->id,
+                    'pinjaman_id'  => $pinjamanAktif->id,
                     'tanggal'      => now(),
                     'jenis'        => 'topup',
                     'jumlah'       => $pengajuan->jumlah_diajukan,
-                    'sisa_setelah' => $sisaBaru, // 🔑 INI YANG HILANG
+                    'sisa_setelah' => $sisaBaru,
                     'keterangan'   => 'Top-up pinjaman',
                 ]);
 
+                $pinjaman = $pinjamanAktif;
+
             } else {
+
+                // =========================
                 // PINJAMAN BARU
+                // =========================
                 $pinjaman = Pinjaman::create([
                     'anggota_id'      => $pengajuan->anggota_id,
+                    'pengajuan_id'    => $pengajuan->id,
                     'tanggal_pinjam'  => now(),
                     'jumlah_pinjaman' => $pengajuan->jumlah_diajukan,
                     'sisa_pinjaman'   => $pengajuan->jumlah_diajukan,
@@ -175,7 +207,7 @@ class PinjamanService
                     'tanggal'      => now(),
                     'jenis'        => 'pencairan',
                     'jumlah'       => $pengajuan->jumlah_diajukan,
-                    'sisa_setelah' => $pengajuan->jumlah_diajukan, // 🔑
+                    'sisa_setelah' => $pengajuan->jumlah_diajukan,
                     'keterangan'   => 'Pencairan pinjaman',
                 ]);
             }

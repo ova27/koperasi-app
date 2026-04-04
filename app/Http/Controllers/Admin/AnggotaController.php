@@ -37,7 +37,17 @@ class AnggotaController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.anggota.index', compact('anggotas', 'search', 'sort', 'direction'));
+        // ambil alasan keluar terakhir untuk semua anggota yang tidak aktif
+        $alasanKeluarMap = \App\Models\Simpanan::whereIn('anggota_id', $anggotas->pluck('id'))
+            ->whereIn('alasan', ['pensiun', 'mutasi'])
+            ->orderByDesc('tanggal')
+            ->get()
+            ->groupBy('anggota_id')
+            ->map(fn($items) => $items->first()->alasan);
+
+        return view('admin.anggota.index', compact(
+            'anggotas', 'search', 'sort', 'direction', 'alasanKeluarMap'
+        ));
     }
 
     public function show(
@@ -47,7 +57,7 @@ class AnggotaController extends Controller
         PinjamanService $pinjamanService
     ) {
         $this->authorize('view anggota list');
-
+        
         // Check if user can view full details (simpanan & pinjaman)
         // Only admin/bendahara/ketua can see financial details of other anggota
         $canViewFullDetails = Gate::allows('manage simpanan anggota') || 
@@ -60,7 +70,13 @@ class AnggotaController extends Controller
 
         $saldoSimpanan = $simpananService->saldoPerJenis($anggota->id);
         $ringkasanPinjaman = $pinjamanService->ringkasanAnggota($anggota->id);
-
+        // ambil alasan keluar terakhir untuk semua anggota yang tidak aktif
+        $alasanKeluarMap = \App\Models\Simpanan::whereIn('anggota_id', $anggota->pluck('id'))
+                        ->whereIn('alasan', ['pensiun', 'mutasi'])
+                        ->orderByDesc('tanggal')
+                        ->get()
+                        ->groupBy('anggota_id')
+                        ->map(fn($items) => $items->first()->alasan);
         // MODAL
         if ($request->ajax()) {
 
@@ -77,7 +93,8 @@ class AnggotaController extends Controller
                 'sukarela',
                 'total',
                 'ringkasanPinjaman',
-                'canViewFullDetails'
+                'canViewFullDetails',
+                'alasanKeluarMap'
             ));
         }
 
@@ -86,7 +103,8 @@ class AnggotaController extends Controller
             'anggota',
             'saldoSimpanan',
             'ringkasanPinjaman',
-            'canViewFullDetails'
+            'canViewFullDetails',
+            'alasanKeluar'
         ));
     }
 

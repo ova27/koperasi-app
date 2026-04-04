@@ -1,19 +1,21 @@
-<div class="space-y-6">
+<div class="space-y-2">
 
     {{-- HEADER --}}
-    <div class="flex items-start justify-between">
+    <div class="flex items-start justify-between mb-4">
         <div>
             <h2 class="text-lg font-semibold text-gray-800">
                 {{ $anggota->nama }}
             </h2>
             <div class="mt-1">
-                <x-status-anggota :status="$anggota->status" /> <br>
+                <x-status-anggota 
+                    :status="$anggota->status"
+                    :alasan="$alasanKeluarMap[$anggota->id] ?? null"/>
             </div>
         </div>
     </div>
 
     {{-- PROFIL SINGKAT --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+    <div class="border rounded-lg p-2 grid grid-cols-6 md:grid-cols-3 gap-6 text-sm">
         <div>
             <div class="text-gray-500">Email</div>
             <div class="font-medium">
@@ -24,14 +26,30 @@
         <div>
             <div class="text-gray-500">Tanggal Masuk</div>
             <div class="font-medium">
-                {{ \Carbon\Carbon::parse($anggota->tanggal_masuk)->format('d-m-Y') }}
+                {{ \Carbon\Carbon::parse($anggota->tanggal_masuk)->format('d F Y') }}
             </div>
         </div>
+
+        @if($anggota->status !== 'aktif')
+            <div>
+                <div class="text-gray-500">Tanggal Keluar</div>
+                <div class="font-medium">
+                    {{ $anggota->tanggal_keluar ? \Carbon\Carbon::parse($anggota->tanggal_keluar)->format('d F Y') : '-' }}
+                </div>
+            </div>
+        @else 
+            <div>
+                <div class="text-gray-500">NIP</div>
+                <div class="font-medium">
+                    {{ $anggota->nip ?? '-' }}
+                </div>
+            </div>
+        @endif
     </div>
 
     {{-- RINGKASAN SIMPANAN --}}
     @if($canViewFullDetails)
-    <div class="border rounded-lg p-4">
+    <div class="border rounded-lg p-2">
         <h3 class="font-semibold mb-3 text-sm">
             Ringkasan Simpanan
         </h3>
@@ -67,7 +85,7 @@
 
     {{-- RINGKASAN PINJAMAN --}}
     @if($canViewFullDetails)
-    <div class="border rounded-lg p-4">
+    <div class="border rounded-lg p-2">
         <h3 class="font-semibold mb-3 text-sm">
             Ringkasan Pinjaman
         </h3>

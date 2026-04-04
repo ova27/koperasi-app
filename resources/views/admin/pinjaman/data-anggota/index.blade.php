@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
-@section('title', 'Data Pinjaman Anggota')
-@section('page-title', 'Data Pinjaman Anggota')
+@section('title', 'Transaksi Pinjaman Anggota')
+@section('page-title', 'Transaksi Pinjaman Anggota')
 @section('content')
 <div class="space-y-6">
 
@@ -123,7 +123,7 @@
                     <span class="font-semibold text-gray-900">{{ $pinjamansAktif->lastItem() ?? 0 }}</span>
                     dari
                     <span class="font-semibold text-gray-900">{{ $pinjamansAktif->total() }}</span>
-                    pinjaman aktif
+                    data
                 </p>
                 <div class="flex justify-center sm:justify-end w-full sm:w-auto">
                     {{ $pinjamansAktif->links('vendor.pagination.custom') }}
@@ -327,7 +327,7 @@
                     <span class="font-semibold text-gray-900">{{ $pinjamansLunas->lastItem() ?? 0 }}</span>
                     dari
                     <span class="font-semibold text-gray-900">{{ $pinjamansLunas->total() }}</span>
-                    pinjaman lunas
+                    data
                 </p>
                 <div class="flex justify-center sm:justify-end w-full sm:w-auto">
                     {{ $pinjamansLunas->links('vendor.pagination.custom') }}

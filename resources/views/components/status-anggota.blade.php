@@ -1,4 +1,7 @@
-@props(['status'])
+@props([
+    'status',        // status anggota: aktif, cuti, tugas_belajar, tidak_aktif
+    'alasan' => null // opsional: pensiun, mutasi, dll
+])
 
 @php
 $map = [
@@ -11,5 +14,11 @@ $map = [
 
 <span class="px-2 py-1 rounded text-xs font-semibold
     {{ $map[$status] ?? 'bg-gray-100 text-gray-600' }}">
-    {{ ucfirst(str_replace('_',' ', $status)) }}
+    {{ ucfirst(str_replace('_', ' ', $status)) }}
+    @if($status === 'tidak_aktif' && $alasan)
+        <span class="text-xs text-gray-500 italic">
+            ({{ ucfirst($alasan) }})
+        </span>
+    @endif
 </span>
+
