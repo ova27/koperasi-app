@@ -131,38 +131,30 @@
 
         {{-- PAGINATION --}}
         @if($simpanan->hasPages())
-            <div class="mt-6 flex justify-center">
-                <div class="flex items-center gap-2">
-                    {{-- Previous --}}
-                    @if($simpanan->onFirstPage())
-                        <span class="px-3 py-2 text-gray-400 cursor-not-allowed">← Sebelumnya</span>
-                    @else
-                        <a href="{{ $simpanan->previousPageUrl() }}" class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition-colors">← Sebelumnya</a>
-                    @endif
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-3 px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm">
 
-                    {{-- Page Numbers --}}
-                    <div class="flex gap-1">
-                        @foreach($simpanan->getUrlRange(1, $simpanan->lastPage()) as $page => $url)
-                            @if($page == $simpanan->currentPage())
-                                <span class="px-3 py-2 bg-blue-600 text-white rounded font-medium">{{ $page }}</span>
-                            @else
-                                <a href="{{ $url }}" class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded transition-colors">{{ $page }}</a>
-                            @endif
-                        @endforeach
-                    </div>
+                {{-- INFO --}}
+                <p class="text-sm text-gray-600">
+                    Menampilkan
+                    <span class="font-semibold text-gray-900">
+                        {{ $simpanan->firstItem() ?? 0 }}
+                    </span>
+                    –
+                    <span class="font-semibold text-gray-900">
+                        {{ $simpanan->lastItem() ?? 0 }}
+                    </span>
+                    dari
+                    <span class="font-semibold text-gray-900">
+                        {{ $simpanan->total() }}
+                    </span>
+                    data
+                </p>
 
-                    {{-- Next --}}
-                    @if($simpanan->hasMorePages())
-                        <a href="{{ $simpanan->nextPageUrl() }}" class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition-colors">Selanjutnya →</a>
-                    @else
-                        <span class="px-3 py-2 text-gray-400 cursor-not-allowed">Selanjutnya →</span>
-                    @endif
+                {{-- PAGINATION --}}
+                <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+                    {{ $simpanan->links('vendor.pagination.custom') }}
                 </div>
-            </div>
 
-            {{-- Page Info --}}
-            <div class="mt-3 text-center text-sm text-gray-500">
-                Menampilkan {{ $simpanan->firstItem() }} hingga {{ $simpanan->lastItem() }} dari {{ $simpanan->total() }} data
             </div>
         @endif
     </div>

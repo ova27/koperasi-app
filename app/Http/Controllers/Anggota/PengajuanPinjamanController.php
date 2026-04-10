@@ -19,7 +19,7 @@ class PengajuanPinjamanController extends Controller
 
         $riwayatPengajuan = PengajuanPinjaman::where('anggota_id', $anggota->id)
             ->orderByDesc('created_at')
-            ->get();
+            ->paginate(10);
 
         $pengajuanAktif = $riwayatPengajuan->first(fn ($p) =>
             in_array($p->status, ['diajukan', 'disetujui'])

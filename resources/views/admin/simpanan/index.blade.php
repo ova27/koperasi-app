@@ -181,7 +181,7 @@
         <div onclick="toggleSection('ambil')" 
             class="p-2 cursor-pointer flex justify-between items-center">
             <h2 class="section-title">
-                Pengambilan Simpanan
+                Pengambilan Simpanan Sukarela
             </h2>
             <span id="icon-ambil">▼</span>
         </div>

@@ -93,7 +93,7 @@
 
     @if($pengajuans->hasPages())
         {{-- PAGINATION --}}
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2 mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2 mb-1">
             <p class="text-sm text-gray-600">
                 Menampilkan
                 <span class="font-semibold text-gray-900">{{ $pengajuans->firstItem() ?? 0 }}</span>
@@ -115,7 +115,7 @@
 {{-- Tampilan Riwayat Approval --}}
 <div class="pt-6 border-t border-gray-200">
     <h2 class="section-title">Riwayat Approval</h2>
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto mb-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto mb-2">
         <table class="min-w-full text-sm">
             <thead class="bg-gray-50 border-b">
                 <tr class="text-gray-600">

@@ -9,10 +9,12 @@
 
 <body class="bg-slate-100 text-slate-800">
 
-<div class="flex min-h-screen">
-
+<div class="flex min-h-screen relative">
     {{-- SIDEBAR --}}
-    <aside class="w-64 rounded-r-xl bg-gradient-to-b from-blue-50 via-teal-50 to-green-50 border-r border-gray-200 shadow-sm px-4 pt-5 pb-6">
+    <aside id="sidebar"
+            class="w-64 transition-all duration-300 overflow-hidden
+            bg-gradient-to-b from-blue-50 via-teal-50 to-green-50 border-r border-gray-200 shadow-sm px-4 pt-5 pb-6">
+
         @role('admin')
             @include('layouts.sidebar.admin')
         @elserole('anggota')
@@ -20,8 +22,14 @@
         @endrole
     </aside>
 
+    <button id="toggleSidebar"
+        class="absolute top-8 -translate-y-1/2 left-64 z-50 rounded-md
+            transition-all duration-300 shadow-md w-9 h-9 flex items-center justify-center hover:bg-gray-200">
+        ☰
+    </button>
+
     {{-- WRAPPER KANAN --}}
-    <div class="flex-1 flex flex-col">
+    <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300">
 
         {{-- TOP NAVIGATION --}}
         <header class="bg-white border-b shadow-sm">
@@ -73,48 +81,7 @@
     </div>
 </div>
 
-{{-- ================= MODAL KONFIRMASI STATUS ================= --}}
-<div id="modal-confirm-status"
-     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
 
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6">
-
-        <h3 class="text-lg font-semibold text-red-600 mb-2">
-            Konfirmasi Pensiun / Mutasi
-        </h3>
-
-        <p class="text-sm text-gray-700 mb-4">
-            Anda akan mengubah status anggota menjadi
-            <b>Pensiun / Mutasi</b>.<br>
-            Tindakan ini akan:
-        </p>
-
-        <ul class="text-sm text-gray-600 list-disc list-inside mb-4">
-            <li>Menonaktifkan akses login anggota</li>
-            <li>Menghentikan seluruh transaksi</li>
-            <li>Menjadikan anggota sebagai arsip</li>
-        </ul>
-
-        <div class="bg-yellow-50 border border-yellow-300 p-3 rounded mb-4 text-sm">
-            <b>Pastikan:</b> seluruh simpanan anggota
-            <u>sudah dikembalikan</u>.
-        </div>
-
-        <div class="flex gap-3 justify-end">
-            <button type="button"
-                    onclick="closeConfirmStatus()"
-                    class="px-4 py-2 bg-gray-200 rounded">
-                Batal
-            </button>
-
-            <button type="button"
-                    onclick="confirmStatusChange()"
-                    class="px-4 py-2 bg-red-600 text-white rounded">
-                Ya, Simpanan Sudah Dikembalikan
-            </button>
-        </div>
-    </div>
-</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -191,20 +158,6 @@ function closeModal() {
 
     });
 
-    function openConfirmStatusModal() {
-        const modal = document.getElementById('modal-confirm-status');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-
-    function closeConfirmStatus() {
-        const modal = document.getElementById('modal-confirm-status');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-
-        pendingSubmitForm = null;
-    }
-
     function confirmStatusChange() {
         if (pendingSubmitForm) {
             pendingSubmitForm.submit(); // lanjut submit asli
@@ -212,6 +165,30 @@ function closeModal() {
     }
 </script>
 
+{{-- TOGGLE SIDEBAR --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggleSidebar');
+
+        if (!sidebar || !toggleBtn) return;
+
+        // load state
+        if (localStorage.getItem('sidebar') === 'collapsed') {
+            sidebar.classList.add('sidebar-collapsed');
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-collapsed');
+
+            if (sidebar.classList.contains('sidebar-collapsed')) {
+                localStorage.setItem('sidebar', 'collapsed');
+            } else {
+                localStorage.setItem('sidebar', 'expanded');
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

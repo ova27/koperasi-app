@@ -63,20 +63,23 @@ class AnggotaController extends Controller
         $canViewFullDetails = Gate::allows('manage simpanan anggota') || 
                              Gate::allows('nonaktifkan anggota');
 
-        $anggota->load([
-            'simpanans' => fn ($q) => $q->orderByDesc('tanggal'),
-            'pinjamans',
-        ]);
+        $anggota->load(['pinjamans']);
+        $jenis = $request->get('jenis'); // pokok / wajib / sukarela
+        $simpanans = $anggota->simpanans()
+            ->when($jenis, fn($q) => $q->where('jenis_simpanan', $jenis))
+            ->orderByDesc('tanggal')
+            ->paginate(5, ['*'], 'simpanan_page')
+            ->withQueryString();
 
         $saldoSimpanan = $simpananService->saldoPerJenis($anggota->id);
         $ringkasanPinjaman = $pinjamanService->ringkasanAnggota($anggota->id);
+        
         // ambil alasan keluar terakhir untuk semua anggota yang tidak aktif
-        $alasanKeluarMap = \App\Models\Simpanan::whereIn('anggota_id', $anggota->pluck('id'))
+        $alasanKeluarMap = \App\Models\Simpanan::where('anggota_id', $anggota->id)
                         ->whereIn('alasan', ['pensiun', 'mutasi'])
-                        ->orderByDesc('tanggal')
-                        ->get()
-                        ->groupBy('anggota_id')
-                        ->map(fn($items) => $items->first()->alasan);
+                        ->latest('tanggal')
+                        ->first()?->alasan;
+
         // MODAL
         if ($request->ajax()) {
 
@@ -94,7 +97,8 @@ class AnggotaController extends Controller
                 'total',
                 'ringkasanPinjaman',
                 'canViewFullDetails',
-                'alasanKeluarMap'
+                'alasanKeluarMap',
+                'simpanans'
             ));
         }
 
@@ -104,7 +108,8 @@ class AnggotaController extends Controller
             'saldoSimpanan',
             'ringkasanPinjaman',
             'canViewFullDetails',
-            'alasanKeluar'
+            'alasanKeluarMap',
+            'simpanans'
         ));
     }
 

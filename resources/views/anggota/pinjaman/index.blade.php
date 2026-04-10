@@ -459,6 +459,25 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- PAGINATION --}}
+        @if($pinjamanLunas->hasPages())
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2 px-2">
+                <p class="text-sm text-gray-600">
+                    Menampilkan
+                    <span class="font-semibold text-gray-900">{{ $pinjamanLunas->firstItem() ?? 0 }}</span>
+                    sampai
+                    <span class="font-semibold text-gray-900">{{ $pinjamanLunas->lastItem() ?? 0 }}</span>
+                    dari
+                    <span class="font-semibold text-gray-900">{{ $pinjamanLunas->total() }}</span>
+                    data
+                </p>
+
+                <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+                    {{ $pinjamanLunas->links('vendor.pagination.custom') }}
+                </div>
+            </div>
+        @endif
     </div>
 
 </div>

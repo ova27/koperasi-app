@@ -101,7 +101,7 @@
                 {{-- TIDAK BOLEH AJUKAN --}}
                 <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-xl p-4">
                     <div class="font-medium mb-2">
-                        Pengajuan Baru Tidak Dapat Dilakukan
+                        Pengisian Form Pengajuan Tidak Dapat Dilakukan
                     </div>
 
                     @if ($pengajuanAktif && $pengajuanAktif->status === 'diajukan')
@@ -282,6 +282,25 @@
                     </tbody>
                 </table>
             </div>
+            
+            {{-- PAGINATION --}}
+            @if($riwayatPengajuan->hasPages())
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2 px-2">
+                    <p class="text-sm text-gray-600">
+                        Menampilkan
+                        <span class="font-semibold text-gray-900">{{ $riwayatPengajuan->firstItem() ?? 0 }}</span>
+                        sampai
+                        <span class="font-semibold text-gray-900">{{ $riwayatPengajuan->lastItem() ?? 0 }}</span>
+                        dari
+                        <span class="font-semibold text-gray-900">{{ $riwayatPengajuan->total() }}</span>
+                        data
+                    </p>
+
+                    <div class="flex justify-center sm:justify-end w-full sm:w-auto">
+                        {{ $riwayatPengajuan->links('vendor.pagination.custom') }}
+                    </div>
+                </div>
+            @endif
         @endif
     </div>
 </div>

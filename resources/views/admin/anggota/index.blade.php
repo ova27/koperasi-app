@@ -7,7 +7,7 @@
 <div class="space-y-6">
 
     {{-- HEADER --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <form id="form-search-anggota" method="GET" action="{{ route('admin.anggota.index') }}" class="w-full sm:w-80">
             <label for="search" class="sr-only">Cari anggota</label>
 
@@ -59,7 +59,7 @@
     @endif
 
     {{-- TABEL --}}
-    <div class="overflow-x-auto bg-white border rounded-lg">
+    <div class="overflow-x-auto bg-white border rounded-lg shadow-sm">
         <table class="min-w-full text-sm">
             <thead class="bg-gray-50 border-b">
                 <tr class="text-gray-600">
