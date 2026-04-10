@@ -37,7 +37,7 @@
         </header>
 
         {{-- CONTENT --}}
-        <main class="flex-1 p-6">
+        <main class="flex-1 p-6 bg-stone-50 border-r border-gray-200 shadow-sm">
             <div class="max-w-7xl mx-auto">
 
                 {{-- PAGE TITLE --}}
@@ -48,7 +48,7 @@
                 @endif
 
                 {{-- CARD CONTENT --}}
-                <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="bg-white border border-gray-200 rounded-xl p-6">
                     @yield('content')
                 </div>
 

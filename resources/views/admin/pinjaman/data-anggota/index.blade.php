@@ -5,6 +5,27 @@
 @section('content')
 <div class="space-y-6">
 
+<div x-data="{ tab: 'aktif' }" class="space-y-4">
+
+    {{-- ================= TAB NAVIGATION ================= --}}
+    <div class="border-b flex gap-6 text-sm font-medium">
+        <button @click="tab = 'aktif'"
+            :class="tab === 'aktif' 
+                ? 'border-b-2 border-black text-black font-medium' 
+                : 'text-gray-400'"
+            class="pb-2">
+            Pinjaman Aktif
+        </button>
+
+        <button @click="tab = 'lunas'"
+            :class="tab === 'lunas' 
+                ? 'border-b-2 border-black text-black font-medium' 
+                : 'text-gray-400'"
+            class="pb-2">
+            Pinjaman Lunas
+        </button>
+    </div>
+
     {{-- FLASH MESSAGE --}}
     @if(session('success'))
         <div id="flash-message" class="px-4 py-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center justify-between">
@@ -26,15 +47,20 @@
                 ×
             </button>
         </div>
-    @endif
+    @endif   
 
     {{-- TABLE PINJAMAN AKTIF --}}
-    <div>
-        <h2 class="section-title">Pinjaman Aktif Anggota</h2>
+    <div x-show="tab === 'aktif'" 
+        x-transition.opacity.duration.200ms
+        class="space-y-4 border rounded-xl p-4">
+        <h2 class="font-semibold text-gray-800 text-sm">
+            Pinjaman Aktif Anggota
+        </h2>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 border-b">
                     <tr class="text-gray-600">
+                        <th No class="p-3 border-b text-left">No</th>
                         <th class="p-3 border-b text-left">Anggota</th>
                         <th class="p-3 border-b text-left">Tanggal Pinjam</th>
                         <th class="p-3 border-b text-right">Jumlah Pinjaman</th>
@@ -47,6 +73,7 @@
                 <tbody class="divide-y">
                     @forelse($pinjamansAktif as $pinjaman)
                         <tr class="hover:bg-gray-50 transition">
+                            <td class="p-3 border-b">{{ $loop->iteration }}</td>
                             <td class="p-3 border-b">
                                 <div class="font-medium text-gray-800">
                                     {{ $pinjaman->anggota->nama ?? '-' }}
@@ -133,12 +160,18 @@
     </div>
 
     {{-- TABLE PINJAMAN LUNAS --}}
-    <div class="pt-6 border-t border-gray-200">
-        <h2 class="section-title">Pinjaman Lunas Anggota</h2>
+    <div x-show="tab === 'lunas'" 
+        x-transition.opacity.duration.200ms
+         class="space-y-4 border rounded-xl p-4">
+        
+        <h2 class="font-semibold text-gray-800 text-sm">
+            Pinjaman Lunas Anggota
+        </h2>
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 border-b">
                     <tr class="text-gray-600">
+                        <th No class="p-3 border-b text-left">No</th>
                         <th class="p-3 border-b text-left">Anggota</th>
                         <th class="p-3 border-b text-left">Tanggal Pinjam</th>
                         <th class="p-3 border-b text-left">Tanggal Lunas</th>
@@ -153,6 +186,7 @@
                         {{-- BARIS PINJAMAN LUNAS --}}
                         {{-- ========================= --}}
                         <tr class="border-t hover:bg-gray-50 transition-colors duration-200">
+                            <td class="p-3 border-b">{{ $loop->iteration }}</td>
                             <td class="p-3 border-b">
                                 <div class="font-medium text-gray-800">
                                     {{ $pinjaman->anggota->nama ?? '-' }}
@@ -319,7 +353,7 @@
 
         {{-- PAGINATION PINJAMAN LUNAS --}}
         @if($pinjamansLunas->hasPages())
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2 mt-2">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2">
                 <p class="text-sm text-gray-600">
                     Menampilkan
                     <span class="font-semibold text-gray-900">{{ $pinjamansLunas->firstItem() ?? 0 }}</span>
@@ -335,7 +369,7 @@
             </div>
         @endif
     </div>
-
+</div>
 </div>
 
 {{-- MODAL CICILAN --}}

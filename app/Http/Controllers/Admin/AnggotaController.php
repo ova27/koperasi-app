@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
-use App\Services\SimpananService;
+use App\Models\Pinjaman;
 use App\Services\PinjamanService;
+use App\Services\SimpananService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -63,7 +64,29 @@ class AnggotaController extends Controller
         $canViewFullDetails = Gate::allows('manage simpanan anggota') || 
                              Gate::allows('nonaktifkan anggota');
 
-        $anggota->load(['pinjamans']);
+        $status = $request->get('status_pinjaman');
+
+        // 🔹 Query dasar (biar gak nulis ulang)
+        $queryPinjaman = Pinjaman::with('transaksi')
+                        ->where('anggota_id', $anggota->id);
+        $pinjamans = (clone $queryPinjaman)
+                    ->when($status, fn($q) => $q->where('status', $status))
+                    ->orderByDesc('tanggal_pinjam')
+                    ->paginate(5, ['*'], 'pinjaman_page')
+                    ->withQueryString();
+
+        $pinjamanAktif = (clone $queryPinjaman)
+                    ->whereIn('status', ['aktif', 'pengajuan', 'disetujui'])
+                    ->orderByRaw("CASE WHEN status = 'aktif' THEN 1 ELSE 2 END")
+                    ->orderByDesc('tanggal_pinjam')
+                    ->get();
+
+        $pinjamanLunas = (clone $queryPinjaman)
+                    ->where('status', 'lunas')
+                    ->orderByDesc('tanggal_pinjam')
+                    ->paginate(10, ['*'], 'pinjaman_lunas_page')
+                    ->withQueryString();
+            
         $jenis = $request->get('jenis'); // pokok / wajib / sukarela
         $simpanans = $anggota->simpanans()
             ->when($jenis, fn($q) => $q->where('jenis_simpanan', $jenis))
@@ -98,7 +121,10 @@ class AnggotaController extends Controller
                 'ringkasanPinjaman',
                 'canViewFullDetails',
                 'alasanKeluarMap',
-                'simpanans'
+                'simpanans',
+                'pinjamans',
+                'pinjamanAktif',
+                'pinjamanLunas'
             ));
         }
 
@@ -109,7 +135,10 @@ class AnggotaController extends Controller
             'ringkasanPinjaman',
             'canViewFullDetails',
             'alasanKeluarMap',
-            'simpanans'
+            'simpanans',
+            'pinjamans',
+            'pinjamanAktif',
+            'pinjamanLunas'
         ));
     }
 

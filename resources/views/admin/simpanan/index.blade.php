@@ -6,6 +6,38 @@
 @section('content')
 <div class="space-y-6">
 
+<div x-data="{ tab: 'wajib' }" class="space-y-4">
+
+    {{-- ================= TAB NAVIGATION ================= --}}
+    <div class="border-b flex gap-6 text-sm font-medium">
+        <button @click="tab = 'wajib'"
+            :class="tab === 'wajib' ? 'border-b-2 border-black text-black font-medium' : 'text-gray-400'"
+            class="pb-2">
+            Wajib
+        </button>
+
+        <button @click="tab = 'manual'"
+            :class="tab === 'manual' ? 'border-b-2 border-black text-black font-medium' : 'text-gray-400'"
+            class="pb-2">
+            Manual
+        </button>
+
+        <button @click="tab = 'ambil'"
+            :class="tab === 'ambil' ? 'border-b-2 border-black text-black font-medium' : 'text-gray-400'"
+            class="pb-2">
+            Pengambilan
+        </button>
+
+        @can('nonaktifkan anggota')
+        <button @click="tab = 'keluar'"
+            :class="tab === 'keluar' ? 'border-b-2 border-red-600 text-red-600' : 'text-gray-400'"
+            class="pb-2">
+            Pensiun / Mutasi
+        </button>
+        @endcan
+    </div>
+
+    
     {{-- FLASH MESSAGE --}}
     @if(session('success'))
         <div id="flash-message" class="px-4 py-4 mt-6 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex justify-between items-center">
@@ -25,338 +57,323 @@
     {{-- ================= --}}
     {{-- A. SIMPANAN WAJIB --}}
     {{-- ================= --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
+    <div x-show="tab === 'wajib'" 
+        x-transition.opacity.duration.200ms
+        class="bg-white border rounded-lg p-4 space-y-4">
                     
-        <div onclick="toggleSection('wajib')" 
-            class="p-2 cursor-pointer flex justify-between items-center">
-            <h2 class="section-title">Simpanan Wajib Bulanan (Generate Otomatis)</h2>
-            <span id="icon-wajib">▼</span>
-        </div>
-        <div id="content-wajib" class="px-2 pb-2 hidden transition-all duration-300">
+        <h2 class="font-semibold text-gray-800 text-sm">
+            Input Simpanan Wajib (Bulanan)
+        </h2>
+        
+        @if ($sudahGenerateWajib)
+            <div class="text-sm italic">
+                Simpanan wajib bulan ini sudah digenerate.
+            </div>
+        @else
+            <div class="text-sm italic">
+                Simpanan wajib bulan ini belum digenerate.
+            </div>
+        @endif
+        <span class="text-xs text-gray-500 mb-4 block italic">
+            Bulan: <strong>{{ \Carbon\Carbon::parse($bulan)->format('F Y') }}</strong>
+        </span>
+
+        <form action="{{ route('admin.simpanan.generate-wajib') }}" method="POST">
+            @csrf
+            <input type="hidden" name="bulan" value="{{ $bulan }}">
+
             @if ($sudahGenerateWajib)
-                <div class="text-sm italic">
-                    Simpanan wajib bulan ini sudah digenerate.
-                </div>
+                <button
+                    type="button"
+                    disabled
+                    class="px-4 py-2 text-sm font-semibold text-white bg-gray-400 rounded-lg cursor-not-allowed shadow-sm flex items-center gap-2"
+                >
+                    Sudah Digenerate
+                </button>
             @else
-                <div class="text-sm italic">
-                    Simpanan wajib bulan ini belum digenerate.
-                </div>
+                <button
+                    type="submit"
+                    class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
+                >
+                    Generate Simpanan Wajib
+                </button>
             @endif
-            <span class="text-xs text-gray-500 mb-4 block italic">
-                Bulan: <strong>{{ \Carbon\Carbon::parse($bulan)->format('F Y') }}</strong>
-            </span>
-
-            <form action="{{ route('admin.simpanan.generate-wajib') }}" method="POST">
-                @csrf
-                <input type="hidden" name="bulan" value="{{ $bulan }}">
-
-                @if ($sudahGenerateWajib)
-                    <button
-                        type="button"
-                        disabled
-                        class="px-4 py-2 text-sm font-semibold text-white bg-gray-400 rounded-lg cursor-not-allowed shadow-sm flex items-center gap-2"
-                    >
-                        Sudah Digenerate
-                    </button>
-                @else
-                    <button
-                        type="submit"
-                        class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
-                    >
-                        Generate Simpanan Wajib
-                    </button>
-                @endif
-            </form>
-        </div>
+        </form>
+        
     </div>
 
 
     {{-- ======================== --}}
     {{-- B. INPUT SIMPANAN MANUAL --}}
     {{-- ======================== --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
-    
-        <div onclick="toggleSection('manual')" 
-            class="p-2 cursor-pointer flex justify-between items-center">
-            <h2 class="section-title mb-2">
-                Tambah Simpanan (Manual)
-            </h2>
-            <span id="icon-manual">▼</span>
-        </div>
+    <div x-show="tab === 'manual'" 
+        x-transition.opacity.duration.200ms
+        class="bg-white border rounded-lg p-4 space-y-4">
 
-        <div id="content-manual" class="px-2 pb-2 hidden transition-all duration-300">
-            <p class="text-sm text-gray-500 mb-4 leading-relaxed">
-                Digunakan untuk:
-                <br>• Simpanan sukarela
-                <br>• Simpanan wajib anggota baru / terlewat
-                <br>• Simpanan pokok (1x di awal keanggotaan)
-            </p>
+        <h2 class="font-semibold text-gray-800 text-sm">
+            Input Simpanan (Manual)
+        </h2>
 
-            <form method="POST" action="{{ route('admin.simpanan.store-manual') }}" class="space-y-4">
-                @csrf
+        <p class="text-sm text-gray-500 mb-4 leading-relaxed">
+            Digunakan untuk:
+            <br>• Simpanan sukarela
+            <br>• Simpanan wajib anggota baru / terlewat
+            <br>• Simpanan pokok (1x di awal keanggotaan)
+        </p>
 
-                {{-- ANGGOTA --}}
-                <div>
-                    <label class="text-xs text-gray-500">Anggota</label>
-                    <select name="anggota_id" 
-                            id="anggotaSelectSimpan"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none" required>
-                        <option value="" disabled selected>Pilih Anggota</option>
-                        @foreach ($anggotas as $anggota)
-                            <option value="{{ $anggota->id }}">
-                                {{ $anggota->nama }}
-                            </option>
-                        @endforeach
-                    </select>
+        <form method="POST" action="{{ route('admin.simpanan.store-manual') }}" class="space-y-4">
+            @csrf
+
+            {{-- ANGGOTA --}}
+            <div>
+                <label class="text-xs text-gray-500">Anggota</label>
+                <select name="anggota_id" 
+                        id="anggotaSelectSimpan"
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none" required>
+                    <option value="" disabled selected>Pilih Anggota</option>
+                    @foreach ($anggotas as $anggota)
+                        <option value="{{ $anggota->id }}">
+                            {{ $anggota->nama }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div id="saldoBoxSimpan" class="hidden mt-3 p-3 bg-gray-50 border rounded-lg text-sm">
+                <div class="flex justify-between">
+                    <span>Pokok</span>
+                    <span id="saldoPokokSimpan">Rp 0</span>
                 </div>
-
-                <div id="saldoBoxSimpan" class="hidden mt-3 p-3 bg-gray-50 border rounded-lg text-sm">
-                    <div class="flex justify-between">
-                        <span>Pokok</span>
-                        <span id="saldoPokokSimpan">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Wajib</span>
-                        <span id="saldoWajibSimpan">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Sukarela</span>
-                        <span id="saldoSukarelaSimpan">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between border-t mt-2 pt-2 font-bold">
-                        <span>Total</span>
-                        <span id="saldoTotalSimpan">Rp 0</span>
-                    </div>
+                <div class="flex justify-between">
+                    <span>Wajib</span>
+                    <span id="saldoWajibSimpan">Rp 0</span>
                 </div>
-
-                {{-- JENIS --}}
-                <div>
-                    <label class="text-xs text-gray-500">Jenis Simpanan</label>
-                    <select name="jenis_simpanan" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
-                        <option value="" disabled selected>Pilih Jenis</option>
-                        <option value="pokok">Pokok</option>
-                        <option value="wajib">Wajib</option>
-                        <option value="sukarela">Sukarela</option>
-                    </select>
+                <div class="flex justify-between">
+                    <span>Sukarela</span>
+                    <span id="saldoSukarelaSimpan">Rp 0</span>
                 </div>
-
-                {{-- JUMLAH --}}
-                <div>
-                    <label class="text-xs text-gray-500">Jumlah</label>
-                    <input
-                        type="number"
-                        placeholder="Masukkan Jumlah Simpanan"
-                        name="jumlah"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
-                        required>
+                <div class="flex justify-between border-t mt-2 pt-2 font-bold">
+                    <span>Total</span>
+                    <span id="saldoTotalSimpan">Rp 0</span>
                 </div>
+            </div>
 
-                {{-- KETERANGAN --}}
-                <div>
-                    <label class="text-xs text-gray-500">Keterangan (opsional)</label>
-                    <input
-                        type="text"
-                        placeholder="Keterangan"
-                        name="keterangan"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
-                    >
-                </div>
+            {{-- JENIS --}}
+            <div>
+                <label class="text-xs text-gray-500">Jenis Simpanan</label>
+                <select name="jenis_simpanan" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
+                    <option value="" disabled selected>Pilih Jenis</option>
+                    <option value="pokok">Pokok</option>
+                    <option value="wajib">Wajib</option>
+                    <option value="sukarela">Sukarela</option>
+                </select>
+            </div>
 
-                <div class="pt-2">
-                    <button
-                        type="submit"
-                        class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm"
-                    >
-                        Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
+            {{-- JUMLAH --}}
+            <div>
+                <label class="text-xs text-gray-500">Jumlah</label>
+                <input
+                    type="number"
+                    placeholder="Masukkan Jumlah Simpanan"
+                    name="jumlah"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                    required>
+            </div>
+
+            {{-- KETERANGAN --}}
+            <div>
+                <label class="text-xs text-gray-500">Keterangan (opsional)</label>
+                <input
+                    type="text"
+                    placeholder="Keterangan"
+                    name="keterangan"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                >
+            </div>
+
+            <div class="pt-2">
+                <button
+                    type="submit"
+                    class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm"
+                >
+                    Simpan
+                </button>
+            </div>
+        </form>
+        
     </div>
 
     {{-- ======================== --}}
     {{-- C. PENGAMBILAN SIMPANAN  --}}
     {{-- ======================== --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
-        <div onclick="toggleSection('ambil')" 
-            class="p-2 cursor-pointer flex justify-between items-center">
-            <h2 class="section-title">
-                Pengambilan Simpanan Sukarela
-            </h2>
-            <span id="icon-ambil">▼</span>
-        </div>
-        <div id="content-ambil" class="px-2 pb-2 hidden transition-all duration-300">
-            <p class="text-sm text-gray-500 mb-4">
-                Digunakan untuk penarikan simpanan sukarela anggota.
-            </p>
+    <div x-show="tab === 'ambil'" 
+        x-transition.opacity.duration.200ms
+        class="bg-white border rounded-lg p-4 space-y-4">
 
-            <form method="POST" action="{{ route('admin.simpanan.ambil') }}" class="space-y-4">
-                @csrf
+        <h2 class="font-semibold text-gray-800 text-sm">
+            Pengambilan Simpanan Sukarela Anggota
+        </h2>
 
-                {{-- ANGGOTA --}}
-                <div>
-                    <label class="text-xs text-gray-500">Anggota</label>
-                    <select name="anggota_id" 
-                            id="anggotaSelectAmbil"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none" required>
-                        <option value="" disabled selected>Pilih Anggota</option>
-                        @foreach ($anggotas as $anggota)
-                            <option value="{{ $anggota->id }}">
-                                {{ $anggota->nama }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div id="saldoBoxAmbil" class="hidden mt-3 p-3 bg-gray-50 border rounded-lg text-sm">
-                    <div class="flex justify-between">
-                        <span>Pokok</span>
-                        <span id="saldoPokokAmbil">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Wajib</span>
-                        <span id="saldoWajibAmbil">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Sukarela</span>
-                        <span id="saldoSukarelaAmbil" class="font-semibold">Rp 0</span>
-                    </div>
-                    <div class="flex justify-between border-t mt-2 pt-2 font-bold">
-                        <span>Total</span>
-                        <span id="saldoTotalAmbil">Rp 0</span>
-                    </div>
-                </div>
+        <form method="POST" action="{{ route('admin.simpanan.ambil') }}" class="space-y-4">
+            @csrf
 
-                {{-- JUMLAH --}}
-                <div>
-                    <label class="text-xs text-gray-500">Jumlah</label>
-                    <input
-                        type="number"
-                        name="jumlah"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none"
-                        required
-                    >
+            {{-- ANGGOTA --}}
+            <div>
+                <label class="text-xs text-gray-500">Anggota</label>
+                <select name="anggota_id" 
+                        id="anggotaSelectAmbil"
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none" required>
+                    <option value="" disabled selected>Pilih Anggota</option>
+                    @foreach ($anggotas as $anggota)
+                        <option value="{{ $anggota->id }}">
+                            {{ $anggota->nama }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div id="saldoBoxAmbil" class="hidden mt-3 p-3 bg-gray-50 border rounded-lg text-sm">
+                <div class="flex justify-between">
+                    <span>Pokok</span>
+                    <span id="saldoPokokAmbil">Rp 0</span>
                 </div>
+                <div class="flex justify-between">
+                    <span>Wajib</span>
+                    <span id="saldoWajibAmbil">Rp 0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Sukarela</span>
+                    <span id="saldoSukarelaAmbil" class="font-semibold">Rp 0</span>
+                </div>
+                <div class="flex justify-between border-t mt-2 pt-2 font-bold">
+                    <span>Total</span>
+                    <span id="saldoTotalAmbil">Rp 0</span>
+                </div>
+            </div>
 
-                {{-- KETERANGAN --}}
-                <div>
-                    <label class="text-xs text-gray-500">Keterangan</label>
-                    <input
-                        type="text"
-                        name="keterangan"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none"
-                        required
-                    >
-                </div>
+            {{-- JUMLAH --}}
+            <div>
+                <label class="text-xs text-gray-500">Jumlah</label>
+                <input
+                    type="number"
+                    name="jumlah"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none"
+                    required
+                >
+            </div>
 
-                <div class="pt-2">
-                    <button
-                        type="submit"
-                        class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm"
-                    >
-                        Ambil Simpanan
-                    </button>
-                </div>
-            </form>
-        </div>
+            {{-- KETERANGAN --}}
+            <div>
+                <label class="text-xs text-gray-500">Keterangan</label>
+                <input
+                    type="text"
+                    name="keterangan"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none"
+                    required
+                >
+            </div>
+
+            <div class="pt-2">
+                <button
+                    type="submit"
+                    class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm"
+                >
+                    Ambil Simpanan
+                </button>
+            </div>
+        </form>
     </div>
 
     {{-- ========================== --}}
     {{-- D. PROSES PENSIUN / MUTASI --}}
     {{-- ========================== --}}
-    @can('nonaktifkan anggota')
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            {{-- HEADER --}}
-            <div onclick="toggleSection('keluar')" 
-                class="p-5 cursor-pointer flex justify-between items-center">
-                <h2 class="section-title">
-                    Proses Pensiun / Mutasi
-                </h2>
-                <span id="icon-keluar">▼</span>
-            </div>
+     @can('nonaktifkan anggota')
+        <div x-show="tab === 'keluar'" 
+            x-transition.opacity.duration.200ms
+            class="bg-white border rounded-lg p-4 space-y-4">
+
+            <h2 class="font-semibold text-red-600 text-sm">
+                Proses Keluar Anggota Karena Pensiun / Mutasi
+            </h2>
 
             {{-- CONTENT --}}
-            <div id="content-keluar" class="px-5 pb-5 hidden space-y-4">
+            <p class="text-sm text-gray-500">
+                Proses ini akan:
+                <br>• Menonaktifkan anggota
+                <br>• Mengembalikan seluruh simpanan
+            </p>
 
-                <p class="text-sm text-gray-500">
-                    Proses ini akan:
-                    <br>• Menonaktifkan anggota
-                    <br>• Mengembalikan seluruh simpanan
-                </p>
+            {{-- PILIH ANGGOTA --}}
+            <div>
+                <label class="text-xs text-gray-500">Anggota</label>
+                <select id="anggotaSelectKeluar"
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                    <option value="" disabled selected>Pilih Anggota</option>
+                    @foreach ($anggotas as $anggota)
+                        <option value="{{ $anggota->id }}">
+                            {{ $anggota->nama }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-                {{-- PILIH ANGGOTA --}}
+            {{-- SALDO --}}
+            <div id="saldoBoxKeluar" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm space-y-1">
+                <div class="flex justify-between">
+                    <span>Pokok</span>
+                    <span id="saldoPokokKeluar">Rp 0</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span>Wajib</span>
+                    <span id="saldoWajibKeluar">Rp 0</span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span>Sukarela</span>
+                    <span id="saldoSukarelaKeluar">Rp 0</span>
+                </div>
+
+                <div class="flex justify-between border-t pt-2 mt-2 font-bold text-red-600">
+                    <span>Total Dikembalikan</span>
+                    <span id="saldoTotalKeluar">Rp 0</span>
+                </div>
+            </div>
+
+            {{-- ALASAN --}}
+            <div class="space-y-3">
+
+                {{-- PILIH JENIS --}}
                 <div>
-                    <label class="text-xs text-gray-500">Anggota</label>
-                    <select id="anggotaSelectKeluar"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                        <option value="" disabled selected>Pilih Anggota</option>
-                        @foreach ($anggotas as $anggota)
-                            <option value="{{ $anggota->id }}">
-                                {{ $anggota->nama }}
-                            </option>
-                        @endforeach
+                    <label class="text-xs text-gray-500">Jenis Keluar</label>
+                    <select id="jenisKeluarSelect"
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none">
+                        <option value="" disabled selected>Pilih Jenis</option>
+                        <option value="pensiun">Pensiun</option>
+                        <option value="mutasi">Mutasi</option>
                     </select>
                 </div>
 
-                {{-- SALDO --}}
-                <div id="saldoBoxKeluar" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm space-y-1">
-                    <div class="flex justify-between">
-                        <span>Pokok</span>
-                        <span id="saldoPokokKeluar">Rp 0</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span>Wajib</span>
-                        <span id="saldoWajibKeluar">Rp 0</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span>Sukarela</span>
-                        <span id="saldoSukarelaKeluar">Rp 0</span>
-                    </div>
-
-                    <div class="flex justify-between border-t pt-2 mt-2 font-bold text-red-600">
-                        <span>Total Dikembalikan</span>
-                        <span id="saldoTotalKeluar">Rp 0</span>
-                    </div>
+                {{-- INPUT KETERANGAN TAMBAHAN --}}
+                <div>
+                    <label class="text-xs text-gray-500">Keterangan (opsional)</label>
+                    <input type="text"
+                        id="keteranganKeluar"
+                        placeholder="Contoh: pindah instansi"
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none">
                 </div>
 
-                {{-- ALASAN --}}
-                <div class="space-y-3">
-
-                    {{-- PILIH JENIS --}}
-                    <div>
-                        <label class="text-xs text-gray-500">Jenis Keluar</label>
-                        <select id="jenisKeluarSelect"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none">
-                            <option value="" disabled selected>Pilih Jenis</option>
-                            <option value="pensiun">Pensiun</option>
-                            <option value="mutasi">Mutasi</option>
-                        </select>
-                    </div>
-
-                    {{-- INPUT KETERANGAN TAMBAHAN --}}
-                    <div>
-                        <label class="text-xs text-gray-500">Keterangan (opsional)</label>
-                        <input type="text"
-                            id="keteranganKeluar"
-                            placeholder="Contoh: pindah instansi"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none">
-                    </div>
-
-                    {{-- INFO TOTAL --}}
-                    <div id="totalKeluarBox" class="hidden text-sm bg-gray-50 border p-3 rounded-lg">
-                        Total akan dikembalikan:
-                        <span id="totalKeluar" class="font-bold">Rp 0</span>
-                    </div>
-
-                    {{-- BUTTON --}}
-                    <button type="button"
-                        id="btnKeluar" disabled
-                        class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm cursor-not-allowed">
-                        Proses Keluar
-                    </button>
-
+                {{-- INFO TOTAL --}}
+                <div id="totalKeluarBox" class="hidden text-sm bg-gray-50 border p-3 rounded-lg">
+                    Total akan dikembalikan:
+                    <span id="totalKeluar" class="font-bold">Rp 0</span>
                 </div>
+
+                {{-- BUTTON --}}
+                <button type="button"
+                    id="btnKeluar" disabled
+                    class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm cursor-not-allowed">
+                    Proses Keluar
+                </button>
             </div>
         </div>
         <form id="formKeluar" method="POST" style="display:none;">
