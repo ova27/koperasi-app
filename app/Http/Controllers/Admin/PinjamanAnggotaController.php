@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\PengajuanPinjaman;
 use App\Models\Pinjaman;
 use Illuminate\Http\Request;
 
@@ -11,7 +12,6 @@ class PinjamanAnggotaController extends Controller
     public function index()
     {
         $this->authorize('view pengajuan pinjaman'); // Ketua & Bendahara only
-        
         $pinjamansAktif = Pinjaman::with(['anggota', 'transaksi'])
             ->where('status', 'aktif')
             ->orderBy('tanggal_pinjam', 'desc')
@@ -22,7 +22,24 @@ class PinjamanAnggotaController extends Controller
                         ->orderByDesc('updated_at') // ✅ pakai ini
                         ->paginate(10, ['*'], 'lunas_page');
 
-        return view('admin.pinjaman.data-anggota.index', compact('pinjamansAktif', 'pinjamansLunas'));
+        $pengajuans = PengajuanPinjaman::with('anggota')
+                    ->where('status', 'diajukan')
+                    ->orderBy('tanggal_pengajuan')
+                    ->paginate(5, ['*'], 'pengajuans_page');
+
+        $riwayatApproval = PengajuanPinjaman::whereIn('status', ['disetujui', 'ditolak', 'dicairkan'])
+                        ->orderBy('updated_at', 'desc')
+                        ->paginate(10, ['*'], 'riwayatApproval_page');
+
+        return view('admin.pinjaman.data-anggota.index', array_merge(
+            compact(
+                'pinjamansAktif',
+                'pinjamansLunas',
+                'pengajuans',
+                'riwayatApproval')))
+                ->with('tab', request()->get('tab'))
+                ->with('success', session('success'))
+                ->with('error', session('error'));
     }
 
     public function lunas()
@@ -34,7 +51,7 @@ class PinjamanAnggotaController extends Controller
             ->orderByDesc('updated_at')
             ->paginate(15);
 
-        return view('admin.pinjaman.data-anggota.lunas', compact('pinjamanLunas'));
+        return view('admin.pinjaman.data-anggota.lunas', compact('pinjamanLunas'))->with('tab', 'lunas');
     }
 
     public function show(Pinjaman $pinjaman)
@@ -74,7 +91,7 @@ class PinjamanAnggotaController extends Controller
         ]);
 
        return redirect()
-            ->route('admin.pinjaman.data-anggota.index')
+            ->route('admin.pinjaman.data-anggota.index', ['tab' => 'aktif'])
             ->with('success', 'Data pinjaman berhasil diperbarui');
     }
 }

@@ -1,5 +1,6 @@
 <div class="max-w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
     <div class="p-4 max-h-[70vh] overflow-y-auto mb-4">
+        
         {{-- Info Ringkas --}}
         <div class="rounded-lg p-2 mb-4 border-b border-gray-200">
             <div class="flex items-start justify-between gap-2">
@@ -27,6 +28,19 @@
         @else
             <div class="text-xs text-gray-400 italic mb-4 px-2">
                 Tidak ada pinjaman aktif
+            </div>
+        @endif
+
+        {{-- Flash Error --}}
+        @if (!empty($validationErrors))
+            <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                <ul class="list-disc pl-5 space-y-1">
+                    @foreach ($validationErrors as $fieldErrors)
+                        @foreach ($fieldErrors as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    @endforeach
+                </ul>
             </div>
         @endif
 

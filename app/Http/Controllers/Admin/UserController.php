@@ -17,14 +17,18 @@ class UserController extends Controller
         $search = request('search');
         $users = User::with('roles', 'anggota')
                 ->when($search, function ($query, $search) {
-                    return $query->where('name', 'like', "%{$search}%")
-                                 ->orWhere('email', 'like', "%{$search}%");
+                    return $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                    });
                 })
                 ->paginate(10);
 
+        $roles = Role::orderBy('name')->get();
         return view('admin.users.index', [
             'users' => $users,
-            'search' => $search
+            'search' => $search,
+            'roles' => $roles,
         ]);
     }
 

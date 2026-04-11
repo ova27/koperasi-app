@@ -74,9 +74,7 @@ class PencairanPinjamanController extends Controller
         
         $service->cairkan($pengajuan, Auth::id());
 
-        return redirect()
-            ->route('admin.pinjaman.pencairan.index')
-            ->with('success', 'Pinjaman berhasil dicairkan');
+        return back()->with('success', 'Pinjaman berhasil dicairkan');
     }
 
     public function batalPencairan(PengajuanPinjaman $pengajuan)

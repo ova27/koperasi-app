@@ -12,20 +12,20 @@ use Illuminate\Support\Facades\Auth;
 
 class ApprovalPinjamanController extends Controller
 {
-    public function index()
-    {
-        $this->authorize('view pengajuan pinjaman');
-        $pengajuans = PengajuanPinjaman::with('anggota')
-            ->where('status', 'diajukan')
-            ->orderBy('tanggal_pengajuan')
-            ->paginate(5, ['*'], 'pengajuans_page');
+    // public function index()
+    // {
+    //     $this->authorize('view pengajuan pinjaman');
+    //     $pengajuans = PengajuanPinjaman::with('anggota')
+    //         ->where('status', 'diajukan')
+    //         ->orderBy('tanggal_pengajuan')
+    //         ->paginate(5, ['*'], 'pengajuans_page');
 
-        $riwayatApproval = PengajuanPinjaman::whereIn('status', ['disetujui', 'ditolak', 'dicairkan'])
-                        ->orderBy('updated_at', 'desc')
-                        ->paginate(10, ['*'], 'riwayatApproval_page');
+    //     $riwayatApproval = PengajuanPinjaman::whereIn('status', ['disetujui', 'ditolak', 'dicairkan'])
+    //                     ->orderBy('updated_at', 'desc')
+    //                     ->paginate(10, ['*'], 'riwayatApproval_page');
 
-        return view('admin.pinjaman.pengajuan.index', compact('pengajuans','riwayatApproval'));
-    }
+    //     return view('admin.pinjaman.pengajuan.index', compact('pengajuans','riwayatApproval'));
+    // }
 
     public function show(PengajuanPinjaman $pengajuan)
     {
@@ -34,9 +34,10 @@ class ApprovalPinjamanController extends Controller
                     ->latest()
                     ->first();
 
+        $validationErrors = session('validation_errors');
         // Jika request adalah AJAX, kirimkan view khusus detail saja
         if (request()->ajax()) {
-            return view('admin.pinjaman.pengajuan._detail_content', compact('pengajuan', 'pinjaman'));
+            return view('admin.pinjaman.pengajuan._detail_content', compact('pengajuan', 'pinjaman', 'validationErrors'));
         }
 
         // Fallback jika diakses manual (opsional)
@@ -49,9 +50,14 @@ class ApprovalPinjamanController extends Controller
         PinjamanService $service
     ) {
         $this->authorize('approve pinjaman');
-        // abort_if($pengajuan->status !== 'diajukan', 400);
-
+       
         try {
+            $request->validate([
+                'jumlah_diajukan' => 'required',
+                'tenor' => 'required|integer|min:1',
+                'bulan_pinjam' => 'required',
+            ]);
+
             $jumlahMurni = str_replace(['Rp', '.', ' '], '', $request->jumlah_diajukan);
 
             $data = [
@@ -63,11 +69,27 @@ class ApprovalPinjamanController extends Controller
             $service->setujui($pengajuan, Auth::id(), $data);
 
             return redirect()
-                ->route('admin.pinjaman.pengajuan.index')
+                ->route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan'])
                 ->with('success', 'Pengajuan berhasil diproses/diperbarui');
-                
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors($e->getMessage());
+         
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()
+                ->route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan'])
+                ->with('validation_errors', $e->errors()) // 🔥 ganti ini
+                ->withInput()
+                ->with('open_modal_pengajuan', true)
+                ->with('pengajuan_id', $pengajuan->id);
+        }
+
+        catch (\Exception $e) {
+            return redirect()
+                ->route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan']) // 🔥 sama
+                ->with('validation_errors', [
+                    'pengajuan' => [$e->getMessage()]
+                ])
+                ->withInput()
+                ->with('open_modal_pengajuan', true)
+                ->with('pengajuan_id', $pengajuan->id);
         }
     }
 
@@ -76,9 +98,7 @@ class ApprovalPinjamanController extends Controller
         $this->authorize('reject pinjaman');
 
         if (! in_array($pengajuan->status, ['diajukan', 'disetujui'])) {
-            return redirect()
-                ->back()
-                ->withErrors('Pengajuan sudah ditolak.');
+            return back()->withErrors('Pengajuan sudah ditolak');    
         }
 
         $request->validate([
@@ -92,7 +112,7 @@ class ApprovalPinjamanController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.pinjaman.pengajuan.index')
+            ->route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan'])
             ->with('success', 'Pengajuan pinjaman ditolak');
     }
 

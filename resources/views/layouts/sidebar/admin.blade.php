@@ -141,14 +141,14 @@
                 @endcan
 
                 {{-- ================= PROSES & APPROVAL ================= --}}
-                @can('view pengajuan pinjaman')
+                {{-- @can('view pengajuan pinjaman')
                 <li class="menu-item">
                     <a href="{{ route('admin.pinjaman.pengajuan.index') }}"
                     class="{{ request()->routeIs('admin.pinjaman.pengajuan.*') ? 'active' : '' }}">
                         Pengajuan Pinjaman Anggota
                     </a>
                 </li>
-                @endcan
+                @endcan --}}
 
                 @can('pencairan pinjaman')
                 <li class="menu-item">

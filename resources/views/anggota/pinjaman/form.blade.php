@@ -17,12 +17,18 @@
                 <div class="bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm p-4">
                     <h2 class="section-title font-black">Form Pengajuan Pinjaman</h2>
                     <hr class="my-2 mb-6 border-gray-200">
+                    
                     {{-- ERROR MESSAGE --}}
-                    @error('pengajuan')
-                        <div class="mb-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded text-sm">
-                            {{ $message }}
+                    @if ($errors->any())
+                        <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                            <ul class="list-disc pl-5 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
-                    @enderror
+                    @endif
+                    
                     <form method="POST" action="{{ route('anggota.pinjaman.store') }}">
                         @csrf
 
@@ -57,7 +63,7 @@
                                     type="number"
                                     name="tenor"
                                     min="1"
-                                    max="24"
+                                    max="20"
                                     value="{{ old('tenor', 1) }}"
                                     class="w-full border border-gray-300 rounded-md p-2"
                                     required>
@@ -318,11 +324,15 @@
         <h3 class="text-lg font-bold mb-4">Edit Pengajuan</h3>
 
         {{-- ERROR MESSAGE --}}
-        @error('pengajuan')
-            <div class="mb-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded text-sm">
-                {{ $message }}
+        @if ($errors->any())
+            <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                <ul class="list-disc pl-5 space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-        @enderror
+        @endif
 
         <form id="formEdit" method="POST">
             @csrf
@@ -393,17 +403,17 @@ function formatRupiah(el) {
     } el.value = value ? 'Rp ' + rupiah : ''; 
     document.getElementById('jumlah_asli').value = value; 
 }
-function openEditModal(id, jumlah, tenor, bulan, tujuan) {
+function openEditModal(id, jumlah_diajukan, tenor, bulan_pinjam, tujuan) {
 
     // set action form
     document.getElementById('formEdit').action = `/anggota/pinjaman/${id}`;
 
     // isi field
-    document.getElementById('edit_jumlah_format').value = 'Rp ' + jumlah.toLocaleString('id-ID');
-    document.getElementById('edit_jumlah_asli').value = jumlah;
+    document.getElementById('edit_jumlah_format').value = 'Rp ' + jumlah_diajukan.toLocaleString('id-ID');
+    document.getElementById('edit_jumlah_asli').value = jumlah_diajukan;
 
     document.getElementById('edit_tenor').value = tenor;
-    document.getElementById('edit_bulan').value = bulan;
+    document.getElementById('edit_bulan').value = bulan_pinjam;
     document.getElementById('edit_tujuan').value = tujuan;
 
     // tampilkan modal
@@ -435,11 +445,11 @@ function formatRupiahEdit(el) {
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         openEditModal(
-            {{ session('edit_id') }},
-            {{ old('jumlah_diajukan', 0) }},
-            {{ old('tenor', 1) }},
-            {{ old('bulan_pinjam') }},
-            {{ old('tujuan') }}
+            @json(session('edit_id')),
+            @json(old('jumlah_diajukan', 0)),
+            @json(old('tenor', 1)),
+            @json(old('bulan_pinjam')),
+            @json(old('tujuan'))
         );
     });
 </script>

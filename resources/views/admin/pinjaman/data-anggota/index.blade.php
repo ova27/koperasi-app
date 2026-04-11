@@ -5,10 +5,17 @@
 @section('content')
 <div class="space-y-6">
 
-<div x-data="{ tab: 'aktif' }" class="space-y-4">
+<div x-data="{ tab: '{{ request('tab', 'pengajuan') }}' }" class="space-y-4">
 
     {{-- ================= TAB NAVIGATION ================= --}}
     <div class="border-b flex gap-6 text-sm font-medium">
+        <button @click="tab = 'pengajuan'"
+            :class="tab === 'pengajuan' 
+                ? 'border-b-2 border-black text-black font-medium' 
+                : 'text-gray-400'"
+            class="pb-2">
+            Pengajuan Pinjaman
+        </button>
         <button @click="tab = 'aktif'"
             :class="tab === 'aktif' 
                 ? 'border-b-2 border-black text-black font-medium' 
@@ -369,6 +376,18 @@
             </div>
         @endif
     </div>
+
+    {{-- TABLE PENGAJUAN PINJAMAN --}}
+    <div x-show="tab === 'pengajuan'" 
+        x-transition.opacity.duration.200ms
+        class="space-y-4">
+
+        @include('admin.pinjaman.pengajuan.tab-pengajuan', [
+            'pengajuans' => $pengajuans,
+            'riwayatApproval' => $riwayatApproval
+        ])
+    </div>
+    
 </div>
 </div>
 

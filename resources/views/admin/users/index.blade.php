@@ -32,10 +32,11 @@
         </form>
 
         @can('manage users')
-            <a href="{{ route('admin.users.create') }}"
-               class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
+            <button
+                onclick="openCreateUserModal()"
+                class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
                 + Tambah Pengguna
-            </a>
+            </button>
         @endcan
     </div>
 
@@ -176,8 +177,77 @@
         </div>
     </div>
 
+    {{-- MODAL CREATE USER --}}
+    <div id="createUserModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white w-full max-w-xl rounded-lg p-6">
+
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold">Tambah Pengguna</h2>
+                <button onclick="closeCreateUserModal()" class="text-gray-500">✕</button>
+            </div>
+
+            <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-4">
+                @csrf
+
+                {{-- NAMA --}}
+                <div>
+                    <label class="text-sm text-gray-600">Nama</label>
+                    <input type="text" name="name" class="w-full border rounded px-3 py-2" required>
+                </div>
+
+                {{-- EMAIL --}}
+                <div>
+                    <label class="text-sm text-gray-600">Email</label>
+                    <input type="email" name="email" class="w-full border rounded px-3 py-2" required>
+                </div>
+
+                {{-- PASSWORD --}}
+                <div>
+                    <label class="text-sm text-gray-600">Password</label>
+                    <input type="password" name="password" class="w-full border rounded px-3 py-2" required>
+                </div>
+
+                {{-- ROLE --}}
+                <div>
+                    <label class="text-sm text-gray-600">Role</label>
+                    @foreach($roles as $role)
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" name="roles[]" value="{{ $role->name }}">
+                            <span>{{ ucfirst($role->name) }}</span>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="flex gap-2 pt-4">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded">
+                        Simpan
+                    </button>
+                    <button type="button"
+                            onclick="closeCreateUserModal()"
+                            class="px-4 py-2 bg-gray-200 rounded">
+                        Batal
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
 </div>
 
+{{-- SCRIPT MODAL CREATE USER --}}
+<script>
+    function openCreateUserModal() {
+        document.getElementById('createUserModal').classList.remove('hidden');
+        document.getElementById('createUserModal').classList.add('flex');
+    }
+
+    function closeCreateUserModal() {
+        document.getElementById('createUserModal').classList.add('hidden');
+        document.getElementById('createUserModal').classList.remove('flex');
+    }
+</script>
+
+{{-- SCRIPT SEARCH --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 

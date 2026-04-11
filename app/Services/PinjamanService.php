@@ -2,16 +2,17 @@
 
 namespace App\Services;
 
-use Exception;
 use App\Models\Anggota;
 use App\Models\ArusKas;
-use App\Models\Pinjaman;
-use Illuminate\Support\Carbon;
-use App\Models\RekeningKoperasi;
 use App\Models\PengajuanPinjaman;
+use App\Models\Pinjaman;
+use App\Models\RekeningKoperasi;
 use App\Models\TransaksiPinjaman;
-use Illuminate\Support\Facades\DB;
+use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 
 class PinjamanService
@@ -26,9 +27,10 @@ class PinjamanService
     ): bool {
         try {
             // pakai aturan YANG SAMA PERSIS
-            $this->validateBatasPinjaman(
+            $this->validatePengajuan(
                 $anggotaId,
                 $jumlahDummy,
+                1, // tenor dummy, karena ini cuma buat cek boleh ajukan apa nggak
                 $pengajuanId
             );
 
@@ -47,7 +49,7 @@ class PinjamanService
         ?string $tujuan = null
     ): PengajuanPinjaman {
         $this->validateAnggotaAktif($anggotaId);
-        $this->validateBatasPinjaman($anggotaId, $jumlah);
+        $this->validatePengajuan($anggotaId, $jumlah, $tenor);
 
         return PengajuanPinjaman::create([
             'anggota_id'        => $anggotaId,
@@ -74,9 +76,10 @@ class PinjamanService
             throw new Exception('Pengajuan tidak bisa diubah');
         }
 
-        $this->validateBatasPinjaman(
+        $this->validatePengajuan(
             $pengajuan->anggota_id,
             $jumlah,
+            $tenor,
             $pengajuan->id
         );
 
@@ -107,6 +110,13 @@ class PinjamanService
         if (!in_array($pengajuan->status, ['diajukan', 'ditolak', 'disetujui'])) {
             throw new Exception('Pengajuan tidak valid atau sudah dicairkan');
         }
+
+        $this->validatePengajuan(
+            $pengajuan->anggota_id,
+            $data['jumlah_diajukan'],
+            $data['tenor'],
+            $pengajuan->id
+        );
 
         $pengajuan->update([
             'jumlah_diajukan' => $data['jumlah_diajukan'], 
@@ -339,12 +349,29 @@ class PinjamanService
         }
     }
 
-    protected function validateBatasPinjaman(
+    protected function validatePengajuan(
         int $anggotaId,
         int $jumlahPengajuan,
+        int $tenor,
         ?int $pengajuanId = null // 👈 untuk edit
     ): void {
+        // VALIDASI ANGGOTA AKTIF
+        $this->validateAnggotaAktif($anggotaId);
 
+        //VALIDASI TENOR
+        if ($tenor <= 0) {
+            throw ValidationException::withMessages([
+                'tenor' => ['Tenor harus lebih dari 0 bulan']
+            ]);
+        }
+
+        if ($tenor > 20) {
+            throw ValidationException::withMessages([
+                'tenor' => ['Tenor maksimal 20 bulan']
+            ]);
+        }
+
+        // VALIDASI BATAS PINJAMAN
         // ambil pinjaman aktif
         $pinjamanAktif = Pinjaman::where('anggota_id', $anggotaId)
             ->where('status', 'aktif')
@@ -369,8 +396,9 @@ class PinjamanService
 
         // 1️⃣ batas total eksposur
         if ($totalEksposur > 20000000) {
-            throw new Exception(
-                'Total pinjaman aktif dan pengajuan maksimal Rp 20.000.000'
+            throw new Exception('Total pinjaman aktif/pengajuan (' . 
+                                'Rp ' . number_format($totalEksposur, 0, ',', '.') . 
+                                ') melebihi batas maksimal Rp 20.000.000'
             );
         }
 

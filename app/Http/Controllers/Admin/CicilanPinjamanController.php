@@ -24,7 +24,8 @@ class CicilanPinjamanController extends Controller
             $suggestedCicilan = (int) ceil($pinjaman->sisa_pinjaman / $pinjaman->tenor);
         }
 
-        return view('admin.pinjaman.cicilan.create', compact('pinjaman', 'suggestedCicilan'));
+        return view('admin.pinjaman.cicilan.create', compact('pinjaman', 'suggestedCicilan'))
+                ->with('tab', 'aktif'); // Kembali ke tab Pinjaman Aktif setelah cicilan disimpan
     }
 
     public function store(
@@ -35,8 +36,7 @@ class CicilanPinjamanController extends Controller
         $this->authorize('manage cicilan pinjaman');
 
         if ($pinjaman->status !== 'aktif') {
-            return redirect()
-                ->back()
+            return redirect()->to(url()->previous() ?: route('admin.pinjaman.data-anggota.index', ['tab' => 'aktif']))
                 ->withErrors('Pinjaman tidak aktif atau sudah lunas.');
         }
 
@@ -49,14 +49,14 @@ class CicilanPinjamanController extends Controller
         if ($pinjaman->tenor && $pinjaman->tenor > 0) {
             $minCicilan = (int) ceil($pinjaman->sisa_pinjaman / $pinjaman->tenor);
             if ((int) $request->jumlah < $minCicilan) {
-                return redirect()->back()
+                return redirect()->to(url()->previous() ?: route('admin.pinjaman.data-anggota.index', ['tab' => 'aktif']))
                     ->withInput()
                     ->withErrors(['jumlah' => 'Jumlah cicilan minimal Rp ' . number_format($minCicilan, 0, ',', '.') . ' berdasarkan tenor saat ini']);
             }
         }
 
         if ((int) $request->jumlah > $pinjaman->sisa_pinjaman) {
-            return redirect()->back()
+            return redirect()->to(url()->previous() ?: route('admin.pinjaman.data-anggota.index', ['tab' => 'aktif']))
                 ->withInput()
                 ->withErrors(['jumlah' => 'Jumlah cicilan tidak boleh lebih dari sisa pinjaman']);
         }
@@ -70,7 +70,7 @@ class CicilanPinjamanController extends Controller
         // Jika berasal dari data pinjaman anggota, kembali ke sana agar perubahan
         // pelunasan langsung terlihat di tabel Pinjaman Lunas Anggota.
         return redirect()
-            ->to(url()->previous() ?: route('admin.pinjaman.data-anggota.index'))
+            ->to(url()->previous() ?: route('admin.pinjaman.data-anggota.index', ['tab' => 'aktif']))
             ->with('success', 'Cicilan berhasil disimpan');
     }
 

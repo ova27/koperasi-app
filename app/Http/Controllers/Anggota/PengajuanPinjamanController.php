@@ -7,6 +7,7 @@ use App\Models\PengajuanPinjaman;
 use App\Services\PinjamanService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class PengajuanPinjamanController extends Controller
 {
@@ -44,9 +45,12 @@ class PengajuanPinjamanController extends Controller
     ) {
         $request->validate([
             'jumlah_diajukan' => 'required|integer|min:100000',
-            'tenor'           => 'required|integer|min:1|max:20', 
+            'tenor'           => 'required|integer|min:1', 
             'bulan_pinjam'    => 'required',                     
             'tujuan'          => 'nullable|string',
+        ],[
+            'tenor.min' => 'Tenor minimal 1 bulan',
+            'tenor.required' => 'Tenor wajib diisi',
         ]);
 
         $this->authorize('create pinjaman');
@@ -67,7 +71,16 @@ class PengajuanPinjamanController extends Controller
                 ->route('anggota.pinjaman.ajukan')
                 ->with('success', 'Pengajuan pinjaman berhasil dikirim');
 
+        } catch (ValidationException $e) {
+
+            // 🔥 ini yang bikin error tenor muncul di input
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+
         } catch (\Exception $e) {
+
+            // 🔥 ini untuk error bisnis (20jt, topup, dll)
             return back()
                 ->withErrors(['pengajuan' => $e->getMessage()])
                 ->withInput();
@@ -102,9 +115,12 @@ class PengajuanPinjamanController extends Controller
 
         $request->validate([
             'jumlah_diajukan' => 'required|integer|min:1',
-            'tenor'           => 'required|integer|min:1|max:20', 
+            'tenor'           => 'required|integer|min:1', 
             'bulan_pinjam'    => 'required|date_format:Y-m|after_or_equal:' . now()->format('Y-m'),
             'tujuan'          => 'nullable|string', 
+        ],[
+            'tenor.min' => 'Tenor minimal 1 bulan',
+            'tenor.required' => 'Tenor wajib diisi',
         ]);
 
         try {
@@ -119,13 +135,22 @@ class PengajuanPinjamanController extends Controller
             return redirect()
                 ->route('anggota.pinjaman.ajukan')
                 ->with('success', 'Pengajuan pinjaman berhasil diperbarui');
+        
+        } catch (ValidationException $e) {
+
+            return back()
+                ->withInput()
+                ->withErrors($e->errors()) // 🔥 penting
+                ->with('open_edit_modal', true)
+                ->with('edit_id', $pengajuan->id);
 
         } catch (\Exception $e) {
+
             return back()
                 ->withInput()
                 ->withErrors(['pengajuan' => $e->getMessage()])
                 ->with('open_edit_modal', true)
-                ->with('edit_id', $pengajuan->id); 
+                ->with('edit_id', $pengajuan->id);
         }
     }
 
