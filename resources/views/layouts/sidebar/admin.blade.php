@@ -1,28 +1,23 @@
 {{-- SIDEBAR HEADER --}}
 <div class="flex items-center gap-3 px-2 mb-4">
-
     {{-- ICON / LOGO --}}
-    <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-600 text-white font-semibold text-sm">
+    <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 text-white font-bold text-lg shadow-md">
         K
     </div>
-
     {{-- TITLE & ROLE --}}
-    <div>
-        <div class="text-[13px] font-semibold tracking-wide text-slate-800 uppercase">
+    <div class="sidebar-title">
+        <div class="text-sm font-bold tracking-wide text-slate-800 uppercase">
             Koperasi Simpatik
         </div>
-        <div class="text-[13px] text-slate-500 capitalize">
+        <div class="text-xs text-slate-500 capitalize">
             BPS Provinsi Banten
         </div>
-
     </div>
-    
 </div>
 
-<hr class="border-slate-200 mb-4">
+<hr class="border-slate-300 mb-6">
 
-<div class="space-y-6">
-
+<div class="space-y-2">
     {{-- MENU --}}
     <nav class="space-y-1">
         <ul class="menu">
@@ -30,8 +25,8 @@
             @can('view dashboard')
             <li class="menu-item">
                 <a href="{{ route('dashboard') }}"
-                class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    Dashboard
+                class="menu-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <span class="menu-text">Dashboard</span>
                 </a>
             </li>
             @endcan
@@ -41,203 +36,158 @@
             @can('view simpanan saya')
             <li class="menu-item">
                 <a href="{{ route('anggota.simpanan.index') }}"
-                class="{{ request()->routeIs('anggota.simpanan.*') ? 'active' : '' }}">
-                    Simpanan Saya
+                class="menu-link {{ request()->routeIs('anggota.simpanan.*') ? 'active' : '' }}">
+                    <span class="menu-text">Simpanan Saya</span>
                 </a>
             </li>
             @endcan
 
             @can('view pinjaman saya')
-                <li class="menu-item">
-                    <a href="{{ route('anggota.pinjaman.index') }}"
-                    class="{{ request()->routeIs('anggota.pinjaman.index') ? 'active' : '' }}">
-                        Pinjaman Saya
-                    </a>
-                </li>
-            @endcan
-
-            @can('create pinjaman')
-                <li class="menu-item">
-                    <a href="{{ route('anggota.pinjaman.ajukan') }}"
-                    class="{{ request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
-                        Pengajuan Pinjaman Saya
-                    </a>
-                </li>
+            <li class="menu-item">
+                <a href="{{ route('anggota.pinjaman.index') }}"
+                class="menu-link {{ request()->routeIs('anggota.pinjaman.index') || request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
+                    <span class="menu-text">Pinjaman Saya</span>
+                </a>
+            </li>
             @endcan
 
             {{-- ================= LAPORAN PRIBADI ================= --}}
             @canany(['view laporan simpanan pribadi', 'view laporan pinjaman pribadi'])
             <li class="menu-header">Laporan Saya</li>
 
-                @can('view laporan simpanan pribadi')
-                <li class="menu-item">
-                    <a href="{{ route('anggota.laporan.simpanan') }}"
-                    class="{{ request()->routeIs('anggota.laporan.simpanan') ? 'active' : '' }}">
-                        Laporan Simpanan
-                    </a>
-                </li>
-                @endcan
-
-                @can('view laporan pinjaman pribadi')
-                <li class="menu-item">
-                    <a href="{{ route('anggota.laporan.pinjaman') }}"
-                    class="{{ request()->routeIs('anggota.laporan.pinjaman') ? 'active' : '' }}">
-                        Laporan Pinjaman
-                    </a>
-                </li>
-                @endcan
-            @endcanany
-
-
-            {{-- ================= DATA MASTER ================= --}}
-            @can('view anggota list')
-            <li class="menu-header">Master</li>
-
+            @can('view laporan simpanan pribadi')
             <li class="menu-item">
-                <a href="{{ route('admin.anggota.index') }}"
-                class="{{ request()->routeIs('admin.anggota.*') ? 'active' : '' }}">
-                    Data Anggota
+                <a href="{{ route('anggota.laporan.simpanan') }}"
+                class="menu-link {{ request()->routeIs('anggota.laporan.simpanan') ? 'active' : '' }}">
+                    <span class="menu-text">Laporan Simpanan</span>
                 </a>
             </li>
             @endcan
-            
-            @canany(['edit profil', 'manage users'])
-                @can('manage users')
-                <li class="menu-item">
-                    <a href="{{ route('admin.users.index') }}"
-                    class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                        Data Pengguna
-                    </a>
-                </li>
-                @endcan
+
+            @can('view laporan pinjaman pribadi')
+            <li class="menu-item">
+                <a href="{{ route('anggota.laporan.pinjaman') }}"
+                class="menu-link {{ request()->routeIs('anggota.laporan.pinjaman') ? 'active' : '' }}">
+                    <span class="menu-text">Laporan Pinjaman</span>
+                </a>
+            </li>
+            @endcan
             @endcanany
 
+            @canany([
+                'view anggota list',
+                'manage users',
+                'manage simpanan anggota',
+                'pencairan pinjaman',
+                'manage cicilan pinjaman',
+                'view pengajuan pinjaman',
+                'view saldo',
+                'view arus koperasi',
+                'view arus operasional',
+                'view laporan arus kas',
+                'view laporan simpanan bulanan',
+                'view laporan pinjaman'
+            ])
+            <li class="menu-header">ADMIN</li>
 
-            {{-- ================= TRANSAKSI ================= --}}
+            @canany(['view anggota list', 'manage users'])
+            <li class="menu-item" x-data="{ open: {{ request()->routeIs('admin.anggota.*') || request()->routeIs('admin.users.*') ? 'true' : 'false' }} }">
+                <button
+                    type="button"
+                    @click="open = !open"
+                    class="menu-link w-full flex items-center justify-between hover:bg-slate-100 transition-colors duration-200">
+                    <div class="flex items-center gap-3">
+                        <span class="menu-text">Master</span>
+                    </div>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div x-show="open" x-transition class="mt-2 ml-6 space-y-1 border-l-2 border-slate-200 pl-4">
+                    <a href="{{ auth()->user()->can('manage users') ? route('admin.users.index') : route('admin.anggota.index') }}"
+                        class="sub-menu-link {{ request()->routeIs('admin.anggota.*') || request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        Data
+                    </a>
+                </div>
+            </li>
+            @endcanany
+
             @canany([
                 'manage simpanan anggota',
                 'pencairan pinjaman',
                 'manage cicilan pinjaman',
                 'view pengajuan pinjaman'
             ])
-            <li class="menu-header">Transaksi</li>
-
-                @can('manage simpanan anggota')
-                <li class="menu-item">
+            <li class="menu-item" x-data="{ open: {{ request()->routeIs('admin.simpanan.*') || request()->routeIs('admin.pinjaman.data-anggota.*') || request()->routeIs('admin.pinjaman.pencairan.*') ? 'true' : 'false' }} }">
+                <button
+                    type="button"
+                    @click="open = !open"
+                    class="menu-link w-full flex items-center justify-between hover:bg-slate-100 transition-colors duration-200">
+                    <div class="flex items-center gap-3">
+                        <span class="menu-text">Transaksi</span>
+                    </div>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div x-show="open" x-transition class="mt-2 ml-6 space-y-1 border-l-2 border-slate-200 pl-4">
+                    @canany(['view simpanan anggota', 'manage simpanan anggota'])
                     <a href="{{ route('admin.simpanan.index') }}"
-                    class="{{ request()->routeIs('admin.simpanan.*') ? 'active' : '' }}">
+                        class="sub-menu-link {{ request()->routeIs('admin.simpanan.*') ? 'active' : '' }}">
                         Simpanan Anggota
                     </a>
-                </li>
-                @endcan
-
-                @can('view pengajuan pinjaman')
-                <li class="menu-item">
+                    @endcanany
+                    @can('view pengajuan pinjaman')
                     <a href="{{ route('admin.pinjaman.data-anggota.index') }}"
-                    class="{{ request()->routeIs('admin.pinjaman.data-anggota.*') ? 'active' : '' }}">
-                    Pinjaman Anggota
+                        class="sub-menu-link {{ request()->routeIs('admin.pinjaman.data-anggota.*') || request()->routeIs('admin.pinjaman.pencairan.*') ? 'active' : '' }}">
+                        Pinjaman Anggota
                     </a>
-                </li>
-                @endcan
-
-                {{-- ================= PROSES & APPROVAL ================= --}}
-                {{-- @can('view pengajuan pinjaman')
-                <li class="menu-item">
-                    <a href="{{ route('admin.pinjaman.pengajuan.index') }}"
-                    class="{{ request()->routeIs('admin.pinjaman.pengajuan.*') ? 'active' : '' }}">
-                        Pengajuan Pinjaman Anggota
-                    </a>
-                </li>
-                @endcan --}}
-
-                @can('pencairan pinjaman')
-                <li class="menu-item">
-                    <a href="{{ route('admin.pinjaman.pencairan.index') }}"
-                    class="{{ request()->routeIs('admin.pinjaman.pencairan.*') ? 'active' : '' }}">
-                        Pencairan Pinjaman
-                    </a>
-                </li>
-                @endcan
-                
+                    @endcan
+                </div>
+            </li>
             @endcanany
 
-
-            {{-- ================= KEUANGAN ================= --}}
             @canany([
                 'view saldo',
                 'view arus koperasi',
-                'view arus operasional'
-            ])
-            <li class="menu-header">Keuangan</li>
-
-                @can('view saldo')
-                <li class="menu-item">
-                    <a href="{{ route('admin.keuangan.saldo') }}"
-                    class="{{ request()->routeIs('admin.keuangan.saldo') ? 'active' : '' }}">
-                        Saldo Koperasi
-                    </a>
-                </li>
-                @endcan
-
-                @can('view arus koperasi')
-                <li class="menu-item">
-                    <a href="{{ route('admin.keuangan.arus.koperasi') }}"
-                    class="{{ request()->routeIs('admin.keuangan.arus.koperasi') ? 'active' : '' }}">
-                        Arus Koperasi
-                    </a>
-                </li>
-                @endcan
-
-                @can('view arus operasional')
-                <li class="menu-item">
-                    <a href="{{ route('admin.keuangan.arus.operasional') }}"
-                    class="{{ request()->routeIs('admin.keuangan.arus.operasional') ? 'active' : '' }}">
-                        Arus Operasional
-                    </a>
-                </li>
-                @endcan
-            @endcanany
-
-
-            {{-- ================= LAPORAN ================= --}}
-            @canany([
+                'view arus operasional',
                 'view laporan arus kas',
                 'view laporan simpanan bulanan',
                 'view laporan pinjaman'
             ])
-            <li class="menu-header">Laporan</li>
-
-                @can('view laporan arus kas')
-                <li class="menu-item">
+            <li class="menu-item" x-data="{ open: {{ request()->routeIs('admin.keuangan.*') || request()->routeIs('admin.laporan.simpanan-bulanan') || request()->routeIs('admin.laporan.pinjaman.*') ? 'true' : 'false' }} }">
+                <button
+                    type="button"
+                    @click="open = !open"
+                    class="menu-link w-full flex items-center justify-between hover:bg-slate-100 transition-colors duration-200">
+                    <div class="flex items-center gap-3">
+                        <span class="menu-text">Keuangan</span>
+                    </div>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div x-show="open" x-transition class="mt-2 ml-6 space-y-1 border-l-2 border-slate-200 pl-4">
+                    @can('view saldo')
+                    <a href="{{ route('admin.keuangan.saldo') }}"
+                        class="sub-menu-link {{ request()->routeIs('admin.keuangan.saldo') || request()->routeIs('admin.keuangan.arus.koperasi') || request()->routeIs('admin.keuangan.arus.operasional') ? 'active' : '' }}">
+                        Arus Kas & Neraca
+                    </a>
+                    @endcan
+                    @canany([
+                        'view laporan arus kas',
+                        'view laporan simpanan bulanan',
+                        'view laporan pinjaman'
+                    ])
                     <a href="{{ route('admin.keuangan.arus-kas') }}"
-                    class="{{ request()->routeIs('admin.keuangan.arus-kas') ? 'active' : '' }}">
-                        Laporan Arus Kas
+                        class="sub-menu-link {{ request()->routeIs('admin.keuangan.arus-kas') || request()->routeIs('admin.laporan.simpanan-bulanan') || request()->routeIs('admin.laporan.pinjaman.*') ? 'active' : '' }}">
+                        Laporan Bulanan
                     </a>
-                </li>
-                @endcan
-
-                @can('view laporan simpanan bulanan')
-                <li class="menu-item">
-                    <a href="{{ route('admin.laporan.simpanan-bulanan') }}"
-                    class="{{ request()->routeIs('admin.laporan.simpanan-bulanan') ? 'active' : '' }}">
-                        Simpanan Bulanan
-                    </a>
-                </li>
-                @endcan
-
-                @can('view laporan pinjaman')
-                <li class="menu-item">
-                    <a href="{{ route('admin.laporan.pinjaman.index') }}"
-                    class="{{ request()->routeIs('admin.laporan.pinjaman.*') ? 'active' : '' }}">
-                        Laporan Pinjaman
-                    </a>
-                </li>
-                @endcan
+                    @endcanany
+                </div>
+            </li>
             @endcanany
-
+            @endcanany
         </ul>
     </nav>
-
 </div>
-
-

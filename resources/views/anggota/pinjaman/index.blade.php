@@ -4,7 +4,8 @@
 @section('page-title', 'Pinjaman Saya')
 
 @section('content')
-<div class="space-y-10">
+<div class="space-y-7 -mt-1">
+    @include('anggota.pinjaman._tabs')
 
     {{-- ========================= --}}
     {{-- RINGKASAN PINJAMAN --}}

@@ -16,6 +16,14 @@
             class="pb-2">
             Pengajuan Pinjaman
         </button>
+
+        @canany(['view pengajuan pinjaman', 'pencairan pinjaman'])
+            <a href="{{ route('admin.pinjaman.pencairan.index') }}"
+                class="pb-2 text-gray-400 hover:text-gray-700">
+                Pencairan Pinjaman
+            </a>
+        @endcanany
+
         <button @click="tab = 'aktif'"
             :class="tab === 'aktif' 
                 ? 'border-b-2 border-black text-black font-medium' 

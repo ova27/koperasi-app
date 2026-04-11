@@ -6,6 +6,13 @@
 @section('content')
 <div class="space-y-6">
 
+@php(
+    $canManageSimpanan = auth()->user()->can('manage simpanan anggota')
+)
+@php(
+    $canNonaktifkan = auth()->user()->can('nonaktifkan anggota')
+)
+
 <div x-data="{ tab: 'wajib' }" class="space-y-4">
 
     {{-- ================= TAB NAVIGATION ================= --}}
@@ -28,13 +35,11 @@
             Pengambilan
         </button>
 
-        @can('nonaktifkan anggota')
         <button @click="tab = 'keluar'"
             :class="tab === 'keluar' ? 'border-b-2 border-red-600 text-red-600' : 'text-gray-400'"
             class="pb-2">
             Pensiun / Mutasi
         </button>
-        @endcan
     </div>
 
     
@@ -45,6 +50,12 @@
             <button onclick="closeFlashMessage()" class="ml-4 hover:text-green-900">×</button>
         </div>
     @endif
+
+    @unless($canManageSimpanan)
+        <div class="px-2 py-2 mt-6 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-sm">
+            Hanya Bendahara yang dapat melakukan transaksi simpanan
+        </div>
+    @endunless
 
     @if($errors->any())
         <div id="flash-message" class="px-4 py-4 mt-6 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex justify-between items-center">
@@ -80,9 +91,10 @@
 
         <form action="{{ route('admin.simpanan.generate-wajib') }}" method="POST">
             @csrf
-            <input type="hidden" name="bulan" value="{{ $bulan }}">
+            <fieldset @disabled(!$canManageSimpanan)>
+                <input type="hidden" name="bulan" value="{{ $bulan }}">
 
-            @if ($sudahGenerateWajib)
+                @if ($sudahGenerateWajib)
                 <button
                     type="button"
                     disabled
@@ -98,6 +110,7 @@
                     Generate Simpanan Wajib
                 </button>
             @endif
+            </fieldset>
         </form>
         
     </div>
@@ -123,6 +136,7 @@
 
         <form method="POST" action="{{ route('admin.simpanan.store-manual') }}" class="space-y-4">
             @csrf
+            <fieldset @disabled(!$canManageSimpanan)>
 
             {{-- ANGGOTA --}}
             <div>
@@ -199,6 +213,7 @@
                     Simpan
                 </button>
             </div>
+            </fieldset>
         </form>
         
     </div>
@@ -216,6 +231,7 @@
 
         <form method="POST" action="{{ route('admin.simpanan.ambil') }}" class="space-y-4">
             @csrf
+            <fieldset @disabled(!$canManageSimpanan)>
 
             {{-- ANGGOTA --}}
             <div>
@@ -280,13 +296,13 @@
                     Ambil Simpanan
                 </button>
             </div>
+            </fieldset>
         </form>
     </div>
 
     {{-- ========================== --}}
     {{-- D. PROSES PENSIUN / MUTASI --}}
     {{-- ========================== --}}
-     @can('nonaktifkan anggota')
         <div x-show="tab === 'keluar'" 
             x-transition.opacity.duration.200ms
             class="bg-white border rounded-lg p-4 space-y-4">
@@ -302,19 +318,20 @@
                 <br>• Mengembalikan seluruh simpanan
             </p>
 
-            {{-- PILIH ANGGOTA --}}
-            <div>
-                <label class="text-xs text-gray-500">Anggota</label>
-                <select id="anggotaSelectKeluar"
-                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                    <option value="" disabled selected>Pilih Anggota</option>
-                    @foreach ($anggotas as $anggota)
-                        <option value="{{ $anggota->id }}">
-                            {{ $anggota->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+            <fieldset @disabled(!$canNonaktifkan)>
+                {{-- PILIH ANGGOTA --}}
+                <div>
+                    <label class="text-xs text-gray-500">Anggota</label>
+                    <select id="anggotaSelectKeluar"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                        <option value="" disabled selected>Pilih Anggota</option>
+                        @foreach ($anggotas as $anggota)
+                            <option value="{{ $anggota->id }}">
+                                {{ $anggota->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
             {{-- SALDO --}}
             <div id="saldoBoxKeluar" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm space-y-1">
@@ -370,18 +387,19 @@
 
                 {{-- BUTTON --}}
                 <button type="button"
-                    id="btnKeluar" disabled
-                    class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm cursor-not-allowed">
+                    id="btnKeluar"
+                    class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm cursor-not-allowed"
+                >
                     Proses Keluar
                 </button>
             </div>
+            </fieldset>
         </div>
         <form id="formKeluar" method="POST" style="display:none;">
             @csrf
             <input type="hidden" name="alasan" id="alasanKeluar">
             <input type="hidden" name="keterangan" id="keteranganHidden">
         </form>
-    @endcan
 </div>
 
 {{-- SCRIPT --}}

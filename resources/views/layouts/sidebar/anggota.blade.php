@@ -2,33 +2,33 @@
 <div class="flex items-center gap-3 px-2 mb-4">
 
     {{-- ICON / LOGO --}}
-    <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-600 text-white font-semibold text-sm">
+    <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 text-white font-bold text-lg shadow-md">
         K
     </div>
 
     {{-- TITLE & ROLE --}}
-    <div>
-        <div class="text-[13px] font-semibold tracking-wide text-slate-800 uppercase">
+    <div class="sidebar-title">
+        <div class="text-sm font-bold tracking-wide text-slate-800 uppercase">
             Koperasi Simpatik
         </div>
 
-        <div class="text-[11px] text-slate-500 capitalize">
+        <div class="text-xs text-slate-500 capitalize">
             BPS Provinsi Banten
         </div>
     </div>
 </div>
 
-<hr class="border-slate-200 mb-4">
+<hr class="border-slate-300 mb-6">
 
-<div class="space-y-6">
+<div class="space-y-2">
 
     {{-- MENU --}}
     <nav class="space-y-1">
         <ul class="menu">
             <li class="menu-item">
                 <a href="{{ route('dashboard') }}"
-                class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    Dashboard
+                class="menu-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <span class="menu-text">Dashboard</span>
                 </a>
             </li>
 
@@ -37,8 +37,8 @@
             @can('view simpanan saya')
             <li class="menu-item">
                 <a href="{{ route('anggota.simpanan.index') }}"
-                class="{{ request()->routeIs('anggota.simpanan.*') ? 'active' : '' }}">
-                    Simpanan Saya
+                class="menu-link {{ request()->routeIs('anggota.simpanan.*') ? 'active' : '' }}">
+                    <span class="menu-text">Simpanan Saya</span>
                 </a>
             </li>
             @endcan
@@ -46,27 +46,18 @@
             @can('view pinjaman saya')
                 <li class="menu-item">
                     <a href="{{ route('anggota.pinjaman.index') }}"
-                    class="{{ request()->routeIs('anggota.pinjaman.index') ? 'active' : '' }}">
-                        Pinjaman Saya
-                    </a>
-                </li>
-            @endcan
-
-            @can('create pinjaman')
-                <li class="menu-item">
-                    <a href="{{ route('anggota.pinjaman.ajukan') }}"
-                    class="{{ request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
-                        Pengajuan Pinjaman Saya
+                    class="menu-link {{ request()->routeIs('anggota.pinjaman.index') || request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
+                        <span class="menu-text">Pinjaman Saya</span>
                     </a>
                 </li>
             @endcan
             {{-- ================= DATA ANGGOTA ================= --}}
             @can('view anggota list')
-            <li class="menu-header">Data</li>
+            <li class="menu-header">Master</li>
             <li class="menu-item">
                 <a href="{{ route('admin.anggota.index') }}"
-                class="{{ request()->routeIs('admin.anggota.*') ? 'active' : '' }}">
-                    Data Anggota
+                class="menu-link {{ request()->routeIs('admin.anggota.*') ? 'active' : '' }}">
+                    <span class="menu-text">Data Anggota</span>
                 </a>
             </li>
             @endcan
@@ -78,8 +69,8 @@
                 @can('view laporan simpanan pribadi')
                 <li class="menu-item">
                     <a href="{{ route('anggota.laporan.simpanan') }}"
-                    class="{{ request()->routeIs('anggota.laporan.simpanan') ? 'active' : '' }}">
-                        Laporan Simpanan
+                    class="menu-link {{ request()->routeIs('anggota.laporan.simpanan') ? 'active' : '' }}">
+                        <span class="menu-text">Laporan Simpanan</span>
                     </a>
                 </li>
                 @endcan
@@ -87,8 +78,8 @@
                 @can('view laporan pinjaman pribadi')
                 <li class="menu-item">
                     <a href="{{ route('anggota.laporan.pinjaman') }}"
-                    class="{{ request()->routeIs('anggota.laporan.pinjaman') ? 'active' : '' }}">
-                        Laporan Pinjaman
+                    class="menu-link {{ request()->routeIs('anggota.laporan.pinjaman') ? 'active' : '' }}">
+                       <span class="menu-text">Laporan Pinjaman</span>
                     </a>
                 </li>
                 @endcan
@@ -97,5 +88,4 @@
     </nav>
 
 </div>
-
 

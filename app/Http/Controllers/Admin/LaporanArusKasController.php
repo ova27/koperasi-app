@@ -15,14 +15,21 @@ class LaporanArusKasController extends Controller
         $this->authorize('view laporan arus kas');
 
         $bulan = $request->get('bulan', now()->format('Y-m'));
+        $filter = $request->get('filter', 'semua');
 
-        $masuk = ArusKas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
+        $query = ArusKas::query()
+            ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
+            ->when(in_array($filter, ['koperasi', 'operasional']), function ($q) use ($filter) {
+                $q->where('jenis_arus', $filter);
+            });
+
+        $masuk = (clone $query)
             ->where('tipe', 'masuk')
             ->selectRaw('jenis_arus, SUM(jumlah) as total')
             ->groupBy('jenis_arus')
             ->pluck('total', 'jenis_arus');
 
-        $keluar = ArusKas::whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
+        $keluar = (clone $query)
             ->where('tipe', 'keluar')
             ->selectRaw('jenis_arus, SUM(jumlah) as total')
             ->groupBy('jenis_arus')
@@ -30,13 +37,23 @@ class LaporanArusKasController extends Controller
 
         $totalMasuk = $masuk->sum();
         $totalKeluar = $keluar->sum();
+        $saldoBersih = $totalMasuk - $totalKeluar;
+
+        $items = (clone $query)
+            ->with(['anggota', 'rekening'])
+            ->orderBy('tanggal')
+            ->orderBy('id')
+            ->get();
 
         return view('keuangan.laporan-arus-kas', compact(
             'bulan',
+            'filter',
             'masuk',
             'keluar',
             'totalMasuk',
-            'totalKeluar'
+            'totalKeluar',
+            'saldoBersih',
+            'items'
         ));
     }
 

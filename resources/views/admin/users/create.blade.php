@@ -1,10 +1,10 @@
 @extends('layouts.main')
-@section('title', 'Tambah Pengguna')
+@section('title', 'Tambah')
 @section('content')
 <div class="max-w-xl mx-auto">
 
     <h1 class="text-xl font-semibold mb-6">
-        Tambah Pengguna
+        Tambah
     </h1>
 
     <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-4" autocomplete="off">
@@ -21,6 +21,25 @@
                 class="w-full border rounded px-3 py-2"
                 required
             >
+        </div>
+
+        <div>
+            <label class="text-sm text-gray-600">NIP</label>
+            <input type="text" name="anggota_nip" class="w-full border rounded px-3 py-2" required>
+        </div>
+
+        <div>
+            <label class="text-sm text-gray-600">Jenis Kelamin</label>
+            <select name="jenis_kelamin" class="w-full border rounded px-3 py-2" required>
+                <option value="">Pilih jenis kelamin</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="text-sm text-gray-600">Jabatan</label>
+            <input type="text" name="jabatan" class="w-full border rounded px-3 py-2" required>
         </div>
 
         {{-- EMAIL --}}
@@ -46,6 +65,11 @@
             >
         </div>
 
+        <div>
+            <label class="text-sm text-gray-600">Tanggal Masuk</label>
+            <input type="date" name="tanggal_masuk" value="{{ now()->toDateString() }}" class="w-full border rounded px-3 py-2" required>
+        </div>
+
         {{-- ROLE --}}
         <div>
             <label class="text-sm text-gray-600">Role</label>
@@ -55,10 +79,21 @@
                         type="checkbox"
                         name="roles[]"
                         value="{{ $role->name }}"
+                        data-create-role="{{ $role->name }}"
                     >
                     <span>{{ ucfirst($role->name) }}</span>
                 </div>
             @endforeach
+        </div>
+
+        <div>
+            <label class="text-sm text-gray-600">Status Anggota</label>
+            <select name="status" class="w-full border rounded px-3 py-2" required>
+                <option value="aktif" selected>Aktif</option>
+                <option value="cuti">Cuti</option>
+                <option value="tugas_belajar">Tugas Belajar</option>
+                <option value="tidak_aktif">Tidak Aktif</option>
+            </select>
         </div>
 
         <div class="flex gap-2 pt-4">

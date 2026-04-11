@@ -1,10 +1,11 @@
 @extends('layouts.main')
 
-@section('title', 'Data Anggota')
-@section('page-title', 'Data Anggota')
+@section('title', 'Master Data')
+@section('page-title', 'Master Data')
 
 @section('content')
 <div class="space-y-6">
+    @include('admin.master-data._tabs')
 
     {{-- HEADER --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -75,7 +76,7 @@
 
                     <th class="px-4 py-3 text-left">
                         <a href="{{ route('admin.anggota.index', array_merge(request()->except('page'), ['sort' => 'nama', 'direction' => $isNama && $d === 'asc' ? 'desc' : 'asc'])) }}"
-                           class="inline-flex items-center gap-1 hover:text-blue-600">
+                        class="inline-flex items-center gap-1 hover:text-blue-600">
                             Nama
                             @if ($isNama)
                                 <span>{{ $d === 'asc' ? '↑' : '↓' }}</span>
@@ -85,7 +86,7 @@
 
                     <th class="px-4 py-3 text-center">
                         <a href="{{ route('admin.anggota.index', array_merge(request()->except('page'), ['sort' => 'jabatan', 'direction' => $isJabatan && $d === 'asc' ? 'desc' : 'asc'])) }}"
-                           class="inline-flex items-center gap-1 hover:text-blue-600">
+                        class="inline-flex items-center gap-1 hover:text-blue-600">
                             Jabatan
                             @if ($isJabatan)
                                 <span>{{ $d === 'asc' ? '↑' : '↓' }}</span>
@@ -95,7 +96,7 @@
 
                     <th class="px-4 py-3 text-center">
                         <a href="{{ route('admin.anggota.index', array_merge(request()->except('page'), ['sort' => 'status', 'direction' => $isStatus && $d === 'asc' ? 'desc' : 'asc'])) }}"
-                           class="inline-flex items-center gap-1 hover:text-blue-600">
+                        class="inline-flex items-center gap-1 hover:text-blue-600">
                             Status
                             @if ($isStatus)
                                 <span>{{ $d === 'asc' ? '↑' : '↓' }}</span>
@@ -200,7 +201,6 @@
             {{ $anggotas->links('vendor.pagination.custom') }}
         </div>
     </div>
-
 </div>
 
 <script>

@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
 
             // SIMPANAN (PRIBADI)
             'view simpanan saya',
+            'view simpanan anggota',
 
             // PINJAMAN (PRIBADI)
             'view pinjaman saya',
@@ -128,6 +129,8 @@ class DatabaseSeeder extends Seeder
             'view laporan arus kas',
             'export laporan arus kas',
 
+            'view simpanan anggota',
+
             'view pengajuan pinjaman',
             'approve pinjaman',
             'reject pinjaman',
@@ -164,6 +167,7 @@ class DatabaseSeeder extends Seeder
             'view laporan arus kas',
             'export laporan arus kas',
 
+            'view simpanan anggota',
             'manage simpanan anggota',
             'pencairan pinjaman',
             'manage cicilan pinjaman',
@@ -189,6 +193,7 @@ class DatabaseSeeder extends Seeder
         // ======================
         $admin->syncPermissions([
             'view dashboard',
+            'view anggota list',
             'manage users',
         ]);
 

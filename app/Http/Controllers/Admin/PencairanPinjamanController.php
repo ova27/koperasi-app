@@ -11,7 +11,7 @@ class PencairanPinjamanController extends Controller
 {
     public function index()
     {
-        $this->authorize('pencairan pinjaman');
+        $this->authorize('view pengajuan pinjaman');
         $request = request();
 
         /* TABEL 1. SIAP DICAIRKAN */
@@ -79,6 +79,8 @@ class PencairanPinjamanController extends Controller
 
     public function batalPencairan(PengajuanPinjaman $pengajuan)
     {
+        $this->authorize('pencairan pinjaman');
+
         if ($pengajuan->status !== 'dicairkan') {
             return back()->with('error', 'Status tidak valid.');
         }

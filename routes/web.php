@@ -68,8 +68,16 @@ Route::middleware(['auth','permission:view saldo'])
             ->name('arus.operasional');
 
         Route::middleware('permission:view arus operasional')
+            ->post('/arus-operasional', [ArusOperasionalController::class, 'store'])
+            ->name('arus.operasional.store');
+
+        Route::middleware('permission:view arus operasional')
             ->get('/arus-operasional/export', [ArusOperasionalController::class, 'export'])
             ->name('arus.operasional.export');
+
+        Route::middleware('permission:view arus operasional')
+            ->delete('/arus-operasional/{arusKas}', [ArusOperasionalController::class, 'destroy'])
+            ->name('arus.operasional.destroy');
 
         Route::middleware('permission:view laporan arus kas')
             ->get('/arus-kas', [LaporanArusKasController::class, 'index'])
@@ -115,6 +123,10 @@ Route::middleware(['auth','permission:view anggota list'])
         /*
         | SIMPANAN PER ANGGOTA (BENDAHARA)
         */
+        Route::middleware('permission:view simpanan anggota|manage simpanan anggota')
+            ->get('/simpanan/saldo/{anggota}', [SimpananController::class, 'saldo'])
+            ->name('simpanan.saldo');
+
         Route::middleware('permission:manage simpanan anggota')
             ->group(function () {
 
@@ -127,9 +139,6 @@ Route::middleware(['auth','permission:view anggota list'])
                 Route::post('/simpanan/ambil', [SimpananController::class, 'ambil'])
                     ->name('simpanan.ambil');
 
-                Route::get('/simpanan/saldo/{anggota}', [SimpananController::class, 'saldo'])
-                    ->name('simpanan.saldo');
-                
                 Route::post('/anggota/{anggota}/keluar', [AnggotaExitController::class, 'process'])
                     ->name('anggota.keluar.process');
             });
@@ -160,15 +169,18 @@ Route::middleware(['auth','permission:view anggota list'])
         /*
         | TRANSAKSI (BENDAHARA)
         */
+        Route::middleware('permission:view simpanan anggota|manage simpanan anggota')
+            ->get('/simpanan', [SimpananController::class, 'index'])
+            ->name('simpanan.index');
+
         Route::middleware('permission:manage simpanan anggota')
             ->group(function () {
 
-                // SIMPANAN
-                Route::get('/simpanan', [SimpananController::class, 'index'])
-                    ->name('simpanan.index');
-
                 Route::post('/simpanan/manual', [SimpananController::class, 'storeManual'])
                     ->name('simpanan.store-manual');
+
+                Route::post('/simpanan/ambil', [SimpananController::class, 'ambil'])
+                    ->name('simpanan.ambil');
 
                 Route::get('/simpanan/generate-wajib', [GenerateSimpananWajibController::class, 'index'])
                     ->name('simpanan.generate-wajib');
@@ -180,11 +192,12 @@ Route::middleware(['auth','permission:view anggota list'])
         /*
         | PINJAMAN (BENDAHARA)
         */
+        Route::middleware('permission:view pengajuan pinjaman')
+            ->get('/pinjaman/pencairan', [PencairanPinjamanController::class, 'index'])
+            ->name('pinjaman.pencairan.index');
+
         Route::middleware('permission:pencairan pinjaman')
             ->group(function () {
-
-                Route::get('/pinjaman/pencairan', [PencairanPinjamanController::class, 'index'])
-                    ->name('pinjaman.pencairan.index');
 
                 Route::post('/pinjaman/pencairan/{pengajuan}', [PencairanPinjamanController::class, 'process'])
                     ->name('pinjaman.pencairan.process');

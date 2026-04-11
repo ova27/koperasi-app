@@ -1,10 +1,11 @@
 @extends('layouts.main')
 
-@section('title', 'Pengajuan Pinjaman Saya')
-@section('page-title', 'Pengajuan Pinjaman Saya')
+@section('title', 'Form Pengajuan Pinjaman')
+@section('page-title', 'Form Pengajuan Pinjaman')
 
 @section('content')
-<div class="space-y-10">
+<div class="space-y-7 -mt-1">
+    @include('anggota.pinjaman._tabs')
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

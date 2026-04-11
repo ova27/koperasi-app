@@ -46,6 +46,24 @@ class DashboardController extends Controller
                         Pinjaman::max('updated_at'),
                         Anggota::max('updated_at'),
                     ])->filter()->max();
+
+        // Data untuk grafik: Simpanan bulanan selama 6 bulan terakhir
+        $chartData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $month = $date->format('M Y');
+            $simpanan = Simpanan::whereYear('created_at', $date->year)
+                                ->whereMonth('created_at', $date->month)
+                                ->sum('jumlah');
+            $pinjaman = Pinjaman::whereYear('created_at', $date->year)
+                                ->whereMonth('created_at', $date->month)
+                                ->sum('jumlah_pinjaman');
+            $chartData[] = [
+                'month' => $month,
+                'simpanan' => $simpanan,
+                'pinjaman' => $pinjaman
+            ];
+        }
                     
         return view('dashboard', [
             'bulan'             => $bulan,
@@ -62,6 +80,7 @@ class DashboardController extends Controller
             'lastUpdated'       => $lastUpdated
                                     ? Carbon::parse($lastUpdated)
                                     : null,
+            'chartData'         => $chartData
         ]);
     }
 

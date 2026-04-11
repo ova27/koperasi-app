@@ -13,7 +13,7 @@ class SimpananController extends Controller
 {
     public function index()
     {
-        $this->authorize('manage simpanan anggota');
+        $this->authorize('view simpanan anggota');
         $bulan = now()->format('Y-m');
 
         // cek apakah simpanan wajib bulan ini sudah digenerate

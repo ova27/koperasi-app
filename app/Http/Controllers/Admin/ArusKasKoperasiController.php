@@ -16,14 +16,28 @@ class ArusKasKoperasiController extends Controller
         $this->authorize('view arus koperasi');
 
         $bulan = $request->get('bulan', now()->format('Y-m'));
+        $bulanNum = substr($bulan, 5, 2);
+        $tahunNum = substr($bulan, 0, 4);
 
         $items = ArusKas::where('jenis_arus', 'koperasi')
-            ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
-            ->orderBy('tanggal')
-            ->orderBy('id')
-            ->get();
+            ->whereMonth('tanggal', $bulanNum)
+            ->whereYear('tanggal', $tahunNum)
+            ->orderBy('tanggal', 'desc')
+            ->paginate(10);
 
-        return view('keuangan.arus-koperasi', compact('items', 'bulan'));
+        $totalMasukBulan = ArusKas::where('jenis_arus', 'koperasi')
+            ->where('tipe', 'masuk')
+            ->whereMonth('tanggal', $bulanNum)
+            ->whereYear('tanggal', $tahunNum)
+            ->sum('jumlah');
+
+        $totalKeluarBulan = ArusKas::where('jenis_arus', 'koperasi')
+            ->where('tipe', 'keluar')
+            ->whereMonth('tanggal', $bulanNum)
+            ->whereYear('tanggal', $tahunNum)
+            ->sum('jumlah');
+
+        return view('keuangan.arus-koperasi', compact('items', 'bulan', 'totalMasukBulan', 'totalKeluarBulan'));
     }
 
     public function export(Request $request)

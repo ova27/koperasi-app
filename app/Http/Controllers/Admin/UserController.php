@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Anggota;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
@@ -46,40 +47,48 @@ class UserController extends Controller
         $this->authorize('manage users');
 
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-            'roles'    => 'array',
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email',
+            'password'       => 'required|min:6',
+            'roles'          => 'array',
+            'anggota_nip'    => 'required|string|max:50|unique:anggotas,nip',
+            'jenis_kelamin'  => 'required|in:L,P',
+            'jabatan'        => 'required|string|max:100',
+            'tanggal_masuk'  => 'required|date',
+            'status'         => 'required|in:aktif,cuti,tugas_belajar,tidak_aktif',
         ]);
 
-        /** ======================
-         * 1. CREATE USER
-         * ====================== */
-        $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        DB::transaction(function () use ($request) {
+            /** ======================
+             * 1. CREATE USER
+             * ====================== */
+            $user = User::create([
+                'name'     => $request->name,
+                'email'    => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        /** ======================
-         * 2. ASSIGN ROLE
-         * ====================== */
-        if ($request->filled('roles')) {
-            $user->syncRoles($request->roles);
-        }
+            /** ======================
+             * 2. ASSIGN ROLE
+             * ====================== */
+            if ($request->filled('roles')) {
+                $user->syncRoles($request->roles);
+            }
 
-        /** ======================
-         * 3. AUTO CREATE ANGGOTA
-         * ====================== */
-        if ($user->hasRole('anggota')) {
+            /** ======================
+             * 3. AUTO CREATE ANGGOTA
+             * ====================== */
             Anggota::create([
                 'user_id'        => $user->id,
                 'nomor_anggota'  => $this->generateNomorAnggota(),
+                'nip'            => $request->anggota_nip,
                 'nama'           => $user->name,
-                'status'         => 'aktif',
-                'tanggal_masuk'  => now(),
+                'jenis_kelamin'  => $request->jenis_kelamin,
+                'jabatan'        => $request->jabatan,
+                'status'         => $request->status,
+                'tanggal_masuk'  => $request->tanggal_masuk,
             ]);
-        }
+        });
 
         return redirect()
             ->route('admin.users.index')

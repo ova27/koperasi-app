@@ -1,11 +1,10 @@
 @extends('layouts.main')
 
-@section('title', 'Master Data')
-@section('page-title', 'Master Data')
+@section('title', 'Data Pengguna')
+@section('page-title', 'Data Pengguna')
     
 @section('content')
 <div class="space-y-6">
-    @include('admin.master-data._tabs')
 
     {{-- HEADER --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -36,7 +35,7 @@
             <button
                 onclick="openCreateUserModal()"
                 class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
-                + Tambah Akun
+                + Tambah Pengguna
             </button>
         @endcan
     </div>
@@ -179,98 +178,53 @@
     </div>
 
     {{-- MODAL CREATE USER --}}
-    <div id="createUserModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 ease-out" id="modalContent">
+    <div id="createUserModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white w-full max-w-xl rounded-lg p-6">
 
-            <div class="flex justify-between items-center pb-4 pt-6 px-6 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-800">Tambah Akun</h2>
-                <button onclick="closeCreateUserModal()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-full hover:bg-gray-100">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold">Tambah Pengguna</h2>
+                <button onclick="closeCreateUserModal()" class="text-gray-500">✕</button>
             </div>
 
-            <form method="POST" action="{{ route('admin.users.store') }}" class="pt-2 pb-6 px-6 space-y-4" autocomplete="off">
+            <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-4">
                 @csrf
 
-                {{-- ROW 1 --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" name="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" placeholder="Masukkan nama lengkap" required>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">NIP</label>
-                        <input type="text" name="anggota_nip" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" placeholder="Masukkan NIP" required>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
-                        <select name="jenis_kelamin" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" required>
-                            <option value="">Pilih jenis kelamin</option>
-                            <option value="L">Laki-laki</option>
-                            <option value="P">Perempuan</option>
-                        </select>
-                    </div>
+                {{-- NAMA --}}
+                <div>
+                    <label class="text-sm text-gray-600">Nama</label>
+                    <input type="text" name="name" class="w-full border rounded px-3 py-2" required>
                 </div>
 
-                {{-- ROW 2 --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Jabatan</label>
-                        <input type="text" name="jabatan" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" placeholder="Masukkan jabatan" required>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" name="email" value="" autocomplete="new-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" placeholder="Masukkan email" required>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" name="password" value="" autocomplete="new-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" placeholder="Masukkan password" required>
-                    </div>
+                {{-- EMAIL --}}
+                <div>
+                    <label class="text-sm text-gray-600">Email</label>
+                    <input type="email" name="email" class="w-full border rounded px-3 py-2" required>
                 </div>
 
-                {{-- ROW 3 --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Tanggal Masuk</label>
-                        <input type="date" name="tanggal_masuk" value="{{ now()->toDateString() }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" required>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Status Anggota</label>
-                        <select name="status" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" required>
-                            <option value="aktif" selected>Aktif</option>
-                            <option value="cuti">Cuti</option>
-                            <option value="tugas_belajar">Tugas Belajar</option>
-                            <option value="tidak_aktif">Tidak Aktif</option>
-                        </select>
-                    </div>
+                {{-- PASSWORD --}}
+                <div>
+                    <label class="text-sm text-gray-600">Password</label>
+                    <input type="password" name="password" class="w-full border rounded px-3 py-2" required>
                 </div>
 
-                {{-- ROLE SELECTION --}}
-                <div class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700">Role Pengguna</label>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 p-4 bg-gray-50 rounded-lg border">
-                        @foreach($roles as $role)
-                            <label class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-200 cursor-pointer">
-                                <input type="checkbox" name="roles[]" value="{{ $role->name }}" data-create-role="{{ $role->name }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
-                                <span class="text-sm font-medium text-gray-700">{{ ucfirst($role->name) }}</span>
-                            </label>
-                        @endforeach
-                    </div>
+                {{-- ROLE --}}
+                <div>
+                    <label class="text-sm text-gray-600">Role</label>
+                    @foreach($roles as $role)
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" name="roles[]" value="{{ $role->name }}">
+                            <span>{{ ucfirst($role->name) }}</span>
+                        </div>
+                    @endforeach
                 </div>
 
-                {{-- ACTION BUTTONS --}}
-                <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
-                    <button type="submit" class="flex-1 sm:flex-none px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm">
+                <div class="flex gap-2 pt-4">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded">
                         Simpan
                     </button>
-                    <button type="button" onclick="closeCreateUserModal()" class="flex-1 sm:flex-none px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200">
+                    <button type="button"
+                            onclick="closeCreateUserModal()"
+                            class="px-4 py-2 bg-gray-200 rounded">
                         Batal
                     </button>
                 </div>
@@ -283,37 +237,13 @@
 {{-- SCRIPT MODAL CREATE USER --}}
 <script>
     function openCreateUserModal() {
-        const modal = document.getElementById('createUserModal');
-        const modalContent = document.getElementById('modalContent');
-        
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        
-        // Trigger animation
-        setTimeout(() => {
-            modalContent.classList.remove('scale-95', 'opacity-0');
-            modalContent.classList.add('scale-100', 'opacity-100');
-        }, 10); // Small delay to ensure display change
-        
-        const form = document.querySelector('#createUserModal form');
-        form?.querySelector('input[name="email"]')?.setAttribute('value', '');
-        form?.querySelector('input[name="password"]')?.setAttribute('value', '');
-        if (form?.email) form.email.value = '';
-        if (form?.password) form.password.value = '';
+        document.getElementById('createUserModal').classList.remove('hidden');
+        document.getElementById('createUserModal').classList.add('flex');
     }
 
     function closeCreateUserModal() {
-        const modal = document.getElementById('createUserModal');
-        const modalContent = document.getElementById('modalContent');
-        
-        modalContent.classList.remove('scale-100', 'opacity-100');
-        modalContent.classList.add('scale-95', 'opacity-0');
-        
-        // Wait for animation to complete
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }, 300); // Match transition duration
+        document.getElementById('createUserModal').classList.add('hidden');
+        document.getElementById('createUserModal').classList.remove('flex');
     }
 </script>
 

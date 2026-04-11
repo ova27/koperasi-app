@@ -1,7 +1,9 @@
 @extends('layouts.main')
 @section('title', 'Laporan Pinjaman')
+@section('page-title', 'Laporan Bulanan')
 @section('content')
-<div class="max-w-6xl mx-auto">
+<div class="space-y-6 -mt-1">
+    @include('admin.laporan._tabs')
 
     {{-- HEADER --}}
     <div class="flex items-center justify-between mb-6">

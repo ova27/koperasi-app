@@ -672,8 +672,6 @@
             </div>
         @endif
     </div>
-@endsection
-
 <script>
     function toggleCicilan(id) {
         const row = document.getElementById('cicilan-' + id);
@@ -711,3 +709,4 @@
         }
     }
 </script>
+@endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
 use App\Models\Pinjaman;
+use App\Models\User;
 use App\Services\PinjamanService;
 use App\Services\SimpananService;
 use Illuminate\Http\Request;
@@ -61,8 +62,10 @@ class AnggotaController extends Controller
         
         // Check if user can view full details (simpanan & pinjaman)
         // Only admin/bendahara/ketua can see financial details of other anggota
-        $canViewFullDetails = Gate::allows('manage simpanan anggota') || 
-                             Gate::allows('nonaktifkan anggota');
+        $canViewFullDetails = Gate::allows('manage simpanan anggota') ||
+                             Gate::allows('nonaktifkan anggota') ||
+                             Gate::allows('manage users') ||
+                             Gate::allows('view pengajuan pinjaman');
 
         $status = $request->get('status_pinjaman');
 
@@ -98,10 +101,12 @@ class AnggotaController extends Controller
         $ringkasanPinjaman = $pinjamanService->ringkasanAnggota($anggota->id);
         
         // ambil alasan keluar terakhir untuk semua anggota yang tidak aktif
-        $alasanKeluarMap = \App\Models\Simpanan::where('anggota_id', $anggota->id)
+        $alasanKeluarMap = [
+            $anggota->id => \App\Models\Simpanan::where('anggota_id', $anggota->id)
                         ->whereIn('alasan', ['pensiun', 'mutasi'])
                         ->latest('tanggal')
-                        ->first()?->alasan;
+                        ->first()?->alasan,
+        ];
 
         // MODAL
         if ($request->ajax()) {
