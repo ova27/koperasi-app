@@ -137,12 +137,12 @@
 
 /* posisi normal */
 #toggleSidebar {
-    left: 17rem; 
+    left: 16rem; 
 }
 
 /* saat collapse */
 #sidebar.sidebar-collapsed + #toggleSidebar {
-    left: 4rem;
+    left: 1rem;
 }
 
 /* default */
@@ -152,13 +152,13 @@
 
 /* collapsed */
 .sidebar.sidebar-collapsed {
-    width: 4rem; /* w-16 */
+    width: 0rem; /* w-16 */
 }
 
 #sidebar.sidebar-collapsed {
-    width: 4rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    width: 0rem;
+    padding-left: 0rem;
+    padding-right: 0rem;
 }
 
 /* text disembunyikan */

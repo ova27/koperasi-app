@@ -4,7 +4,7 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-3">
     
     {{-- ========================= --}}
     {{-- RINGKASAN KOPERASI --}}
@@ -17,10 +17,10 @@
         {{-- ========================= --}}
         {{-- RINGKASAN UTAMA --}}
         {{-- ========================= --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
 
             {{-- ANGGOTA --}}
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="p-2 bg-blue-200 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -36,13 +36,13 @@
                     </div>
                     <div class="text-sm font-medium text-gray-600">Anggota Aktif</div>
                 </div>
-                <div class="text-3xl font-bold text-gray-900">
+                <div class="mx-3 text-3xl font-bold text-gray-900">
                     {{ $anggotaAktif ?? 0 }}
                 </div>
             </div>
 
             {{-- TOTAL SIMPANAN --}}
-            <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="p-2 bg-green-200 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -59,13 +59,13 @@
                     </div>
                     <div class="text-sm font-medium text-gray-600">Total Simpanan</div>
                 </div>
-                <div class="text-3xl font-bold text-gray-900">
+                <div class="mx-2 text-2xl font-bold text-gray-900">
                     Rp {{ number_format($totalSimpanan ?? 0, 0, ',', '.') }}
                 </div>
             </div>
 
             {{-- TOTAL PINJAMAN --}}
-            <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="p-2 bg-yellow-200 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -82,7 +82,7 @@
                     </div>
                     <div class="text-sm font-medium text-gray-600">Total Pinjaman</div>
                 </div>
-                <div class="text-3xl font-bold text-gray-900">
+                <div class="mx-2 text-2xl font-bold text-gray-900">
                     Rp {{ number_format($totalPinjaman ?? 0, 0, ',', '.') }}
                 </div>
             </div>
@@ -90,79 +90,80 @@
         </div>
     </div>
 
-    {{-- ========================= --}}
-    {{-- DETAIL RINGKASAN --}}
-    {{-- ========================= --}}
-    <div class="bg-white border border-gray-200 rounded-xl px-6 py-5 shadow-sm">
-        <h2 class="section-title mb-6">
-            Detail Ringkasan
-            <span class="text-base text-gray-600 font-normal">
-                ({{ $bulan }} {{ $tahun }})
-            </span>
-        </h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+        {{-- DETAIL RINGKASAN (KIRI) --}}
+        <div class="bg-white border border-gray-200 rounded-xl px-6 pt-6 pb-6 shadow-sm">
+            <h2 class="section-title mb-4">
+                Detail Ringkasan
+                <span class="text-base text-gray-600 font-normal">
+                    ({{ $bulan }} {{ $tahun }})
+                </span>
+            </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {{-- SIMPANAN --}}
-            <div class="space-y-3">
-                <h3 class="text-sm font-semibold text-gray-700">Simpanan</h3>
-                <div class="grid grid-cols-1 gap-3">
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div class="text-sm text-green-800 font-medium">Simpanan Pokok</div>
-                        <div class="text-xl font-bold text-green-900">
-                            Rp {{ number_format($simpananPokok ?? 0, 0, ',', '.') }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {{-- SIMPANAN --}}
+                <div class="space-y-2">
+                    <h3 class="text-sm mx-1 font-semibold text-gray-700">Simpanan</h3>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="text-sm text-green-800 font-medium">Simpanan Pokok</div>
+                            <div class="text-lg font-bold text-green-900">
+                                Rp {{ number_format($simpananPokok ?? 0, 0, ',', '.') }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div class="text-sm text-green-800 font-medium">Simpanan Wajib</div>
-                        <div class="text-xl font-bold text-green-900">
-                            Rp {{ number_format($simpananWajib ?? 0, 0, ',', '.') }}
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="text-sm text-green-800 font-medium">Simpanan Wajib</div>
+                            <div class="text-lg font-bold text-green-900">
+                                Rp {{ number_format($simpananWajib ?? 0, 0, ',', '.') }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div class="text-sm text-green-800 font-medium">Simpanan Sukarela</div>
-                        <div class="text-xl font-bold text-green-900">
-                            Rp {{ number_format($simpananSukarela ?? 0, 0, ',', '.') }}
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="text-sm text-green-800 font-medium">Simpanan Sukarela</div>
+                            <div class="text-lg font-bold text-green-900">
+                                Rp {{ number_format($simpananSukarela ?? 0, 0, ',', '.') }}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- PINJAMAN --}}
-            <div class="space-y-3">
-                <h3 class="text-sm font-semibold text-gray-700">Pinjaman</h3>
-                <div class="grid grid-cols-1 gap-3">
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div class="text-sm text-yellow-800 font-medium">Pinjaman Aktif</div>
-                        <div class="text-xl font-bold text-yellow-900">
-                            {{ $pinjamanAktif ?? 0 }}
+                {{-- PINJAMAN --}}
+                <div class="space-y-2">
+                    <h3 class="text-sm mx-1 font-semibold text-gray-700">Pinjaman</h3>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="text-sm text-yellow-800 font-medium">Pinjaman Aktif</div>
+                            <div class="text-lg font-bold text-yellow-900">
+                                {{ $pinjamanAktif ?? 0 }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div class="text-sm text-yellow-800 font-medium">Antrian Pinjaman</div>
-                        <div class="text-xl font-bold text-yellow-900">
-                            {{ $antrianPinjaman ?? 0 }}
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="text-sm text-yellow-800 font-medium">Antrian Pinjaman</div>
+                            <div class="text-lg font-bold text-yellow-900">
+                                {{ $antrianPinjaman ?? 0 }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div class="text-sm text-yellow-800 font-medium">Sisa Pinjaman Aktif</div>
-                        <div class="text-xl font-bold text-yellow-900">
-                            Rp {{ number_format($sisaPinjamanAktif ?? 0, 0, ',', '.') }}
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="text-sm text-yellow-800 font-medium">Sisa Pinjaman Aktif</div>
+                            <div class="text-lg font-bold text-yellow-900">
+                                Rp {{ number_format($sisaPinjamanAktif ?? 0, 0, ',', '.') }}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- ========================= --}}
-    {{-- GRAFIK TREN --}}
-    {{-- ========================= --}}
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-        <h2 class="section-title mb-4">
-            Tren Bulanan
-        </h2>
-        <div class="relative">
-            <canvas id="trenChart" width="400" height="200"></canvas>
+        {{-- GRAFIK TREN (KANAN) --}}
+        <div class="bg-white border border-gray-200 rounded-xl px-6 pt-6 pb-3 shadow-sm flex flex-col">
+            <h2 class="section-title">
+                Tren Bulanan
+            </h2>
+
+            <div class="flex-1 mt-4">
+                <div class="w-full h-[280px]">
+                    <canvas id="trenChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -227,11 +228,7 @@
                 responsive: true,
                 plugins: {
                     legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Tren Simpanan dan Pinjaman Bulanan'
+                        position: 'bottom',
                     }
                 },
                 scales: {

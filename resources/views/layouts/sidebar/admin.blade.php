@@ -103,7 +103,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <div x-show="open" x-transition class="mt-2 ml-6 space-y-1 border-l-2 border-slate-200 pl-4">
+                <div x-show="open" x-transition class="ml-6 space-y-1 border-l-2 border-slate-200 pl-2">
                     <a href="{{ auth()->user()->can('manage users') ? route('admin.users.index') : route('admin.anggota.index') }}"
                         class="sub-menu-link {{ request()->routeIs('admin.anggota.*') || request()->routeIs('admin.users.*') ? 'active' : '' }}">
                         Data
@@ -130,7 +130,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <div x-show="open" x-transition class="mt-2 ml-6 space-y-1 border-l-2 border-slate-200 pl-4">
+                <div x-show="open" x-transition class="ml-6 space-y-1 border-l-2 border-slate-200 pl-2">
                     @canany(['view simpanan anggota', 'manage simpanan anggota'])
                     <a href="{{ route('admin.simpanan.index') }}"
                         class="sub-menu-link {{ request()->routeIs('admin.simpanan.*') ? 'active' : '' }}">
@@ -167,7 +167,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <div x-show="open" x-transition class="mt-2 ml-6 space-y-1 border-l-2 border-slate-200 pl-4">
+                <div x-show="open" x-transition class="ml-6 space-y-1 border-l-2 border-slate-200 pl-2">
                     @can('view saldo')
                     <a href="{{ route('admin.keuangan.saldo') }}"
                         class="sub-menu-link {{ request()->routeIs('admin.keuangan.saldo') || request()->routeIs('admin.keuangan.arus.koperasi') || request()->routeIs('admin.keuangan.arus.operasional') ? 'active' : '' }}">

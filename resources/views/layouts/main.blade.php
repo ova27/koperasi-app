@@ -7,15 +7,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-100 text-slate-800" x-data="{ mobileSidebarOpen: false }">
+<body class="bg-slate-100 text-slate-800">
 
 <div class="flex min-h-screen relative">
     {{-- SIDEBAR --}}
     <aside id="sidebar"
-            class="fixed inset-y-0 left-0 z-50 w-64 transition-all duration-300 overflow-hidden
-            bg-gradient-to-b from-slate-50 to-slate-100 border-r border-gray-200 shadow-lg px-4 pt-5 pb-6
-            lg:static lg:translate-x-0 lg:shadow-sm
-            transform -translate-x-full lg:block">
+        class="fixed inset-y-0 left-0 w-64 transition-all duration-300 overflow-hidden
+        bg-gradient-to-b from-slate-50 to-slate-100 border-r border-gray-200 shadow-lg px-3 pt-5 pb-6
+        lg:static lg:translate-x-0 lg:shadow-sm">
 
         @role('admin')
             @include('layouts.sidebar.admin')
@@ -24,37 +23,11 @@
         @endrole
     </aside>
 
-    {{-- OVERLAY for mobile --}}
-    <div x-show="mobileSidebarOpen" 
-         @click="mobileSidebarOpen = false"
-         class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-         x-transition></div>
-
-    {{-- TOGGLE SIDEBAR DESKTOP --}}
-    <button id="toggleSidebar"
-        class="hidden lg:flex absolute top-8 -translate-y-1/2 left-64 z-50 rounded-md
-            transition-all duration-300 shadow-md w-9 h-9 flex items-center justify-center hover:bg-gray-200 bg-white">
-        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-    </button>
-
     {{-- WRAPPER KANAN --}}
-    <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 lg:ml-0">
+    <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300">
 
         {{-- TOP NAVIGATION --}}
         <header class="bg-white border-b shadow-sm">
-            {{-- MOBILE HAMBURGER --}}
-            <div class="lg:hidden flex items-center justify-between px-4 py-3">
-                <button @click="mobileSidebarOpen = true" 
-                        class="text-gray-600 hover:text-gray-800 focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-                <div class="text-sm font-semibold text-gray-800">Koperasi Simpatik</div>
-                <div class="w-6"></div> {{-- Spacer --}}
-            </div>
             @include('layouts.navigation')
         </header>
 
