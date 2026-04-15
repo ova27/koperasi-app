@@ -7,43 +7,6 @@
 <div class="space-y-6 -mt-1">
     @include('admin.laporan._tabs')
 
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <form method="GET" class="flex flex-wrap gap-3 items-end">
-            <div>
-                <label for="bulan" class="block text-sm font-medium text-gray-600 mb-1">Bulan</label>
-                <input
-                    id="bulan"
-                    type="month"
-                    name="bulan"
-                    value="{{ $bulan }}"
-                    class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-            </div>
-
-            <div>
-                <label for="filter" class="block text-sm font-medium text-gray-600 mb-1">Jenis Arus</label>
-                <select
-                    id="filter"
-                    name="filter"
-                    class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    <option value="semua" @selected($filter === 'semua')>Semua</option>
-                    <option value="koperasi" @selected($filter === 'koperasi')>Arus Koperasi</option>
-                    <option value="operasional" @selected($filter === 'operasional')>Arus Operasional</option>
-                </select>
-            </div>
-
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                Tampilkan
-            </button>
-
-            <a href="{{ route('admin.keuangan.laporan.arus-kas.export', ['bulan' => $bulan]) }}"
-                class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition inline-flex items-center justify-center">
-                Export Excel
-            </a>
-        </form>
-    </div>
-
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <p class="text-sm font-medium text-gray-500">Total Masuk</p>
@@ -147,9 +110,85 @@
             <p class="text-sm text-gray-500">Menampilkan seluruh transaksi kas pada bulan terpilih sesuai filter jenis arus.</p>
         </div>
 
-        <div class="overflow-x-auto">
+        @php
+            [$tahunAktif, $bulanAktif] = array_pad(explode('-', $bulan), 2, null);
+            $tahunAktif = (int) ($tahunAktif ?: now()->format('Y'));
+            $bulanAktif = (int) ($bulanAktif ?: now()->format('n'));
+
+            $namaBulan = [
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember',
+            ];
+
+            $tahunSekarang = (int) now()->format('Y');
+            $daftarTahun = range($tahunSekarang + 1, $tahunSekarang - 5);
+        @endphp
+
+        <div class="px-5 py-3 border-b border-gray-200 bg-gray-50">
+            <form method="GET" class="flex flex-wrap gap-3 items-end">
+                <div>
+                    <label for="bulan_filter" class="block text-sm font-medium text-gray-600 mb-1">Bulan</label>
+                    <select
+                        id="bulan_filter"
+                        name="bulan_filter"
+                        class="border border-gray-300 rounded-lg pl-3 pr-9 py-2 min-w-[6.5rem] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        @foreach ($namaBulan as $nomorBulan => $labelBulan)
+                            <option value="{{ $nomorBulan }}" @selected($bulanAktif === $nomorBulan)>{{ $labelBulan }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="tahun_filter" class="block text-sm font-medium text-gray-600 mb-1">Tahun</label>
+                    <select
+                        id="tahun_filter"
+                        name="tahun_filter"
+                        class="border border-gray-300 rounded-lg pl-3 pr-9 py-2 min-w-[6.5rem] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        @foreach ($daftarTahun as $tahunItem)
+                            <option value="{{ $tahunItem }}" @selected($tahunAktif === (int) $tahunItem) class="text-left">{{ $tahunItem }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="filter" class="block text-sm font-medium text-gray-600 mb-1">Jenis Arus</label>
+                    <select
+                        id="filter"
+                        name="filter"
+                        class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="semua" @selected($filter === 'semua')>Semua</option>
+                        <option value="koperasi" @selected($filter === 'koperasi')>Arus Koperasi</option>
+                        <option value="operasional" @selected($filter === 'operasional')>Arus Operasional</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                    Tampilkan
+                </button>
+
+                <a href="{{ route('admin.keuangan.laporan.arus-kas.export', ['bulan_filter' => $bulanAktif, 'tahun_filter' => $tahunAktif, 'bulan' => $bulan, 'filter' => $filter]) }}"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition inline-flex items-center justify-center">
+                    Export Excel
+                </a>
+            </form>
+        </div>
+
+        <div class="max-h-[28rem] overflow-auto">
             <table class="min-w-full text-sm">
-                <thead class="bg-[#9fb2de] border-b border-gray-300">
+            <thead class="bg-[#9fb2de] border-b border-gray-300 sticky top-0 z-10">
                     <tr class="text-gray-900">
                         <th class="px-4 py-3 text-left text-sm font-semibold">No</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold">Tanggal Transaksi</th>

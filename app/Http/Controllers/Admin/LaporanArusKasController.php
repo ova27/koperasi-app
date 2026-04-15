@@ -14,7 +14,15 @@ class LaporanArusKasController extends Controller
     {
         $this->authorize('view laporan arus kas');
 
-        $bulan = $request->get('bulan', now()->format('Y-m'));
+        $bulanInput = (int) $request->get('bulan_filter');
+        $tahunInput = (int) $request->get('tahun_filter');
+
+        if ($bulanInput >= 1 && $bulanInput <= 12 && $tahunInput >= 2000 && $tahunInput <= 2100) {
+            $bulan = sprintf('%04d-%02d', $tahunInput, $bulanInput);
+        } else {
+            $bulan = $request->get('bulan', now()->format('Y-m'));
+        }
+
         $filter = $request->get('filter', 'semua');
 
         $query = ArusKas::query()
@@ -59,7 +67,14 @@ class LaporanArusKasController extends Controller
 
     public function export(Request $request)
     {
-        $bulan = $request->get('bulan', now()->format('Y-m'));
+        $bulanInput = (int) $request->get('bulan_filter');
+        $tahunInput = (int) $request->get('tahun_filter');
+
+        if ($bulanInput >= 1 && $bulanInput <= 12 && $tahunInput >= 2000 && $tahunInput <= 2100) {
+            $bulan = sprintf('%04d-%02d', $tahunInput, $bulanInput);
+        } else {
+            $bulan = $request->get('bulan', now()->format('Y-m'));
+        }
 
         return Excel::download(
             new LaporanArusKasExport($bulan),

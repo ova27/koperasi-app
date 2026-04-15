@@ -1,26 +1,28 @@
-{{-- SIDEBAR HEADER --}}
-<div class="flex items-center gap-3 px-2 mb-4">
-    {{-- ICON / LOGO --}}
-    <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-500 text-white font-bold text-lg shadow-md">
-        K
-    </div>
-    {{-- TITLE & ROLE --}}
-    <div class="sidebar-title">
-        <div class="text-sm font-bold tracking-wide text-slate-800 uppercase">
-            Koperasi Simpatik
+<div class="sidebar-shell h-full">
+    {{-- SIDEBAR HEADER --}}
+    <div class="sidebar-brand mb-5 flex items-center gap-3 px-1 py-1">
+        {{-- ICON / LOGO --}}
+        <div class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 text-base font-bold text-white shadow-md ring-2 ring-white">
+            K
         </div>
-        <div class="text-xs text-slate-500 capitalize">
-            BPS Provinsi Banten
+        {{-- TITLE & ROLE --}}
+        <div class="sidebar-title min-w-0">
+            <div class="truncate text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Koperasi</div>
+            <div class="truncate text-sm font-bold tracking-wide text-slate-800 uppercase">
+                Simpatik
+            </div>
+            <div class="truncate text-xs text-slate-500 capitalize">
+                BPS Provinsi Banten
+            </div>
         </div>
     </div>
-</div>
 
-<hr class="border-slate-300 mb-6">
+    <hr class="mb-5 border-slate-200">
 
-<div class="space-y-2">
-    {{-- MENU --}}
-    <nav class="space-y-1">
-        <ul class="menu">
+    <div class="space-y-2">
+        {{-- MENU --}}
+        <nav class="space-y-1">
+            <ul class="menu">
             {{-- ================= DASHBOARD ================= --}}
             @can('view dashboard')
             <li class="menu-item">
@@ -95,7 +97,7 @@
                 <button
                     type="button"
                     @click="open = !open"
-                    class="menu-link w-full flex items-center justify-between hover:bg-slate-100 transition-colors duration-200">
+                    class="menu-link menu-toggle-btn w-full flex items-center justify-between transition-colors duration-200">
                     <div class="flex items-center gap-3">
                         <span class="menu-text">Master</span>
                     </div>
@@ -122,7 +124,7 @@
                 <button
                     type="button"
                     @click="open = !open"
-                    class="menu-link w-full flex items-center justify-between hover:bg-slate-100 transition-colors duration-200">
+                    class="menu-link menu-toggle-btn w-full flex items-center justify-between transition-colors duration-200">
                     <div class="flex items-center gap-3">
                         <span class="menu-text">Transaksi</span>
                     </div>
@@ -159,7 +161,7 @@
                 <button
                     type="button"
                     @click="open = !open"
-                    class="menu-link w-full flex items-center justify-between hover:bg-slate-100 transition-colors duration-200">
+                    class="menu-link menu-toggle-btn w-full flex items-center justify-between transition-colors duration-200">
                     <div class="flex items-center gap-3">
                         <span class="menu-text">Keuangan</span>
                     </div>
@@ -188,6 +190,7 @@
             </li>
             @endcanany
             @endcanany
-        </ul>
-    </nav>
+            </ul>
+        </nav>
+    </div>
 </div>

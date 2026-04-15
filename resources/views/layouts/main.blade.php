@@ -12,9 +12,9 @@
 <div class="flex min-h-screen relative">
     {{-- SIDEBAR --}}
     <aside id="sidebar"
-        class="fixed inset-y-0 left-0 w-64 transition-all duration-300 overflow-hidden
+        class="sidebar fixed inset-y-0 left-0 z-40 w-64 -translate-x-full transition-all duration-300 overflow-hidden
         bg-gradient-to-b from-slate-50 to-slate-100 border-r border-gray-200 shadow-lg px-3 pt-5 pb-6
-        lg:static lg:translate-x-0 lg:shadow-sm">
+        lg:static lg:z-auto lg:translate-x-0 lg:shadow-sm">
 
         @role('admin')
             @include('layouts.sidebar.admin')
@@ -23,9 +23,11 @@
         @endrole
     </aside>
 
+    {{-- OVERLAY MOBILE --}}
+    <div id="sidebarOverlay" class="fixed inset-0 z-30 hidden bg-black/40 lg:hidden"></div>
+
     {{-- WRAPPER KANAN --}}
     <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300">
-
         {{-- TOP NAVIGATION --}}
         <header class="bg-white border-b shadow-sm">
             @include('layouts.navigation')
@@ -34,7 +36,6 @@
         {{-- CONTENT --}}
         <main class="flex-1 p-6 bg-stone-50 border-r border-gray-200 shadow-sm">
             <div class="max-w-7xl mx-auto">
-
                 {{-- PAGE TITLE --}}
                 @hasSection('page-title')
                     <h1 class="text-xl font-semibold mb-4">
@@ -46,7 +47,6 @@
                 <div class="bg-white border border-gray-200 rounded-xl p-6">
                     @yield('content')
                 </div>
-
             </div>
         </main>
 
@@ -160,27 +160,77 @@ function closeModal() {
     }
 </script>
 
-{{-- TOGGLE SIDEBAR DESKTOP --}}
+{{-- TOGGLE SIDEBAR RESPONSIVE --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggleSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const desktopBreakpoint = 1024;
 
-        if (!sidebar || !toggleBtn) return;
+        if (!sidebar || !toggleBtn || !sidebarOverlay) return;
 
-        // load state
-        if (localStorage.getItem('sidebar') === 'collapsed') {
-            sidebar.classList.add('sidebar-collapsed');
+        const isDesktop = () => window.innerWidth >= desktopBreakpoint;
+
+        const setMobileOpenState = (isOpen) => {
+            sidebar.classList.toggle('mobile-open', isOpen);
+            sidebarOverlay.classList.toggle('hidden', !isOpen);
+            document.body.classList.toggle('overflow-hidden', isOpen);
+        };
+
+        const applyDesktopSidebarState = () => {
+            if (localStorage.getItem('sidebar') === 'collapsed') {
+                sidebar.classList.add('sidebar-collapsed');
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+            }
+        };
+
+        if (isDesktop()) {
+            applyDesktopSidebarState();
+        } else {
+            sidebar.classList.remove('sidebar-collapsed');
+            setMobileOpenState(false);
         }
 
         toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('sidebar-collapsed');
+            if (isDesktop()) {
+                sidebar.classList.toggle('sidebar-collapsed');
 
-            if (sidebar.classList.contains('sidebar-collapsed')) {
-                localStorage.setItem('sidebar', 'collapsed');
-            } else {
-                localStorage.setItem('sidebar', 'expanded');
+                if (sidebar.classList.contains('sidebar-collapsed')) {
+                    localStorage.setItem('sidebar', 'collapsed');
+                } else {
+                    localStorage.setItem('sidebar', 'expanded');
+                }
+
+                return;
             }
+
+            const isOpen = sidebar.classList.contains('mobile-open');
+            setMobileOpenState(!isOpen);
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            setMobileOpenState(false);
+        });
+
+        window.addEventListener('resize', () => {
+            if (isDesktop()) {
+                setMobileOpenState(false);
+                applyDesktopSidebarState();
+                return;
+            }
+
+            sidebar.classList.remove('sidebar-collapsed');
+            setMobileOpenState(false);
+        });
+
+        sidebar.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', () => {
+                if (!isDesktop()) {
+                    setMobileOpenState(false);
+                }
+            });
         });
     });
 </script>
