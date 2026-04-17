@@ -36,6 +36,13 @@
 
             <li class="menu-header">Data Saya</li>
 
+            <li class="menu-item">
+                <a href="{{ route('anggota.profil.index') }}"
+                class="menu-link {{ request()->routeIs('anggota.profil.*') ? 'active' : '' }}">
+                    <span class="menu-text">Profil</span>
+                </a>
+            </li>
+
             @can('view simpanan saya')
             <li class="menu-item">
                 <a href="{{ route('anggota.simpanan.index') }}"

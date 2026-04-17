@@ -16,11 +16,11 @@
         bg-gradient-to-b from-slate-50 to-slate-100 border-r border-gray-200 shadow-lg px-3 pt-5 pb-6
         lg:static lg:z-auto lg:translate-x-0 lg:shadow-sm">
 
-        @role('admin')
+        @if(auth()->user()->hasAnyRole(['admin', 'ketua', 'bendahara']))
             @include('layouts.sidebar.admin')
-        @elserole('anggota')
+        @elseif(auth()->user()->hasRole('anggota'))
             @include('layouts.sidebar.anggota')
-        @endrole
+        @endif
     </aside>
 
     {{-- OVERLAY MOBILE --}}
@@ -56,20 +56,32 @@
 
 {{-- ================= MODAL DETAIL ANGGOTA ================= --}}
 <div id="modal-detail"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
+     class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-title">
 
-    <div class="bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative">
+    {{-- BACKDROP --}}
+    <div id="modal-backdrop"
+         class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+         onclick="closeModal()"></div>
 
-        {{-- TOMBOL TUTUP --}}
-        <button
-            type="button"
-            onclick="closeModal()"
-            class="absolute top-3 right-3 text-gray-400 hover:text-black text-lg">
-            ✕
-        </button>
+    {{-- PANEL --}}
+    <div id="modal-panel"
+         class="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl ring-1 ring-black/5
+                translate-y-4 opacity-0 transition-all duration-300 ease-out overflow-hidden">
+
+        {{-- LOADING STATE --}}
+        <div id="modal-loading" class="flex flex-col items-center justify-center py-20 gap-3">
+            <svg class="w-8 h-8 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+            <p class="text-sm text-slate-500">Memuat data...</p>
+        </div>
 
         {{-- KONTEN AJAX --}}
-        <div id="modal-content">
+        <div id="modal-content" class="hidden">
             {{-- diisi via fetch --}}
         </div>
 
@@ -99,32 +111,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
+    // ESC key to close modal
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+    });
+
 });
 
 function openModal(url) {
+    const modal   = document.getElementById('modal-detail');
+    const panel   = document.getElementById('modal-panel');
+    const loading = document.getElementById('modal-loading');
+    const content = document.getElementById('modal-content');
+
+    // Reset state
+    content.classList.add('hidden');
+    content.innerHTML = '';
+    loading.classList.remove('hidden');
+
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+
+    // Animate in
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            panel.classList.remove('translate-y-4', 'opacity-0');
+            panel.classList.add('translate-y-0', 'opacity-100');
+        });
+    });
+
     fetch(url, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(res => res.text())
     .then(html => {
-        document.getElementById('modal-content').innerHTML = html;
+        content.innerHTML = html;
+        content.querySelectorAll('script').forEach(oldScript => {
+            const newScript = document.createElement('script');
 
-        const modal = document.getElementById('modal-detail');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+            Array.from(oldScript.attributes).forEach(attribute => {
+                newScript.setAttribute(attribute.name, attribute.value);
+            });
+
+            newScript.textContent = oldScript.textContent;
+            oldScript.replaceWith(newScript);
+        });
+
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
     })
     .catch(() => {
-        alert('Gagal memuat data.');
+        loading.classList.add('hidden');
+        content.innerHTML = '<div class="p-6 text-center text-red-500 text-sm">Gagal memuat data. Silakan coba lagi.</div>';
+        content.classList.remove('hidden');
     });
 }
 
 function closeModal() {
     const modal = document.getElementById('modal-detail');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    document.getElementById('modal-content').innerHTML = '';
+    const panel = document.getElementById('modal-panel');
+
+    panel.classList.remove('translate-y-0', 'opacity-100');
+    panel.classList.add('translate-y-4', 'opacity-0');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+        document.getElementById('modal-content').innerHTML = '';
+        document.getElementById('modal-content').classList.add('hidden');
+        document.getElementById('modal-loading').classList.remove('hidden');
+    }, 200);
 }
 </script>
 

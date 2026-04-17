@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
 use App\Models\Pinjaman;
-use App\Models\User;
 use App\Services\PinjamanService;
 use App\Services\SimpananService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -67,6 +67,46 @@ class AnggotaController extends Controller
                              Gate::allows('manage users') ||
                              Gate::allows('view pengajuan pinjaman');
 
+        $anggota->loadMissing(['user', 'rekeningAktif']);
+
+        // ambil alasan keluar terakhir untuk anggota ini
+        $alasanKeluarMap = [
+            $anggota->id => \App\Models\Simpanan::where('anggota_id', $anggota->id)
+                        ->whereIn('alasan', ['pensiun', 'mutasi'])
+                        ->latest('tanggal')
+                        ->first()?->alasan,
+        ];
+
+        // MODAL AJAX: cukup ambil data ringkas agar respon cepat
+        if ($request->ajax()) {
+            $pokok = 0;
+            $wajib = 0;
+            $sukarela = 0;
+            $total = 0;
+            $ringkasanPinjaman = ['aktif' => 0, 'lunas' => 0, 'sisa' => 0];
+
+            if ($canViewFullDetails) {
+                $saldoSimpanan = $simpananService->saldoPerJenis($anggota->id);
+                $ringkasanPinjaman = $pinjamanService->ringkasanAnggota($anggota->id);
+
+                $pokok    = $saldoSimpanan['pokok'] ?? 0;
+                $wajib    = $saldoSimpanan['wajib'] ?? 0;
+                $sukarela = $saldoSimpanan['sukarela'] ?? 0;
+                $total    = $pokok + $wajib + $sukarela;
+            }
+
+            return view('admin.anggota._show_modal', compact(
+                'anggota',
+                'pokok',
+                'wajib',
+                'sukarela',
+                'total',
+                'ringkasanPinjaman',
+                'canViewFullDetails',
+                'alasanKeluarMap'
+            ));
+        }
+
         $status = $request->get('status_pinjaman');
 
         // 🔹 Query dasar (biar gak nulis ulang)
@@ -99,39 +139,6 @@ class AnggotaController extends Controller
 
         $saldoSimpanan = $simpananService->saldoPerJenis($anggota->id);
         $ringkasanPinjaman = $pinjamanService->ringkasanAnggota($anggota->id);
-        
-        // ambil alasan keluar terakhir untuk semua anggota yang tidak aktif
-        $alasanKeluarMap = [
-            $anggota->id => \App\Models\Simpanan::where('anggota_id', $anggota->id)
-                        ->whereIn('alasan', ['pensiun', 'mutasi'])
-                        ->latest('tanggal')
-                        ->first()?->alasan,
-        ];
-
-        // MODAL
-        if ($request->ajax()) {
-
-            // hitung ulang biar view modal simpel
-            $pokok    = $saldoSimpanan['pokok'] ?? 0;
-            $wajib    = $saldoSimpanan['wajib'] ?? 0;
-            $sukarela = $saldoSimpanan['sukarela'] ?? 0;
-            $total    = $pokok + $wajib + $sukarela;
-
-            return view('admin.anggota._show_modal', compact(
-                'anggota',
-                'pokok',
-                'wajib',
-                'sukarela',
-                'total',
-                'ringkasanPinjaman',
-                'canViewFullDetails',
-                'alasanKeluarMap',
-                'simpanans',
-                'pinjamans',
-                'pinjamanAktif',
-                'pinjamanLunas'
-            ));
-        }
 
         // VIEW (FULL PAGE)
         return view('admin.anggota.show', compact(
@@ -184,34 +191,86 @@ class AnggotaController extends Controller
             return view('admin.anggota._edit_modal', compact('anggota'));
         }
 
-        // fallback: halaman lama tetap bisa dipakai
-        return view('admin.anggota.edit', compact('anggota'));
+        return redirect()->route('admin.anggota.show', [
+            'anggota' => $anggota,
+            'open_edit' => 1,
+        ]);
     }
 
     public function update(Request $request, Anggota $anggota)
     {
         $this->authorize('edit anggota');
 
-        if ($request->status === 'tidak_aktif') {
+        $validated = $request->validate([
+            'nama'           => ['required', 'string', 'max:255'],
+            'email'          => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($anggota->user_id),
+            ],
+            'nip'            => ['nullable', 'string', 'max:50', Rule::unique('anggotas', 'nip')->ignore($anggota->id)],
+            'jenis_kelamin'  => ['required', 'in:L,P'],
+            'jabatan'        => ['nullable', 'string', 'max:100'],
+            'tanggal_masuk'  => ['required', 'date'],
+            'tanggal_keluar' => ['nullable', 'date', 'after_or_equal:tanggal_masuk'],
+            'status'         => ['required', 'in:aktif,tugas_belajar,cuti,tidak_aktif'],
+            'nama_bank'      => ['nullable', 'string', 'max:100'],
+            'nomor_rekening' => ['nullable', 'string', 'max:50'],
+            'nama_pemilik'   => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if (($validated['status'] ?? null) === 'tidak_aktif' && $anggota->status !== 'tidak_aktif') {
+            $message = 'Status Pensiun/Mutasi tidak bisa diubah dari Edit Profil. Gunakan proses keluar anggota setelah pengembalian seluruh simpanan.';
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => 'Validasi gagal.',
+                    'errors' => ['status' => [$message]],
+                ], 422);
+            }
+
+            return back()->withErrors(['status' => $message])->withInput();
+        }
+
+        if ($validated['status'] === 'tidak_aktif') {
             // logout paksa jika sedang login
             if ($anggota->user && Auth::id() === $anggota->user->id) {
                 Auth::logout();
             }
         }
 
-        $request->validate([
-            'nip'            => 'nullable|string|max:50',
-            'jenis_kelamin'  => 'required|in:L,P',
-            'jabatan'        => 'nullable|string|max:100',
-            'status'         => 'required|in:aktif,tugas_belajar,cuti,tidak_aktif',
+        $anggota->update([
+            'nama'          => $validated['nama'],
+            'nip'           => $validated['nip'],
+            'jenis_kelamin' => $validated['jenis_kelamin'],
+            'jabatan'       => $validated['jabatan'],
+            'status'        => $validated['status'],
+            'tanggal_masuk' => $validated['tanggal_masuk'],
+            'tanggal_keluar' => $validated['status'] === 'tidak_aktif'
+                ? ($validated['tanggal_keluar'] ?? $anggota->tanggal_keluar)
+                : null,
         ]);
 
-        $anggota->update([
-            'nip'           => $request->nip,
-            'jenis_kelamin' => $request->jenis_kelamin,
-            'jabatan'       => $request->jabatan,
-            'status'        => $request->status,
-        ]);
+        if ($anggota->user && !empty($validated['email'])) {
+            $anggota->user->update(['email' => $validated['email']]);
+        }
+
+        $hasRekeningInput = filled($validated['nama_bank']) ||
+            filled($validated['nomor_rekening']) ||
+            filled($validated['nama_pemilik']);
+
+        if ($hasRekeningInput) {
+            $anggota->rekeningAktif()->updateOrCreate(
+                ['aktif' => true],
+                [
+                    'nama_bank' => $validated['nama_bank'] ?? '-',
+                    'nomor_rekening' => $validated['nomor_rekening'] ?? '-',
+                    'nama_pemilik' => $validated['nama_pemilik'] ?? $validated['nama'],
+                    'aktif' => true,
+                ]
+            );
+        }
 
         if ($request->ajax()) {
             return response()->json([

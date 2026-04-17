@@ -70,6 +70,21 @@
             <input type="date" name="tanggal_masuk" value="{{ now()->toDateString() }}" class="w-full border rounded px-3 py-2" required>
         </div>
 
+        <div>
+            <label class="text-sm text-gray-600">Nama Bank</label>
+            <input type="text" name="nama_bank" class="w-full border rounded px-3 py-2" placeholder="Contoh: BANK BRI">
+        </div>
+
+        <div>
+            <label class="text-sm text-gray-600">Nomor Rekening</label>
+            <input type="text" name="nomor_rekening" class="w-full border rounded px-3 py-2" placeholder="Masukkan nomor rekening">
+        </div>
+
+        <div>
+            <label class="text-sm text-gray-600">Nama Pemilik Rekening</label>
+            <input type="text" name="nama_pemilik" class="w-full border rounded px-3 py-2" placeholder="Nama pemilik rekening">
+        </div>
+
         {{-- ROLE --}}
         <div>
             <label class="text-sm text-gray-600">Role</label>

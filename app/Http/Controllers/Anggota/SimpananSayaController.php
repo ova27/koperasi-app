@@ -23,10 +23,21 @@ class SimpananSayaController extends Controller
             ->groupBy('jenis_simpanan')
             ->map(fn ($items) => $items->sum('jumlah'));
 
-        // Paginate for table display (10 per page)
-        $simpanan = Simpanan::where('anggota_id', $anggota->id)
-            ->orderByDesc('tanggal')
-            ->paginate(10);
+        // Build query for paginated table
+        $query = Simpanan::where('anggota_id', $anggota->id);
+        
+        // Apply filter if provided
+        if (request('filter')) {
+            $validFilters = ['pokok', 'wajib', 'sukarela'];
+            if (in_array(request('filter'), $validFilters)) {
+                $query->where('jenis_simpanan', request('filter'));
+            }
+        }
+        
+        // Paginate for table display (10 per page) with query string preserved
+        $simpanan = $query->orderByDesc('tanggal')
+            ->paginate(10)
+            ->appends(request()->query());
 
         return view('anggota.simpanan.index', compact(
             'simpanan',

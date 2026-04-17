@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -17,6 +16,7 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         $this->authorize('edit profil');
+
         return view('profile.edit', [
             'user' => $request->user(),
         ]);
@@ -28,15 +28,35 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $this->authorize('edit profil');
-        $request->user()->fill($request->validated());
+        $validated = $request->validated();
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        if (!empty($validated['password'])) {
+            $user->password = $validated['password'];
+        }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $user->save();
+
+        if ($user->anggota) {
+            $user->anggota()->update([
+                'nama' => $validated['name'],
+                'nip' => $validated['nip'] ?? null,
+                'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
+            ]);
+        }
+
+        return Redirect::back()
+            ->with('status', 'profile-updated')
+            ->with('success', 'Profil berhasil diperbarui.');
     }
 
     /**

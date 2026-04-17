@@ -195,6 +195,7 @@ class DatabaseSeeder extends Seeder
             'view dashboard',
             'view anggota list',
             'manage users',
+            'edit profil',
         ]);
 
         $this->call(RekeningKoperasiSeeder::class);

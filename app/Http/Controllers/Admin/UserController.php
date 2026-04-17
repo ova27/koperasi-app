@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Anggota;
+use App\Models\RekeningAnggota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -56,6 +57,9 @@ class UserController extends Controller
             'jabatan'        => 'required|string|max:100',
             'tanggal_masuk'  => 'required|date',
             'status'         => 'required|in:aktif,cuti,tugas_belajar,tidak_aktif',
+            'nama_bank'      => 'nullable|string|max:100',
+            'nomor_rekening' => 'nullable|string|max:50',
+            'nama_pemilik'   => 'nullable|string|max:255',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -78,7 +82,7 @@ class UserController extends Controller
             /** ======================
              * 3. AUTO CREATE ANGGOTA
              * ====================== */
-            Anggota::create([
+            $anggota = Anggota::create([
                 'user_id'        => $user->id,
                 'nomor_anggota'  => $this->generateNomorAnggota(),
                 'nip'            => $request->anggota_nip,
@@ -88,6 +92,20 @@ class UserController extends Controller
                 'status'         => $request->status,
                 'tanggal_masuk'  => $request->tanggal_masuk,
             ]);
+
+            $hasRekeningInput = filled($request->nama_bank) ||
+                filled($request->nomor_rekening) ||
+                filled($request->nama_pemilik);
+
+            if ($hasRekeningInput) {
+                RekeningAnggota::create([
+                    'anggota_id'      => $anggota->id,
+                    'nama_bank'       => $request->nama_bank ?? '-',
+                    'nomor_rekening'  => $request->nomor_rekening ?? '-',
+                    'nama_pemilik'    => $request->nama_pemilik ?? $request->name,
+                    'aktif'           => true,
+                ]);
+            }
         });
 
         return redirect()

@@ -33,7 +33,18 @@
             </li>
             @endcan
 
+            {{-- ================= DATA SAYA ================= --}}
+            @canany(['view pinjaman saya', 'view simpanan saya'])
             <li class="menu-header">Data Saya</li>
+
+            @can('view pinjaman saya')
+            <li class="menu-item">
+                <a href="{{ route('anggota.profil.index') }}"
+                class="menu-link {{ request()->routeIs('anggota.profil.*') ? 'active' : '' }}">
+                    <span class="menu-text">Profil</span>
+                </a>
+            </li>
+            @endcan
 
             @can('view simpanan saya')
             <li class="menu-item">
@@ -52,6 +63,7 @@
                 </a>
             </li>
             @endcan
+            @endcanany
 
             {{-- ================= LAPORAN PRIBADI ================= --}}
             @canany(['view laporan simpanan pribadi', 'view laporan pinjaman pribadi'])

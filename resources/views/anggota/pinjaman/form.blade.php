@@ -15,118 +15,140 @@
         <div class="lg:col-span-2">
 
             @if ($bolehAjukan)
-                <div class="bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm p-4">
-                    <h2 class="section-title font-black">Form Pengajuan Pinjaman</h2>
-                    <hr class="my-2 mb-6 border-gray-200">
-                    
-                    {{-- ERROR MESSAGE --}}
-                    @if ($errors->any())
-                        <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-                            <ul class="list-disc pl-5 space-y-1">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+
+                    {{-- HEADER --}}
+                    <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
                         </div>
-                    @endif
-                    
-                    <form method="POST" action="{{ route('anggota.pinjaman.store') }}">
-                        @csrf
-
-                        {{-- JUMLAH --}}
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Jumlah Pinjaman
-                            </label>
-
-                            <input
-                                type="text"
-                                id="input_jumlah_format"
-                                class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500"
-                                placeholder="Rp 0"
-                                oninput="formatRupiah(this)"
-                                value="{{ old('jumlah_diajukan') ? 'Rp ' . number_format(old('jumlah_diajukan'), 0, ',', '.') : '' }}"
-                                required>
-
-                            <input
-                                type="hidden"
-                                name="jumlah_diajukan"
-                                id="jumlah_asli"
-                                value="{{ old('jumlah_diajukan') }}">
+                        <div>
+                            <h2 class="text-sm font-semibold text-gray-800">Form Pengajuan Pinjaman</h2>
+                            <p class="text-xs text-gray-400 mt-0.5">Isi data berikut untuk mengajukan pinjaman baru</p>
                         </div>
+                    </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Tenor (Bulan)
+                    <div class="p-6">
+                        {{-- ERROR MESSAGE --}}
+                        @if ($errors->any())
+                            <div class="mb-5 p-4 rounded-lg bg-red-50 border border-red-200 flex gap-3">
+                                <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <ul class="text-sm text-red-700 space-y-0.5">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('anggota.pinjaman.store') }}">
+                            @csrf
+
+                            {{-- JUMLAH PINJAMAN --}}
+                            <div class="mb-5">
+                                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                    Jumlah Pinjaman
                                 </label>
                                 <input
-                                    type="number"
-                                    name="tenor"
-                                    min="1"
-                                    max="20"
-                                    value="{{ old('tenor', 1) }}"
-                                    class="w-full border border-gray-300 rounded-md p-2"
+                                    type="text"
+                                    id="input_jumlah_format"
+                                    class="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-900 font-medium bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                                    placeholder="Rp 0"
+                                    oninput="formatRupiah(this)"
+                                    value="{{ old('jumlah_diajukan') ? 'Rp ' . number_format(old('jumlah_diajukan'), 0, ',', '.') : '' }}"
                                     required>
+                                <input type="hidden" name="jumlah_diajukan" id="jumlah_asli" value="{{ old('jumlah_diajukan') }}">
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Rencana Bulan Pinjam
+                            {{-- TENOR & BULAN --}}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                        Tenor
+                                    </label>
+                                    <div class="relative">
+                                        <input
+                                            type="number"
+                                            name="tenor"
+                                            min="1"
+                                            max="20"
+                                            value="{{ old('tenor', 1) }}"
+                                            class="w-full border border-gray-200 rounded-lg px-4 py-3 pr-14 text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                                            required>
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">bulan</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                        Rencana Bulan Pinjam
+                                    </label>
+                                    <input
+                                        type="month"
+                                        name="bulan_pinjam"
+                                        min="{{ now()->format('Y-m') }}"
+                                        class="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                                        required>
+                                </div>
+                            </div>
+
+                            {{-- KETERANGAN --}}
+                            <div class="mb-6">
+                                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                    Keterangan <span class="normal-case font-normal text-gray-400">(opsional)</span>
                                 </label>
-                                <input
-                                    type="month"
-                                    name="bulan_pinjam"
-                                    min="{{ now()->format('Y-m') }}"
-                                    class="w-full border border-gray-300 rounded-md p-2"
-                                    required>
+                                <textarea
+                                    name="tujuan"
+                                    rows="3"
+                                    class="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none text-sm"
+                                    placeholder="Jelaskan tujuan pinjaman Anda...">{{ old('tujuan') }}</textarea>
                             </div>
-                        </div>
 
-                        {{-- KETERANGAN --}}
-                        <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Keterangan
-                            </label>
-                            <textarea
-                                name="tujuan"
-                                rows="2"
-                                class="w-full border border-gray-300 rounded-md p-2"
-                                placeholder="Keterangan">{{ old('tujuan') }}</textarea>
-                        </div>
-
-                        <div class="mt-6">
+                            {{-- SUBMIT --}}
                             <button
                                 type="submit"
-                                class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition shadow-sm">
-                                <span class="font-sm"> Ajukan Pinjaman </span>
+                                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 hover:shadow-lg text-sm flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Ajukan Pinjaman
                             </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             @else
                 {{-- TIDAK BOLEH AJUKAN --}}
-                <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-xl p-4">
-                    <div class="font-medium mb-2">
-                        Pengisian Form Pengajuan Tidak Dapat Dilakukan
-                    </div>
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl p-6 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div class="p-3 bg-yellow-200 rounded-full flex-shrink-0">
+                            <svg class="w-6 h-6 text-yellow-700" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-yellow-900 mb-2">
+                                Pengisian Form Pengajuan Tidak Dapat Dilakukan
+                            </h3>
 
-                    @if ($pengajuanAktif && $pengajuanAktif->status === 'diajukan')
-                        <span
-                         class="block text-sm">
-                            Pinjaman Anda sedang diproses. Mohon menunggu keputusan dari pengurus koperasi/lakukan edit pengajuan jika diperlukan.
-                        </span>
-                    @elseif ($pengajuanAktif && $pengajuanAktif->status === 'disetujui')
-                        <span
-                         class="block text-sm">
-                            Pengajuan pinjaman Anda sudah disetujui. Mohon menunggu untuk pencairan.
-                        </span>
-                    @else
-                        <span
-                         class="block text-sm">
-                            Anda belum memenuhi syarat untuk mengajukan pinjaman baru. Sisa pinjaman aktif harus ≤ Rp 5.000.000 dan tidak ada pengajuan yang sedang diproses.
-                        </span>
-                    @endif
+                            @if ($pengajuanAktif && $pengajuanAktif->status === 'diajukan')
+                                <p class="text-sm text-yellow-800">
+                                    Pinjaman Anda sedang diproses. Mohon menunggu keputusan dari pengurus koperasi atau lakukan edit pengajuan jika diperlukan.
+                                </p>
+                            @elseif ($pengajuanAktif && $pengajuanAktif->status === 'disetujui')
+                                <p class="text-sm text-yellow-800">
+                                    Pengajuan pinjaman Anda sudah disetujui. Mohon menunggu untuk pencairan.
+                                </p>
+                            @else
+                                <p class="text-sm text-yellow-800">
+                                    Anda belum memenuhi syarat untuk mengajukan pinjaman baru. Sisa pinjaman aktif harus ≤ Rp 5.000.000 dan tidak ada pengajuan yang sedang diproses.
+                                </p>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             @endif
 
@@ -137,28 +159,31 @@
         {{-- ========================= --}}
         <div class="space-y-4">
 
-            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm">
-                <div class="font-semibold text-gray-800 mb-2">
-                    Informasi Pinjaman Anda
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 shadow-sm">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="p-2.5 bg-blue-200 rounded-full">
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="font-semibold text-blue-900">Informasi Pinjaman Anda</div>
                 </div>
 
-                <ul class="space-y-1 text-gray-700">
-                    <li>
-                        Pinjaman aktif:
-                        <strong>{{ $ringkasan['aktif'] }}</strong>
-                    </li>
-                    <li>
-                        Sisa pinjaman:
-                        <strong>
-                            Rp {{ number_format($ringkasan['sisa'], 0, ',', '.') }}
-                        </strong>
-                    </li>
-                </ul>
+                <div class="space-y-3">
+                    <div class="bg-white/60 rounded-lg p-3">
+                        <div class="text-xs text-blue-700 mb-0.5">Pinjaman Aktif</div>
+                        <div class="text-lg font-bold text-blue-900">{{ $ringkasan['aktif'] }}</div>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3">
+                        <div class="text-xs text-blue-700 mb-0.5">Sisa Pinjaman</div>
+                        <div class="text-lg font-bold text-blue-900">Rp {{ number_format($ringkasan['sisa'], 0, ',', '.') }}</div>
+                    </div>
+                </div>
 
-                <div class="mt-3 text-xs text-gray-500 leading-relaxed">
-                    • Top-up hanya boleh jika sisa pinjaman ≤ Rp 5.000.000<br>
-                    • Total pengajuan maksimal Rp 20.000.000<br>
-                    • Tenor maksimal 20 bulan
+                <div class="mt-4 pt-4 border-t border-blue-200 text-xs text-blue-800 leading-relaxed space-y-1">
+                    <p class="flex items-start gap-2"><span class="text-blue-500 mt-0.5">•</span> Top-up hanya boleh jika sisa pinjaman ≤ Rp 5.000.000</p>
+                    <p class="flex items-start gap-2"><span class="text-blue-500 mt-0.5">•</span> Total pengajuan maksimal Rp 20.000.000</p>
+                    <p class="flex items-start gap-2"><span class="text-blue-500 mt-0.5">•</span> Tenor maksimal 20 bulan</p>
                 </div>
             </div>
 
@@ -168,78 +193,86 @@
     {{-- ========================= --}}
     {{-- RIWAYAT PENGAJUAN --}}
     {{-- ========================= --}}
-    <div class="pt-6 border-t border-gray-200">
+    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
 
-        <h2 class="section-title">
+        <h2 class="text-base font-semibold text-gray-700 mb-6">
             Riwayat Pengajuan Pinjaman Saya
         </h2>
 
         @if ($riwayatPengajuan->isEmpty())
-            <div class="text-sm text-gray-500 mt-2">
-                Belum ada riwayat pengajuan pinjaman.
+            <div class="flex flex-col items-center justify-center py-12">
+                <svg class="w-16 h-16 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-sm font-medium text-gray-400">Belum ada riwayat pengajuan pinjaman.</p>
             </div>
         @else
-            <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 text-gray-600">
-                        <tr>
-                            <th class="px-4 py-3 text-left w-[18%]">Tanggal</th>
-                            <th class="px-4 py-3 text-right w-[18%]">Jumlah</th>
-                            <th class="px-4 py-3 text-center w-[15%]">Tenor</th>
-                            <th class="px-4 py-3 text-center w-[18%]">Bulan Pinjam</th>
-                            <th class="px-4 py-3 text-center w-[15%]">Status</th>
-                            <th class="px-4 py-3 text-center w-[15%]">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($riwayatPengajuan as $item)
-                            @php
-                                $badge = match($item->status) {
-                                    'diajukan' => 'bg-yellow-100 text-yellow-700',
-                                    'disetujui' => 'bg-blue-100 text-blue-700',
-                                    'ditolak'  => 'bg-red-100 text-red-700',
-                                    'dicairkan' => 'bg-green-100 text-green-700',
-                                    default    => 'bg-gray-100 text-gray-700',
-                                };
-                            @endphp
+            <div class="overflow-hidden rounded-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-300">
+                            <tr>
+                                <th class="px-5 py-2.5 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Tanggal</th>
+                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Jumlah</th>
+                                <th class="px-5 py-2.5 text-center font-semibold text-xs text-blue-900 uppercase tracking-widest">Tenor</th>
+                                <th class="px-5 py-2.5 text-center font-semibold text-xs text-blue-900 uppercase tracking-widest">Bulan Pinjam</th>
+                                <th class="px-5 py-2.5 text-center font-semibold text-xs text-blue-900 uppercase tracking-widest">Status</th>
+                                <th class="px-5 py-2.5 text-center font-semibold text-xs text-blue-900 uppercase tracking-widest">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @foreach ($riwayatPengajuan as $item)
+                                @php
+                                    $badge = match($item->status) {
+                                        'diajukan' => 'bg-yellow-100 text-yellow-700 border border-yellow-300 shadow-sm',
+                                        'disetujui' => 'bg-blue-100 text-blue-700 border border-blue-300 shadow-sm',
+                                        'ditolak'  => 'bg-red-100 text-red-700 border border-red-300 shadow-sm',
+                                        'dicairkan' => 'bg-green-100 text-green-700 border border-green-300 shadow-sm',
+                                        default    => 'bg-gray-100 text-gray-700 border border-gray-300 shadow-sm',
+                                    };
+                                @endphp
 
-                            <tr class="border-t hover:bg-gray-50">
-                                <td class="px-4 py-2">
-                                    {{ $item->tanggal_pengajuan->format('d M Y') }}
-                                </td>
+                                <tr class="@if($loop->odd) bg-white @else bg-blue-50 @endif hover:bg-blue-100 transition-all duration-300 group">
+                                    <td class="px-5 py-2.5 text-gray-800 font-medium text-xs">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            {{ $item->tanggal_pengajuan->format('d M Y') }}
+                                        </div>
+                                    </td>
 
-                                <td class="px-4 py-2 text-right font-medium">
-                                    Rp {{ number_format($item->jumlah_diajukan, 0, ',', '.') }}
-                                </td>
+                                    <td class="px-5 py-2.5 text-right font-bold text-gray-900 text-sm">
+                                        <span class="text-blue-600">Rp {{ number_format($item->jumlah_diajukan, 0, ',', '.') }}</span>
+                                    </td>
 
-                                <td class="px-4 py-3 text-center align-middle">
-                                    {{ $item->tenor }} bln
-                                </td>
+                                    <td class="px-5 py-2.5 text-center text-xs">
+                                        {{ $item->tenor }} bln
+                                    </td>
 
-                                <td class="px-4 py-3 text-center align-middle">
-                                    {{ \Carbon\Carbon::parse($item->bulan_pinjam)->translatedFormat('F Y') }}
-                                </td>
+                                    <td class="px-5 py-2.5 text-center text-xs">
+                                        {{ \Carbon\Carbon::parse($item->bulan_pinjam)->translatedFormat('F Y') }}
+                                    </td>
 
-                                <td class="px-4 py-3 text-center align-middle">
-                                    @if ($item->status === 'ditolak')
-                                        <button 
-                                            type="button" 
-                                            onclick="showAlasanTolak('{{ addslashes($item->alasan_tolak ?? 'Tidak ada alasan') }}')"
-                                            class="px-3 py-1 rounded-full text-xs font-semibold {{ $badge }} hover:opacity-80 transition">
-                                            {{ ucfirst($item->status) }}
-                                        </button>
-                                    @else
-                                        <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $badge }}">
-                                            {{ ucfirst($item->status) }}
-                                        </span>
-                                    @endif
-                                </td>
+                                    <td class="px-5 py-2.5 text-center">
+                                        @if ($item->status === 'ditolak')
+                                            <button 
+                                                type="button" 
+                                                onclick="showAlasanTolak('{{ addslashes($item->alasan_tolak ?? 'Tidak ada alasan') }}')"
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $badge }} hover:opacity-90 transition">
+                                                {{ ucfirst($item->status) }}
+                                            </button>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $badge }}">
+                                                {{ ucfirst($item->status) }}
+                                            </span>
+                                        @endif
+                                    </td>
 
-                                <td class="px-4 py-3 text-center align-middle">
-                                    @if ($item->status === 'diajukan')
-                                        <div class="flex items-center justify-center gap-3">
-                                            {{-- EDIT --}}
-                                            <div class="relative group">
+                                    <td class="px-5 py-2.5 text-center">
+                                        @if ($item->status === 'diajukan')
+                                            <div class="flex items-center justify-center gap-2">
+                                                {{-- EDIT --}}
                                                 <button
                                                     type="button" onclick="openEditModal(
                                                     {{ $item->id }}, 
@@ -247,52 +280,38 @@
                                                     {{ $item->tenor }}, 
                                                     '{{ \Carbon\Carbon::parse($item->bulan_pinjam)->format('Y-m') }}', 
                                                     '{{ addslashes($item->tujuan) }}')"
-                                                    class="w-9 h-9 flex items-center justify-center
-                                                        rounded-lg bg-blue-50 text-blue-600
-                                                        hover:bg-blue-100 transition
-                                                        text-base leading-none">
-                                                    ✏️
-                                                </button>
-
-                                                <span class="absolute -top-8 left-1/2 -translate-x-1/2
-                                                    bg-gray-800 text-white text-[10px] px-2 py-1 rounded
-                                                    opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:shadow-md">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
                                                     Edit
-                                                </span>
-                                            </div>
-
-                                            {{-- BATAL --}}
-                                            <div class="relative group">
-                                                <button
-                                                    type="submit"
-                                                    onclick="handleDelete({{ $item->id }})"
-                                                    class="w-9 h-9 flex items-center justify-center
-                                                        rounded-lg bg-red-50 text-red-600
-                                                        hover:bg-red-100 transition
-                                                        text-base leading-none">
-                                                    🗑️
                                                 </button>
 
-                                                <span class="absolute -top-8 left-1/2 -translate-x-1/2
-                                                    bg-gray-800 text-white text-[10px] px-2 py-1 rounded
-                                                    opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                                                {{-- BATAL --}}
+                                                <button
+                                                    type="button"
+                                                    onclick="handleDelete({{ $item->id }})"
+                                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:shadow-md">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
                                                     Batal
-                                                </span>
+                                                </button>
                                             </div>
-                                        </div>
-                                    @else
-                                        <span class="text-xs text-gray-400 italic">-</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                        @else
+                                            <span class="text-xs text-gray-400 italic">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             {{-- PAGINATION --}}
             @if($riwayatPengajuan->hasPages())
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2 px-2">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4 pt-4 border-t border-gray-200">
                     <p class="text-sm text-gray-600">
                         Menampilkan
                         <span class="font-semibold text-gray-900">{{ $riwayatPengajuan->firstItem() ?? 0 }}</span>
@@ -318,11 +337,18 @@
 </form>
 
 <!-- MODAL EDIT -->
-<div id="modalEdit" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+<div id="modalEdit" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
 
-    <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6">
+    <div class="bg-white w-full max-w-md rounded-xl shadow-xl p-6">
 
-        <h3 class="text-lg font-bold mb-4">Edit Pengajuan</h3>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="p-2.5 bg-blue-100 rounded-full">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Edit Pengajuan</h3>
+        </div>
 
         {{-- ERROR MESSAGE --}}
         @if ($errors->any())
@@ -340,44 +366,46 @@
             @method('PUT')
 
             {{-- JUMLAH --}}
-            <div class="mb-3">
-                <label class="text-sm">Jumlah</label>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah</label>
                 <input type="text" id="edit_jumlah_format"
-                    class="w-full border rounded p-2"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     oninput="formatRupiahEdit(this)">
                 <input type="hidden" name="jumlah_diajukan" id="edit_jumlah_asli">
             </div>
 
             {{-- TENOR --}}
-            <div class="mb-3">
-                <label class="text-sm">Tenor</label>
-                <input type="number" name="tenor" id="edit_tenor"
-                    class="w-full border rounded p-2">
-            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tenor (Bulan)</label>
+                    <input type="number" name="tenor" id="edit_tenor"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                </div>
 
-            {{-- BULAN --}}
-            <div class="mb-3">
-                <label class="text-sm">Bulan Pinjam</label>
-                <input type="month" name="bulan_pinjam" id="edit_bulan"
-                    class="w-full border rounded p-2">
+                {{-- BULAN --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Bulan Pinjam</label>
+                    <input type="month" name="bulan_pinjam" id="edit_bulan"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                </div>
             </div>
 
             {{-- KETERANGAN --}}
-            <div class="mb-3">
-                <label class="text-sm">Catatan</label>
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Catatan</label>
                 <textarea name="tujuan" id="edit_tujuan"
-                    class="w-full border rounded p-2"></textarea>
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none" rows="3"></textarea>
             </div>
 
-            <div class="flex justify-end mt-4">
+            <div class="flex gap-3 justify-end">
                 <button type="button" onclick="closeEditModal()"
-                    class="px-4 py-2 text-sm text-gray-500">
+                    class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition">
                     Batal
                 </button>
 
                 <button type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white rounded">
-                    Simpan
+                    class="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-lg hover:shadow-md transition-all duration-200">
+                    Simpan Perubahan
                 </button>
             </div>
 

@@ -1,17 +1,21 @@
-<div class="border-b border-gray-200">
-    <nav class="-mb-px flex flex-wrap sm:gap-4" aria-label="Tabs Pinjaman Saya">
-        @can('view pinjaman saya')
-            <a href="{{ route('anggota.pinjaman.index') }}"
-                class="inline-flex items-center border-b-2 px-1 py-1 text-sm font-medium transition {{ request()->routeIs('anggota.pinjaman.index') ? 'border-black text-black' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }}">
-                Pinjaman Saya
-            </a>
-        @endcan
+<div class="flex gap-2">
+    @can('view pinjaman saya')
+        <a href="{{ route('anggota.pinjaman.index') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('anggota.pinjaman.index') ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-700' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Pinjaman Saya
+        </a>
+    @endcan
 
-        @can('create pinjaman')
-            <a href="{{ route('anggota.pinjaman.ajukan') }}"
-                class="inline-flex items-center border-b-2 px-1 py-1 text-sm font-medium transition {{ request()->routeIs('anggota.pinjaman.ajukan') ? 'border-black text-black' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }}">
-                Form Pengajuan Pinjaman
-            </a>
-        @endcan
-    </nav>
+    @can('create pinjaman')
+        <a href="{{ route('anggota.pinjaman.ajukan') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('anggota.pinjaman.ajukan') ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-700' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Form Pengajuan
+        </a>
+    @endcan
 </div>

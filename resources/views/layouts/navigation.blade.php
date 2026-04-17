@@ -7,21 +7,25 @@
                 <button id="toggleSidebar"
                     type="button"
                     aria-label="Toggle sidebar"
-                    class="z-50 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-100 hover:shadow focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    class="z-50 inline-flex h-9 w-9 items-center justify-center rounded-lg border bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-100 hover:shadow focus:outline-none">
                     <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
 
-                <div class="min-w-0">
-                    <div class="truncate text-sm font-semibold text-slate-700">Koperasi Simpatik</div>
-                    <div class="truncate text-xs text-slate-500">BPS Provinsi Banten</div>
+                <div class="min-w-0 flex flex-col">
+                    <div class="truncate text-sm font-semibold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                        Koperasi Simpatik
+                    </div>
+                    <div class="truncate text-xs text-slate-400 font-medium">
+                        BPS Provinsi Banten
+                    </div>
                 </div>
             </div>
 
             <!-- Settings Dropdown -->
             <div class="ms-3 flex min-w-0 flex-shrink-0 items-center">
-                <x-dropdown align="right" width="56">
+                <x-dropdown align="right" width="56" contentClasses="py-0 bg-white rounded-xl overflow-hidden">
                     <x-slot name="trigger">
                         <button
                             type="button"
@@ -49,20 +53,25 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Ubah Profil') }}
-                        </x-dropdown-link>
+                        <div class="px-4 py-3 border-b border-slate-100">
+                            <p class="text-xs font-medium text-slate-500">Masuk sebagai</p>
+                            <p class="truncate text-sm font-semibold text-slate-700">{{ Auth::user()->email }}</p>
+                        </div>
 
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
+                        <div class="py-1">
+                            <!-- Authentication -->
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit"
+                                        onclick="event.preventDefault(); this.closest('form').submit();"
+                                        class="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-500 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:bg-red-50">
+                                    <svg class="h-4 w-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+                                    </svg>
+                                    {{ __('Log Out') }}
+                                </button>
+                            </form>
+                        </div>
                     </x-slot>
                 </x-dropdown>
             </div>

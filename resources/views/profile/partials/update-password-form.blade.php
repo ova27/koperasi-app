@@ -1,14 +1,5 @@
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Ubah Password') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Perubahan password untuk keamanaan akun Anda.') }}
-        </p>
-    </header>
-
+   
     <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('put')

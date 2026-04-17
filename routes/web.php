@@ -23,7 +23,8 @@ use App\Http\Controllers\Admin\{
 use App\Http\Controllers\Anggota\{
     SimpananSayaController,
     PinjamanSayaController,
-    PengajuanPinjamanController
+    PengajuanPinjamanController,
+    ProfilSayaController
 };
 
 /*
@@ -290,6 +291,9 @@ Route::middleware(['auth','permission:view pinjaman saya'])
     ->prefix('anggota')
     ->name('anggota.')
     ->group(function () {
+
+        Route::get('/profil', [ProfilSayaController::class, 'index'])
+            ->name('profil.index');
 
         Route::middleware('permission:create pinjaman')
             ->get('/pinjaman/ajukan', [PengajuanPinjamanController::class, 'create'])
