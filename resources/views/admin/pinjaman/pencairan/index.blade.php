@@ -5,29 +5,6 @@
 @section('content')
 <div class="space-y-4">
 
-    {{-- ================= TAB NAVIGATION ================= --}}
-    <div class="border-b flex gap-6 text-sm font-medium">
-        <a href="{{ route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan']) }}"
-            class="pb-2 text-gray-400 hover:text-gray-700">
-            Pengajuan Pinjaman
-        </a>
-
-        <a href="{{ route('admin.pinjaman.pencairan.index') }}"
-            class="pb-2 border-b-2 border-black text-black font-medium">
-            Pencairan Pinjaman
-        </a>
-
-        <a href="{{ route('admin.pinjaman.data-anggota.index', ['tab' => 'aktif']) }}"
-            class="pb-2 text-gray-400 hover:text-gray-700">
-            Pinjaman Aktif
-        </a>
-
-        <a href="{{ route('admin.pinjaman.data-anggota.index', ['tab' => 'lunas']) }}"
-            class="pb-2 text-gray-400 hover:text-gray-700">
-            Pinjaman Lunas
-        </a>
-    </div>
-
     {{-- FLASH MESSAGE --}}
     @if(session('success'))
         <div id="flash-message" class="px-4 py-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center justify-between">
@@ -93,10 +70,10 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    @forelse ($pengajuans as $p)
+                    @forelse ($pencairanSiapCair as $p)
                         <tr class="hover:bg-gray-50 transition">
                             <td class="p-3 text-center text-gray-500">
-                                {{ $pengajuans->firstItem() + $loop->index }}
+                                {{ $pencairanSiapCair->firstItem() + $loop->index }}
                             </td>
                             <td class="p-3 text-center text-gray-500">
                                 {{ optional($p->tanggal_pengajuan)->format('d F Y') ?? '-' }}
@@ -150,20 +127,20 @@
         </div>
 
         {{-- PAGINATION --}}
-        @if($pengajuans->hasPages())
+        @if($pencairanSiapCair->hasPages())
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2">
                 <p class="text-sm text-gray-600">
                     Menampilkan
-                    <span class="font-semibold text-gray-900">{{ $pengajuans->firstItem() ?? 0 }}</span>
+                    <span class="font-semibold text-gray-900">{{ $pencairanSiapCair->firstItem() ?? 0 }}</span>
                     sampai
-                    <span class="font-semibold text-gray-900">{{ $pengajuans->lastItem() ?? 0 }}</span>
+                    <span class="font-semibold text-gray-900">{{ $pencairanSiapCair->lastItem() ?? 0 }}</span>
                     dari
-                    <span class="font-semibold text-gray-900">{{ $pengajuans->total() }}</span>
+                    <span class="font-semibold text-gray-900">{{ $pencairanSiapCair->total() }}</span>
                     data
                 </p>
 
                 <div class="flex justify-center sm:justify-end w-full sm:w-auto">
-                    {{ $pengajuans->links('vendor.pagination.custom') }}
+                    {{ $pencairanSiapCair->links('vendor.pagination.custom') }}
                 </div>
             </div>
         @endif

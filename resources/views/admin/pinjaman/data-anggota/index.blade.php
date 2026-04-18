@@ -4,25 +4,9 @@
 @section('page-title', 'Transaksi Pinjaman Anggota')
 @section('content')
 <div class="space-y-6">
-
-<div x-data="{ tab: '{{ request('tab', 'pengajuan') }}' }" class="space-y-4">
-
+<div x-data="{ tab: 'aktif' }" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
     {{-- ================= TAB NAVIGATION ================= --}}
     <div class="border-b flex gap-6 text-sm font-medium">
-        <button @click="tab = 'pengajuan'"
-            :class="tab === 'pengajuan' 
-                ? 'border-b-2 border-black text-black font-medium' 
-                : 'text-gray-400'"
-            class="pb-2">
-            Pengajuan Pinjaman
-        </button>
-
-        @canany(['view pengajuan pinjaman', 'pencairan pinjaman'])
-            <a href="{{ route('admin.pinjaman.pencairan.index') }}"
-                class="pb-2 text-gray-400 hover:text-gray-700">
-                Pencairan Pinjaman
-            </a>
-        @endcanany
 
         <button @click="tab = 'aktif'"
             :class="tab === 'aktif' 
@@ -385,17 +369,6 @@
         @endif
     </div>
 
-    {{-- TABLE PENGAJUAN PINJAMAN --}}
-    <div x-show="tab === 'pengajuan'" 
-        x-transition.opacity.duration.200ms
-        class="space-y-4">
-
-        @include('admin.pinjaman.pengajuan.tab-pengajuan', [
-            'pengajuans' => $pengajuans,
-            'riwayatApproval' => $riwayatApproval
-        ])
-    </div>
-    
 </div>
 </div>
 

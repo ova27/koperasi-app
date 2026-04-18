@@ -194,6 +194,9 @@ class DatabaseSeeder extends Seeder
         $admin->syncPermissions([
             'view dashboard',
             'view anggota list',
+            'view laporan pinjaman',
+            'export laporan pinjaman',
+            'manage simpanan anggota',
             'manage users',
             'edit profil',
         ]);

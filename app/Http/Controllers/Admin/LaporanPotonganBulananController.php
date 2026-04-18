@@ -6,10 +6,12 @@ use App\Exports\LaporanPotonganBulananExport;
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
 use App\Models\PotonganTitipan;
+use App\Models\RekeningKoperasi;
 use App\Services\NominalTitipanImportService;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -20,22 +22,51 @@ class LaporanPotonganBulananController extends Controller
         $this->authorize('view laporan pinjaman');
 
         $bulanPotongan = $request->get('bulan', now()->addMonthNoOverflow()->format('Y-m'));
+        $search = trim((string) $request->get('search', ''));
         $bulanAcuan = Carbon::createFromFormat('Y-m', $bulanPotongan)
             ->subMonthNoOverflow()
             ->format('Y-m');
 
-        $rows = $this->buildPotonganRows();
+        $allRows = $this->buildPotonganRows($bulanPotongan);
+        $filteredRows = $allRows;
+
+        if ($search !== '') {
+            $needle = Str::lower($search);
+            $filteredRows = $allRows
+                ->filter(function ($row) use ($needle) {
+                    return Str::contains(Str::lower((string) ($row['nama'] ?? '')), $needle)
+                        || Str::contains(Str::lower((string) ($row['bank'] ?? '')), $needle)
+                        || Str::contains(Str::lower((string) ($row['nomor_rekening'] ?? '')), $needle);
+                })
+                ->values();
+        }
+
+        $perPage = 15;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $rows = new LengthAwarePaginator(
+            $filteredRows->forPage($currentPage, $perPage)->values(),
+            $filteredRows->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'query' => $request->query(),
+            ]
+        );
 
         return view('admin.laporan.potongan-bulanan.index', [
             'bulanAcuan' => $bulanAcuan,
             'bulanPotongan' => $bulanPotongan,
             'rows' => $rows,
-            'totalWajib' => (int) $rows->sum('wajib'),
-            'totalCicilan' => (int) $rows->sum('cicilan'),
-            'totalTitipan' => (int) $rows->sum('total_titipan'),
-            'totalIuranOperasional' => (int) $rows->sum('iuran_operasional'),
-            'totalPotongan' => (int) $rows->sum('total'),
-            'ringkasanBank' => $rows->groupBy('bank')->map(fn ($items) => [
+            'totalWajib' => (int) $filteredRows->sum('wajib'),
+            'totalCicilan' => (int) $filteredRows->sum('cicilan'),
+            'totalTitipan' => (int) $filteredRows->sum('total_titipan'),
+            'totalIuranOperasional' => (int) $filteredRows->sum('iuran_operasional'),
+            'totalDharma' => (int) $filteredRows->sum('iuran_dharma_wanita'),
+            'totalInfaq' => (int) $filteredRows->sum('infaq_pegawai'),
+            'totalQurban' => (int) $filteredRows->sum('tabungan_qurban'),
+            'totalPotongan' => (int) $filteredRows->sum('total'),
+            'ringkasanBank' => $filteredRows->groupBy('bank')->map(fn ($items) => [
                 'jumlah_anggota' => $items->count(),
                 'total' => (int) $items->sum('total'),
             ])->sortKeys(),
@@ -48,7 +79,8 @@ class LaporanPotonganBulananController extends Controller
 
         $bulanPotongan = $request->get('bulan', now()->addMonthNoOverflow()->format('Y-m'));
         $namaBank = trim((string) $request->get('nama_bank', ''));
-        $allRows = $this->buildPotonganRows();
+        $allRows = $this->buildPotonganRows($bulanPotongan);
+
         $bankOptions = $allRows
             ->pluck('bank')
             ->filter(fn ($bank) => filled($bank))
@@ -60,10 +92,22 @@ class LaporanPotonganBulananController extends Controller
             ? $allRows->where('bank', $namaBank)->values()
             : $allRows;
 
+        $rekeningKoperasiList = RekeningKoperasi::query()
+            ->where('jenis', 'bank')
+            ->where('aktif', true)
+            ->get(['id', 'nama'])
+            ->sortBy('nama')
+            ->values();
+
+        $rekeningKoperasiMap = $this->buildRekeningKoperasiAliasMap($rekeningKoperasiList);
+        $selectedRekeningKoperasiId = $this->resolveRekeningKoperasiIdFromBankName($namaBank, $rekeningKoperasiMap);
+
         return view('admin.laporan.potongan-bulanan.bank', [
             'bulanPotongan' => $bulanPotongan,
             'namaBank' => $namaBank,
             'bankOptions' => $bankOptions,
+            'rekeningKoperasiMap' => $rekeningKoperasiMap,
+            'selectedRekeningKoperasiId' => $selectedRekeningKoperasiId,
             'rows' => $rows,
             'totalSetoranBank' => (int) $rows->sum('total'),
             'ringkasanBank' => $rows->groupBy('bank')->map(fn ($items) => [
@@ -100,7 +144,7 @@ class LaporanPotonganBulananController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('export laporan pinjaman');
+        $this->authorize('view laporan pinjaman');
 
         $bulanPotongan = $request->get('bulan', now()->addMonthNoOverflow()->format('Y-m'));
 
@@ -130,21 +174,53 @@ class LaporanPotonganBulananController extends Controller
         $validated = $request->validate([
             'bulan' => ['nullable', 'date_format:Y-m'],
             'nama_bank' => ['required', 'string'],
+            'rekening_koperasi_id' => ['required', 'integer', 'exists:rekening_koperasis,id'],
         ]);
 
         $bulanPotongan = $validated['bulan'] ?? now()->addMonthNoOverflow()->format('Y-m');
         $namaBank = trim((string) $validated['nama_bank']);
-        $rows = $this->buildPotonganRowsByBank($namaBank);
+        $rekeningKoperasiId = (int) $validated['rekening_koperasi_id'];
+
+        $rekeningKoperasiList = RekeningKoperasi::query()
+            ->where('jenis', 'bank')
+            ->where('aktif', true)
+            ->get(['id', 'nama'])
+            ->values();
+        $rekeningKoperasiMap = $this->buildRekeningKoperasiAliasMap($rekeningKoperasiList);
+        $mappedRekeningKoperasiId = $this->resolveRekeningKoperasiIdFromBankName($namaBank, $rekeningKoperasiMap);
+
+        if ($mappedRekeningKoperasiId === null || $mappedRekeningKoperasiId !== $rekeningKoperasiId) {
+            return back()->with('error', 'Mapping bank rekening anggota ke rekening koperasi tidak sesuai. Pastikan bank terpilih sudah mengarah ke rekening koperasi yang benar.');
+        }
+
+        $rekeningKoperasi = RekeningKoperasi::query()
+            ->whereKey($rekeningKoperasiId)
+            ->where('jenis', 'bank')
+            ->where('aktif', true)
+            ->first();
+
+        if (! $rekeningKoperasi) {
+            return back()->with('error', 'Mapping rekening koperasi untuk export Word tidak valid atau tidak aktif.');
+        }
+
+        $rows = $this->buildPotonganRowsByBank($namaBank, $bulanPotongan);
 
         if ($rows->isEmpty()) {
             return back()->with('error', 'Data setoran untuk bank terpilih tidak ditemukan.');
         }
 
+        Carbon::setLocale('id');
+
         $totalSetoran = (int) $rows->sum('total');
-        $bulanLabel = Carbon::createFromFormat('Y-m', $bulanPotongan)->translatedFormat('F Y');
+        $bulanLabel = Carbon::createFromFormat('Y-m', $bulanPotongan)
+            ->locale('id')
+            ->translatedFormat('F Y');
 
         $suratKuasaConfig = config('koperasi.surat_kuasa_bank', []);
-        $tanggalSurat = Carbon::parse($suratKuasaConfig['tanggal'] ?? now())->translatedFormat('d F Y');
+        $bankTujuan = $this->resolveBankTujuanSuratKuasa($suratKuasaConfig, $rekeningKoperasi);
+        $tanggalSurat = Carbon::parse($suratKuasaConfig['tanggal'] ?? now())
+            ->locale('id')
+            ->translatedFormat('d F Y');
         $logoPath = public_path('images/bps-surat.png');
         $logoDataUri = file_exists($logoPath)
             ? 'data:image/png;base64,' . base64_encode((string) file_get_contents($logoPath))
@@ -172,12 +248,7 @@ class LaporanPotonganBulananController extends Controller
                     'nip' => (string) ($suratKuasaConfig['penandatangan_2']['nip'] ?? '19910508 201403 2 003'),
                     'jabatan' => (string) ($suratKuasaConfig['penandatangan_2']['jabatan'] ?? 'Bendahara Pengeluaran BPS Provinsi Banten'),
                 ],
-                'bank_tujuan' => [
-                    'nama' => (string) ($suratKuasaConfig['bank_tujuan']['nama'] ?? 'Bank Syariah Indonesia (BSI) Cabang Serang'),
-                    'nomor_rekening' => (string) ($suratKuasaConfig['bank_tujuan']['nomor_rekening'] ?? '7235147593'),
-                    'atas_nama' => (string) ($suratKuasaConfig['bank_tujuan']['atas_nama'] ?? 'DANDI ISWANDI'),
-                    'keterangan' => (string) ($suratKuasaConfig['bank_tujuan']['keterangan'] ?? 'Pengurus Koperasi Pegawai BPS Provinsi Banten'),
-                ],
+                'bank_tujuan' => $bankTujuan,
                 'kota' => (string) ($suratKuasaConfig['kota'] ?? 'Serang'),
                 'tanggal' => $tanggalSurat,
             ],
@@ -269,8 +340,13 @@ class LaporanPotonganBulananController extends Controller
         );
     }
 
-    private function buildPotonganRows()
+    private function buildPotonganRows(?string $bulanPotongan = null)
     {
+        $bulanPotongan = $bulanPotongan ?: now()->addMonthNoOverflow()->format('Y-m');
+        $batasRiwayatCicilan = Carbon::createFromFormat('Y-m', $bulanPotongan)
+            ->subMonthNoOverflow()
+            ->endOfMonth();
+
         $wajibDefault = (int) config('koperasi.simpanan_wajib', 0);
         $iuranDharmaWanita = (int) config('koperasi.iuran_dharma_wanita', 0);
         $infaqPegawai = (int) config('koperasi.infaq_pegawai', 0);
@@ -278,20 +354,29 @@ class LaporanPotonganBulananController extends Controller
         $iuranOperasional = (int) config('koperasi.iuran_operasional', 5000);
 
         return Anggota::query()
-            ->with(['rekeningAktif', 'pinjamanAktif', 'potonganTitipan'])
+            ->with([
+                'rekeningAktif',
+                'pinjamans.transaksi' => function ($query) {
+                    $query->orderBy('tanggal')->orderBy('id');
+                },
+                'potonganTitipan',
+            ])
             ->where('status', 'aktif')
             ->orderBy('nama')
             ->get()
-            ->map(function ($anggota) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban) {
-                $pinjamanAktif = $anggota->pinjamanAktif;
+            ->map(function ($anggota) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $batasRiwayatCicilan) {
+                $pinjamanAcuan = $this->pinjamanPadaAkhirBulan($anggota->pinjamans, $batasRiwayatCicilan);
                 $cicilan = 0;
                 $titipan = $anggota->potonganTitipan;
 
-                if ($pinjamanAktif) {
-                    $cicilan = (int) min(
-                        (int) ($pinjamanAktif->cicilan_per_bulan ?? 0),
-                        (int) ($pinjamanAktif->sisa_pinjaman ?? 0)
-                    );
+                if ($pinjamanAcuan) {
+                    $sisaPinjamanLalu = $this->sisaPinjamanPerAkhirBulan($pinjamanAcuan, $batasRiwayatCicilan);
+                    if ($sisaPinjamanLalu > 0) {
+                        $cicilan = (int) min(
+                            (int) ($pinjamanAcuan->cicilan_per_bulan ?? 0),
+                            $sisaPinjamanLalu
+                        );
+                    }
                 }
 
                 $dharma = $titipan ? (int) $titipan->iuran_dharma_wanita : $iuranDharmaWanita;
@@ -317,11 +402,163 @@ class LaporanPotonganBulananController extends Controller
             ->values();
     }
 
-    private function buildPotonganRowsByBank(string $namaBank)
+    private function buildPotonganRowsByBank(string $namaBank, ?string $bulanPotongan = null)
     {
-        return $this->buildPotonganRows()
-            ->where('bank', $namaBank)
+        $rekeningKoperasiList = RekeningKoperasi::query()
+            ->where('jenis', 'bank')
+            ->where('aktif', true)
+            ->get(['id', 'nama'])
             ->values();
+        $rekeningKoperasiMap = $this->buildRekeningKoperasiAliasMap($rekeningKoperasiList);
+        $selectedRekeningKoperasiId = $this->resolveRekeningKoperasiIdFromBankName($namaBank, $rekeningKoperasiMap);
+
+        return $this->buildPotonganRows($bulanPotongan)
+            ->filter(function ($row) use ($selectedRekeningKoperasiId, $namaBank, $rekeningKoperasiMap) {
+                if ($selectedRekeningKoperasiId === null) {
+                    return Str::lower(trim((string) ($row['bank'] ?? ''))) === Str::lower(trim($namaBank));
+                }
+
+                return $this->resolveRekeningKoperasiIdFromBankName((string) ($row['bank'] ?? ''), $rekeningKoperasiMap) === $selectedRekeningKoperasiId;
+            })
+            ->values();
+    }
+
+    private function buildRekeningKoperasiAliasMap($rekeningKoperasiList)
+    {
+        return $rekeningKoperasiList
+            ->reduce(function ($carry, $rekening) {
+                foreach ($this->bankNameCandidates((string) $rekening->nama) as $candidate) {
+                    if ($candidate !== '' && ! array_key_exists($candidate, $carry)) {
+                        $carry[$candidate] = (int) $rekening->id;
+                    }
+                }
+
+                return $carry;
+            }, []);
+    }
+
+    private function resolveRekeningKoperasiIdFromBankName(string $bankName, array $rekeningKoperasiMap): ?int
+    {
+        foreach ($this->bankNameCandidates($bankName) as $candidate) {
+            if (array_key_exists($candidate, $rekeningKoperasiMap)) {
+                return (int) $rekeningKoperasiMap[$candidate];
+            }
+        }
+
+        return null;
+    }
+
+    private function bankNameCandidates(string $bankName): array
+    {
+        $normalized = $this->normalizeBankName($bankName);
+        if ($normalized === '') {
+            return [];
+        }
+
+        $candidates = [$normalized];
+        $stopWords = ['bank', 'cabang', 'kantor', 'kc', 'kcp', 'pt', 'tbk'];
+
+        if (preg_match_all('/\(([^)]+)\)/', $bankName, $matches)) {
+            foreach ($matches[1] as $value) {
+                $abbr = $this->normalizeBankName((string) $value);
+                if ($abbr !== '') {
+                    $candidates[] = $abbr;
+                }
+            }
+        }
+
+        $parts = preg_split('/\s+/', $normalized) ?: [];
+
+        foreach ($parts as $part) {
+            if ($part === '' || in_array($part, $stopWords, true)) {
+                continue;
+            }
+
+            if (Str::length($part) >= 3) {
+                $candidates[] = $part;
+            }
+        }
+
+        $acronym = collect($parts)
+            ->filter(fn ($part) => $part !== '')
+            ->map(fn ($part) => Str::substr($part, 0, 1))
+            ->implode('');
+
+        if (Str::length($acronym) >= 2) {
+            $candidates[] = $acronym;
+        }
+
+        return collect($candidates)
+            ->filter(fn ($item) => $item !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function normalizeBankName(string $bankName): string
+    {
+        $normalized = Str::of($bankName)
+            ->lower()
+            ->replaceMatches('/[^a-z0-9]+/', ' ')
+            ->squish()
+            ->value();
+
+        return trim($normalized);
+    }
+
+    private function resolveBankTujuanSuratKuasa(array $suratKuasaConfig, RekeningKoperasi $rekeningKoperasi): array
+    {
+        return [
+            'nama' => (string) $rekeningKoperasi->nama,
+            'nomor_rekening' => (string) ($rekeningKoperasi->nomor_rekening ?? '-'),
+            'atas_nama' => (string) ($rekeningKoperasi->nama_pemilik ?? $suratKuasaConfig['bank_tujuan']['atas_nama'] ?? '-'),
+            'keterangan' => (string) ($suratKuasaConfig['bank_tujuan']['keterangan'] ?? 'Pengurus Koperasi Pegawai BPS Provinsi Banten'),
+        ];
+    }
+
+    private function pinjamanPadaAkhirBulan($pinjamans, Carbon $batasRiwayatCicilan)
+    {
+        $kandidat = $pinjamans
+            ->filter(function ($pinjaman) use ($batasRiwayatCicilan) {
+                return $pinjaman->tanggal_pinjam && $pinjaman->tanggal_pinjam->lte($batasRiwayatCicilan);
+            })
+            ->sortBy(function ($pinjaman) {
+                $tanggal = $pinjaman->tanggal_pinjam ? $pinjaman->tanggal_pinjam->format('Ymd') : '00000000';
+                return $tanggal . '-' . str_pad((string) $pinjaman->id, 10, '0', STR_PAD_LEFT);
+            })
+            ->values();
+
+        for ($i = $kandidat->count() - 1; $i >= 0; $i--) {
+            $pinjaman = $kandidat->get($i);
+            if ($this->sisaPinjamanPerAkhirBulan($pinjaman, $batasRiwayatCicilan) > 0) {
+                return $pinjaman;
+            }
+        }
+
+        return null;
+    }
+
+    private function sisaPinjamanPerAkhirBulan($pinjaman, Carbon $batasRiwayatCicilan): int
+    {
+        if (! $pinjaman) {
+            return 0;
+        }
+
+        if (! $pinjaman->tanggal_pinjam || $pinjaman->tanggal_pinjam->gt($batasRiwayatCicilan)) {
+            return 0;
+        }
+
+        $transaksiSampaiBatas = $pinjaman->transaksi
+            ->filter(function ($transaksi) use ($batasRiwayatCicilan) {
+                return $transaksi->tanggal && $transaksi->tanggal->lte($batasRiwayatCicilan);
+            })
+            ->values();
+
+        if ($transaksiSampaiBatas->isNotEmpty()) {
+            return max(0, (int) ($transaksiSampaiBatas->last()->sisa_setelah ?? 0));
+        }
+
+        return max(0, (int) ($pinjaman->jumlah_pinjaman ?? 0));
     }
 
     private function toTerbilang(int $value): string

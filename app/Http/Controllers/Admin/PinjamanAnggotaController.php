@@ -5,41 +5,31 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PengajuanPinjaman;
 use App\Models\Pinjaman;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class PinjamanAnggotaController extends Controller
 {
     public function index()
     {
-        $this->authorize('view pengajuan pinjaman'); // Ketua & Bendahara only
+        $this->authorize('view pengajuan pinjaman');
+        $request = request();
+
         $pinjamansAktif = Pinjaman::with(['anggota', 'transaksi'])
             ->where('status', 'aktif')
             ->orderBy('tanggal_pinjam', 'desc')
             ->paginate(10, ['*'], 'aktif_page');
 
         $pinjamansLunas = Pinjaman::with(['anggota', 'transaksi'])
-                        ->where('status', 'lunas')
-                        ->orderByDesc('updated_at') // ✅ pakai ini
-                        ->paginate(10, ['*'], 'lunas_page');
+            ->where('status', 'lunas')
+            ->orderByDesc('updated_at')
+            ->paginate(10, ['*'], 'lunas_page');
 
-        $pengajuans = PengajuanPinjaman::with('anggota')
-                    ->where('status', 'diajukan')
-                    ->orderBy('tanggal_pengajuan')
-                    ->paginate(5, ['*'], 'pengajuans_page');
-
-        $riwayatApproval = PengajuanPinjaman::whereIn('status', ['disetujui', 'ditolak', 'dicairkan'])
-                        ->orderBy('updated_at', 'desc')
-                        ->paginate(10, ['*'], 'riwayatApproval_page');
-
-        return view('admin.pinjaman.data-anggota.index', array_merge(
-            compact(
-                'pinjamansAktif',
-                'pinjamansLunas',
-                'pengajuans',
-                'riwayatApproval')))
-                ->with('tab', request()->get('tab'))
-                ->with('success', session('success'))
-                ->with('error', session('error'));
+        return view('admin.pinjaman.data-anggota.index', compact(
+            'pinjamansAktif',
+            'pinjamansLunas',
+        ));
     }
 
     public function lunas()
@@ -54,12 +44,6 @@ class PinjamanAnggotaController extends Controller
         return view('admin.pinjaman.data-anggota.lunas', compact('pinjamanLunas'))->with('tab', 'lunas');
     }
 
-    public function show(Pinjaman $pinjaman)
-    {
-        $this->authorize('view pengajuan pinjaman');
-
-        return view('admin.pinjaman.data-anggota.show', compact('pinjaman'));
-    }
 
     public function edit(Pinjaman $pinjaman)
     {

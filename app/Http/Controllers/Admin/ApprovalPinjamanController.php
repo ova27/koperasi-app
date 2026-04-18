@@ -12,20 +12,20 @@ use Illuminate\Support\Facades\Auth;
 
 class ApprovalPinjamanController extends Controller
 {
-    // public function index()
-    // {
-    //     $this->authorize('view pengajuan pinjaman');
-    //     $pengajuans = PengajuanPinjaman::with('anggota')
-    //         ->where('status', 'diajukan')
-    //         ->orderBy('tanggal_pengajuan')
-    //         ->paginate(5, ['*'], 'pengajuans_page');
+    public function index()
+    {
+        $this->authorize('view pengajuan pinjaman');
+        $pengajuans = PengajuanPinjaman::with('anggota')
+            ->where('status', 'diajukan')
+            ->orderBy('tanggal_pengajuan')
+            ->paginate(5, ['*'], 'pengajuans_page');
 
-    //     $riwayatApproval = PengajuanPinjaman::whereIn('status', ['disetujui', 'ditolak', 'dicairkan'])
-    //                     ->orderBy('updated_at', 'desc')
-    //                     ->paginate(10, ['*'], 'riwayatApproval_page');
+        $riwayatApproval = PengajuanPinjaman::whereIn('status', ['disetujui', 'ditolak', 'dicairkan'])
+                        ->orderBy('updated_at', 'desc')
+                        ->paginate(10, ['*'], 'riwayatApproval_page');
 
-    //     return view('admin.pinjaman.pengajuan.index', compact('pengajuans','riwayatApproval'));
-    // }
+        return view('admin.pinjaman.pengajuan.index', compact('pengajuans','riwayatApproval'));
+    }
 
     public function show(PengajuanPinjaman $pengajuan)
     {

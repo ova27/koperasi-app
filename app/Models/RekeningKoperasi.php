@@ -8,7 +8,7 @@ class RekeningKoperasi extends Model
 {
     protected $table = 'rekening_koperasis';
 
-    protected $fillable = ['nama', 'jenis', 'aktif'];
+    protected $fillable = ['nama', 'nomor_rekening', 'nama_pemilik', 'jenis', 'aktif'];
 
     public function arusKas()
     {

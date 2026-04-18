@@ -3,7 +3,7 @@
         @can('view laporan arus kas')
             <a href="{{ route('admin.keuangan.arus-kas') }}"
                 class="inline-flex items-center border-b-2 px-1 py-1 text-sm font-medium transition {{ request()->routeIs('admin.keuangan.arus-kas') ? 'border-black text-black' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }}">
-                Laporan Arus Kas
+                Rekap Arus Kas
             </a>
         @endcan
 

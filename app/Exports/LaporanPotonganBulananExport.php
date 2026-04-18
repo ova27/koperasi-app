@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use Illuminate\Support\Collection;
 
 class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnWidths, WithEvents
 {
@@ -30,6 +31,7 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
         
         $bulanPotongan = Carbon::createFromFormat('Y-m', $this->bulanPotongan);
         $bulanSebelumnya = $bulanPotongan->copy()->subMonthNoOverflow();
+        $batasRiwayatCicilan = $bulanSebelumnya->copy()->endOfMonth();
 
         $wajibDefault = (int) config('koperasi.simpanan_wajib', 0);
         $iuranDharmaWanita = (int) config('koperasi.iuran_dharma_wanita', 0);
@@ -38,31 +40,42 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
         $iuranOperasional = (int) config('koperasi.iuran_operasional', 5000);
 
         $rows = Anggota::query()
-            ->with(['rekeningAktif', 'pinjamanAktif', 'potonganTitipan'])
+            ->with([
+                'rekeningAktif',
+                'pinjamans.transaksi' => function ($query) {
+                    $query->orderBy('tanggal')->orderBy('id');
+                },
+                'potonganTitipan',
+            ])
             ->where('status', 'aktif')
             ->orderBy('nama')
             ->get()
-            ->map(function ($anggota, $index) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $bulanPotongan) {
-                $pinjamanAktif = $anggota->pinjamanAktif;
+            ->map(function ($anggota, $index) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $batasRiwayatCicilan) {
+                $pinjamanAcuan = $this->pinjamanPadaAkhirBulan($anggota->pinjamans, $batasRiwayatCicilan);
                 $cicilan = 0;
                 $sisaPinjamanLalu = 0;
                 $sisaPinjamanSekarang = 0;
+                $tenor = '-';
                 $cicilanKe = '-';
                 $titipan = $anggota->potonganTitipan;
 
-                if ($pinjamanAktif) {
-                    $sisaPinjamanLalu = (int) ($pinjamanAktif->sisa_pinjaman ?? 0);
-                    $cicilan = (int) min(
-                        (int) ($pinjamanAktif->cicilan_per_bulan ?? 0),
-                        $sisaPinjamanLalu
-                    );
-                    $sisaPinjamanSekarang = $sisaPinjamanLalu - $cicilan;
+                if ($pinjamanAcuan) {
+                    $sisaPinjamanLalu = $this->sisaPinjamanPerAkhirBulan($pinjamanAcuan, $batasRiwayatCicilan);
+
+                    if ($sisaPinjamanLalu > 0) {
+                        $tenor = (int) ($pinjamanAcuan->tenor ?? 0) > 0
+                            ? (int) $pinjamanAcuan->tenor
+                            : '-';
+                        $cicilan = (int) min(
+                            (int) ($pinjamanAcuan->cicilan_per_bulan ?? 0),
+                            $sisaPinjamanLalu
+                        );
+                        $sisaPinjamanSekarang = max(0, $sisaPinjamanLalu - $cicilan);
+                    }
                     
-                    // Hitung cicilan ke berapa berdasarkan jumlah cicilan yang sudah masuk (exclude pencairan dan topup)
+                    // Kolom ke- mengikuti urutan riwayat cicilan, termasuk saat ada topup.
                     if ($cicilan > 0) {
-                        $jumlahCicilan = $pinjamanAktif->transaksi()
-                            ->where('jenis', 'cicilan')
-                            ->count();
+                        $jumlahCicilan = $this->jumlahCicilanSampaiBulan($pinjamanAcuan->transaksi, $batasRiwayatCicilan);
                         $cicilanKe = $jumlahCicilan + 1;
                     }
                 }
@@ -78,7 +91,7 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
                     'nama' => $anggota->nama,
                     'rekening' => $anggota->rekeningAktif->nomor_rekening ?? '-',
                     'sisa_lalu' => $sisaPinjamanLalu,
-                    'tenor' => $pinjamanAktif ? $pinjamanAktif->tenor : '-',
+                    'tenor' => $tenor,
                     'ke' => $cicilanKe,
                     'cicilan' => $cicilan,
                     'sisa_sekarang' => $sisaPinjamanSekarang,
@@ -174,6 +187,64 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
         $dataArray[] = ['', 'NIP. 19961027 201901 2 001', '', '', 'NIP. 19770605 199901 1 001', '', '', '', '', '', 'NIP. 19830206 201101 2 008', '', ''];
 
         return $dataArray;
+    }
+
+    private function pinjamanPadaAkhirBulan(Collection $pinjamans, Carbon $batasRiwayatCicilan)
+    {
+        $kandidat = $pinjamans
+            ->filter(function ($pinjaman) use ($batasRiwayatCicilan) {
+                return $pinjaman->tanggal_pinjam && $pinjaman->tanggal_pinjam->lte($batasRiwayatCicilan);
+            })
+            ->sortBy(function ($pinjaman) {
+                $tanggal = $pinjaman->tanggal_pinjam ? $pinjaman->tanggal_pinjam->format('Ymd') : '00000000';
+                return $tanggal . '-' . str_pad((string) $pinjaman->id, 10, '0', STR_PAD_LEFT);
+            })
+            ->values();
+
+        for ($i = $kandidat->count() - 1; $i >= 0; $i--) {
+            $pinjaman = $kandidat->get($i);
+            if ($this->sisaPinjamanPerAkhirBulan($pinjaman, $batasRiwayatCicilan) > 0) {
+                return $pinjaman;
+            }
+        }
+
+        return null;
+    }
+
+    private function sisaPinjamanPerAkhirBulan($pinjaman, Carbon $batasRiwayatCicilan): int
+    {
+        if (! $pinjaman) {
+            return 0;
+        }
+
+        if (! $pinjaman->tanggal_pinjam || $pinjaman->tanggal_pinjam->gt($batasRiwayatCicilan)) {
+            return 0;
+        }
+
+        $transaksiSampaiBatas = $pinjaman->transaksi
+            ->filter(function ($transaksi) use ($batasRiwayatCicilan) {
+                return $transaksi->tanggal && $transaksi->tanggal->lte($batasRiwayatCicilan);
+            })
+            ->values();
+
+        if ($transaksiSampaiBatas->isNotEmpty()) {
+            $sisaTerakhir = (int) ($transaksiSampaiBatas->last()->sisa_setelah ?? 0);
+            return max(0, $sisaTerakhir);
+        }
+
+        // Saat belum ada transaksi yang tercatat sampai bulan acuan,
+        // gunakan pokok awal pinjaman sebagai posisi sisa terakhir.
+        return max(0, (int) ($pinjaman->jumlah_pinjaman ?? 0));
+    }
+
+    private function jumlahCicilanSampaiBulan(Collection $transaksi, Carbon $batasRiwayatCicilan): int
+    {
+        return $transaksi
+            ->where('jenis', 'cicilan')
+            ->filter(function ($transaksi) use ($batasRiwayatCicilan) {
+                return $transaksi->tanggal && $transaksi->tanggal->lte($batasRiwayatCicilan);
+            })
+            ->count();
     }
 
 

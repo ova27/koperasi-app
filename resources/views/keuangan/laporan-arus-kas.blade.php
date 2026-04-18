@@ -1,11 +1,66 @@
 @extends('layouts.main')
 
-@section('title', 'Laporan Arus Kas Bulanan')
-@section('page-title', 'Laporan Arus Kas Bulanan')
+@section('title', 'Laporan Rekap Arus Kas')
+@section('page-title', 'Laporan Rekap Arus Kas')
+@section('page-description', 'Ringkasan bulanan untuk membandingkan total arus koperasi dan arus operasional dalam satu tampilan.')
 
 @section('content')
 <div class="space-y-6 -mt-1">
     @include('admin.laporan._tabs')
+
+    @php
+        [$tahunAktif, $bulanAktif] = array_pad(explode('-', $bulan), 2, null);
+        $tahunAktif = (int) ($tahunAktif ?: now()->format('Y'));
+        $bulanAktif = (int) ($bulanAktif ?: now()->format('n'));
+
+        $namaBulan = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
+        ];
+
+        $filterLabel = match ($filter) {
+            'koperasi' => 'Hanya arus koperasi',
+            'operasional' => 'Hanya arus operasional',
+            default => 'Seluruh arus kas',
+        };
+
+        $tahunSekarang = (int) now()->format('Y');
+        $daftarTahun = range($tahunSekarang + 1, $tahunSekarang - 5);
+        $labelPeriode = ($namaBulan[$bulanAktif] ?? 'Bulan') . ' ' . $tahunAktif;
+    @endphp
+
+    <div class="rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div class="max-w-2xl">
+                <div class="inline-flex w-fit items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                    Ringkasan bulanan
+                </div>
+                <h2 class="mt-3 text-lg font-semibold text-slate-900">Rekap arus kas untuk {{ $labelPeriode }}</h2>
+                <p class="mt-1 text-sm leading-6 text-slate-600">
+                    Halaman ini dipakai untuk membaca total pemasukan, pengeluaran, dan saldo bersih dalam satu periode tanpa melihat transaksi satu per satu terlebih dahulu.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <div class="inline-flex items-center rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200">
+                    Filter aktif: {{ $filterLabel }}
+                </div>
+                <div class="inline-flex items-center rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200">
+                    {{ $items->count() }} transaksi tercatat
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
@@ -106,33 +161,9 @@
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-200">
-            <h2 class="text-base font-semibold text-gray-900">Seluruh Arus</h2>
-            <p class="text-sm text-gray-500">Menampilkan seluruh transaksi kas pada bulan terpilih sesuai filter jenis arus.</p>
+            <h2 class="text-base font-semibold text-gray-900">Daftar transaksi pendukung rekap</h2>
+            <p class="text-sm text-gray-500">Gunakan tabel ini untuk menelusuri transaksi yang membentuk total laporan pada periode terpilih.</p>
         </div>
-
-        @php
-            [$tahunAktif, $bulanAktif] = array_pad(explode('-', $bulan), 2, null);
-            $tahunAktif = (int) ($tahunAktif ?: now()->format('Y'));
-            $bulanAktif = (int) ($bulanAktif ?: now()->format('n'));
-
-            $namaBulan = [
-                1 => 'Januari',
-                2 => 'Februari',
-                3 => 'Maret',
-                4 => 'April',
-                5 => 'Mei',
-                6 => 'Juni',
-                7 => 'Juli',
-                8 => 'Agustus',
-                9 => 'September',
-                10 => 'Oktober',
-                11 => 'November',
-                12 => 'Desember',
-            ];
-
-            $tahunSekarang = (int) now()->format('Y');
-            $daftarTahun = range($tahunSekarang + 1, $tahunSekarang - 5);
-        @endphp
 
         <div class="px-5 py-3 border-b border-gray-200 bg-gray-50">
             <form method="GET" class="flex flex-wrap gap-3 items-end">

@@ -14,6 +14,8 @@ class RekeningKoperasiSeeder extends Seeder
                 'nama' => 'Bank BRI',
             ],
             [
+                'nomor_rekening' => null,
+                'nama_pemilik' => null,
                 'jenis' => 'bank',
                 'aktif' => true,
             ]

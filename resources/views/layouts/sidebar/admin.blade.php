@@ -1,18 +1,15 @@
 <div class="sidebar-shell h-full">
     {{-- SIDEBAR HEADER --}}
-    <div class="sidebar-brand mb-5 flex items-center gap-3 px-1 py-1">
+    <div class="sidebar-brand mb-3 flex items-center gap-2 px-1 py-0">
         {{-- ICON / LOGO --}}
-        <div class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 text-base font-bold text-white shadow-md ring-2 ring-white">
+        <div class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 text-sm font-bold text-white shadow-md ring-2 ring-white">
             K
         </div>
         {{-- TITLE & ROLE --}}
         <div class="sidebar-title min-w-0">
-            <div class="truncate text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Koperasi</div>
-            <div class="truncate text-sm font-bold tracking-wide text-slate-800 uppercase">
+            <div class="truncate text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">Koperasi</div>
+            <div class="truncate text-xs font-bold tracking-wide text-slate-800 uppercase">
                 Simpatik
-            </div>
-            <div class="truncate text-xs text-slate-500 capitalize">
-                BPS Provinsi Banten
             </div>
         </div>
     </div>
@@ -105,7 +102,7 @@
             <li class="menu-header">ADMIN</li>
 
             @canany(['view anggota list', 'manage users'])
-            <li class="menu-item" x-data="{ open: {{ request()->routeIs('admin.anggota.*') || request()->routeIs('admin.users.*') ? 'true' : 'false' }} }">
+            <li class="menu-item" x-data="{ open: {{ request()->routeIs('admin.anggota.*') || request()->routeIs('admin.users.*') || request()->routeIs('admin.master.rekening-koperasi.*') ? 'true' : 'false' }} }">
                 <button
                     type="button"
                     @click="open = !open"
@@ -122,6 +119,12 @@
                         class="sub-menu-link {{ request()->routeIs('admin.anggota.*') || request()->routeIs('admin.users.*') ? 'active' : '' }}">
                         Data
                     </a>
+                    @if(auth()->user()->hasAnyRole(['admin', 'ketua', 'bendahara']))
+                    <a href="{{ route('admin.master.rekening-koperasi.index') }}"
+                        class="sub-menu-link {{ request()->routeIs('admin.master.rekening-koperasi.*') ? 'active' : '' }}">
+                        Rekening Koperasi
+                    </a>
+                    @endif
                 </div>
             </li>
             @endcanany
@@ -151,12 +154,21 @@
                         Simpanan Anggota
                     </a>
                     @endcanany
-                    @can('view pengajuan pinjaman')
+
                     <a href="{{ route('admin.pinjaman.data-anggota.index') }}"
-                        class="sub-menu-link {{ request()->routeIs('admin.pinjaman.data-anggota.*') || request()->routeIs('admin.pinjaman.pencairan.*') ? 'active' : '' }}">
+                        class="sub-menu-link {{ request()->routeIs('admin.pinjaman.data-anggota.*') ? 'active' : '' }}">
                         Pinjaman Anggota
                     </a>
+                    @can('view pengajuan pinjaman')
+                    <a href="{{ route('admin.pinjaman.pengajuan.index') }}"
+                        class="sub-menu-link {{ request()->routeIs('admin.pinjaman.pengajuan.*')  ? 'active' : '' }}">
+                        Approval Pengajuan Pinjaman
+                    </a>
                     @endcan
+                    <a href="{{ route('admin.pinjaman.pencairan.index') }}"
+                        class="sub-menu-link {{ request()->routeIs('admin.pinjaman.pencairan.*')  ? 'active' : '' }}">
+                        Pencairan Pengajuan Pinjaman
+                    </a>
                 </div>
             </li>
             @endcanany
@@ -192,7 +204,7 @@
                     @can('view saldo')
                     <a href="{{ route('admin.keuangan.saldo') }}"
                         class="sub-menu-link {{ request()->routeIs('admin.keuangan.saldo') || request()->routeIs('admin.keuangan.arus.koperasi') || request()->routeIs('admin.keuangan.arus.operasional') ? 'active' : '' }}">
-                        Arus Kas & Neraca
+                        Transaksi & Neraca
                     </a>
                     @endcan
                     @canany([
@@ -202,7 +214,7 @@
                     ])
                     <a href="{{ route('admin.keuangan.arus-kas') }}"
                         class="sub-menu-link {{ request()->routeIs('admin.keuangan.arus-kas') || request()->routeIs('admin.laporan.simpanan-bulanan') || request()->routeIs('admin.laporan.pinjaman.*') ? 'active' : '' }}">
-                        Laporan Bulanan
+                        Rekap Bulanan
                     </a>
                     @endcanany
 

@@ -93,6 +93,16 @@
                 </li>
                 @endcan
             @endcanany
+
+            @can('view laporan pinjaman')
+            <li class="menu-header">Laporan</li>
+            <li class="menu-item">
+                <a href="{{ route('admin.laporan.potongan-bulanan.index') }}"
+                class="menu-link {{ request()->routeIs('admin.laporan.potongan-bulanan.*') ? 'active' : '' }}">
+                    <span class="menu-text">Rincian Potongan Bulanan</span>
+                </a>
+            </li>
+            @endcan
             </ul>
         </nav>
 

@@ -12,7 +12,7 @@
 <div class="flex min-h-screen relative">
     {{-- SIDEBAR --}}
     <aside id="sidebar"
-        class="sidebar fixed inset-y-0 left-0 z-40 w-64 -translate-x-full transition-all duration-300 overflow-hidden
+        class="sidebar fixed inset-y-0 left-0 z-40 w-56 -translate-x-full transition-all duration-300 overflow-hidden
         bg-gradient-to-b from-slate-50 to-slate-100 border-r border-gray-200 shadow-lg px-3 pt-5 pb-6
         lg:static lg:z-auto lg:translate-x-0 lg:shadow-sm">
 
@@ -38,9 +38,17 @@
             <div class="max-w-7xl mx-auto">
                 {{-- PAGE TITLE --}}
                 @hasSection('page-title')
-                    <h1 class="text-xl font-semibold mb-4">
-                        @yield('page-title')
-                    </h1>
+                    <div class="mb-4">
+                        <h1 class="text-xl font-semibold text-slate-900">
+                            @yield('page-title')
+                        </h1>
+
+                        @hasSection('page-description')
+                            <p class="mt-1 text-sm text-slate-500">
+                                @yield('page-description')
+                            </p>
+                        @endif
+                    </div>
                 @endif
 
                 {{-- CARD CONTENT --}}
@@ -237,16 +245,15 @@ function closeModal() {
             document.body.classList.toggle('overflow-hidden', isOpen);
         };
 
-        const applyDesktopSidebarState = () => {
-            if (localStorage.getItem('sidebar') === 'collapsed') {
-                sidebar.classList.add('sidebar-collapsed');
-            } else {
-                sidebar.classList.remove('sidebar-collapsed');
-            }
+        const applyDesktopState = () => {
+            sidebar.classList.remove('mobile-open');
+            sidebar.classList.remove('sidebar-collapsed');
+            sidebarOverlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
         };
 
         if (isDesktop()) {
-            applyDesktopSidebarState();
+            applyDesktopState();
         } else {
             sidebar.classList.remove('sidebar-collapsed');
             setMobileOpenState(false);
@@ -255,13 +262,6 @@ function closeModal() {
         toggleBtn.addEventListener('click', () => {
             if (isDesktop()) {
                 sidebar.classList.toggle('sidebar-collapsed');
-
-                if (sidebar.classList.contains('sidebar-collapsed')) {
-                    localStorage.setItem('sidebar', 'collapsed');
-                } else {
-                    localStorage.setItem('sidebar', 'expanded');
-                }
-
                 return;
             }
 
@@ -275,8 +275,7 @@ function closeModal() {
 
         window.addEventListener('resize', () => {
             if (isDesktop()) {
-                setMobileOpenState(false);
-                applyDesktopSidebarState();
+                applyDesktopState();
                 return;
             }
 

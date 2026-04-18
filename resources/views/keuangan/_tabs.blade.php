@@ -4,7 +4,7 @@
         @can('view arus koperasi')
             <a href="{{ route('admin.keuangan.arus.koperasi') }}"
                 class="inline-flex items-center border-b-2 px-1 py-1 text-sm font-medium transition {{ request()->routeIs('admin.keuangan.arus.koperasi') ? 'border-black text-black' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }}">
-                Arus Koperasi
+                Transaksi Koperasi
             </a>
         @endcan
 

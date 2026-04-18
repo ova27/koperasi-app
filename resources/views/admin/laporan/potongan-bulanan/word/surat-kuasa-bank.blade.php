@@ -149,6 +149,10 @@
     </style>
 </head>
 <body>
+    @php
+        $instansiTitle = mb_convert_case((string) ($suratKuasa['instansi'] ?? ''), MB_CASE_TITLE, 'UTF-8');
+    @endphp
+
     <div class="header">
         @if($logoDataUri)
             <img src="{{ $logoDataUri }}" alt="Logo BPS" class="logo">
@@ -165,7 +169,7 @@
             <tr>
                 <td>Nama</td>
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</td>
-                <td class="bold">&nbsp;{{ $suratKuasa['penandatangan_1']['nama'] }}</td>
+                <td class="bold">&nbsp;{{ mb_strtoupper((string) $suratKuasa['penandatangan_1']['nama'], 'UTF-8') }}</td>
             </tr>
             <tr>
                 <td>NIP</td>
@@ -186,7 +190,7 @@
             <tr>
                 <td>Nama</td>
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</td>
-                <td class="bold">&nbsp;{{ $suratKuasa['penandatangan_2']['nama'] }}</td>
+                <td class="bold">&nbsp;{{ mb_strtoupper((string) $suratKuasa['penandatangan_2']['nama'], 'UTF-8') }}</td>
             </tr>
             <tr>
                 <td>NIP</td>
@@ -203,13 +207,13 @@
 
     <p class="paragraph">
         Dengan ini memberikan kuasa kepada {{ $suratKuasa['bank_tujuan']['nama'] }} untuk melakukan pendebetan rekening
-        pegawai {{ $suratKuasa['instansi'] }} untuk
-        <span class="bold underline">Potongan Koperasi {{ ucfirst($bulanLabel) }}</span>
+        pegawai {{ $instansiTitle }} untuk
+        <strong><u>Potongan Koperasi {{ ucfirst($bulanLabel) }}</u></strong>
         sebesar <span class="bold">Rp {{ number_format($totalSetoran, 0, ',', '.') }}</span>
-        - ({{ $totalSetoranTerbilang }} rupiah) dari rekening pegawai {{ $suratKuasa['instansi'] }}
+        - ({{ mb_convert_case((string) $totalSetoranTerbilang, MB_CASE_TITLE, 'UTF-8') }} Rupiah) dari rekening pegawai {{ $instansiTitle }}
         yang selanjutnya ditransfer ke nomor rekening
         {{ $suratKuasa['bank_tujuan']['nama'] }} : <span class="bold">{{ $suratKuasa['bank_tujuan']['nomor_rekening'] }}</span>
-        atas nama <span class="bold">{{ $suratKuasa['bank_tujuan']['atas_nama'] }}</span>,
+        atas nama <span class="bold">{{ mb_strtoupper((string) $suratKuasa['bank_tujuan']['atas_nama'], 'UTF-8') }}</span>,
         {{ $suratKuasa['bank_tujuan']['keterangan'] }} (Daftar Nama dan Nomor Rekening Pegawai terlampir). 
     </p>
 
@@ -224,8 +228,8 @@
             <td class="ttd-space"></td>
         </tr>
         <tr>
-            <td class="left signature-name"><b>{{ $suratKuasa['penandatangan_2']['nama'] }}</b><br><span class="signature-nip-text">NIP : {{ $suratKuasa['penandatangan_2']['nip'] }}</span></td>
-            <td class="right signature-name"><b>{{ $suratKuasa['penandatangan_1']['nama'] }}</b><br><span class="signature-nip-text">NIP : {{ $suratKuasa['penandatangan_1']['nip'] }}</span></td>
+            <td class="left signature-name"><b>{{ mb_strtoupper((string) $suratKuasa['penandatangan_2']['nama'], 'UTF-8') }}</b><br><span class="signature-nip-text">NIP : {{ $suratKuasa['penandatangan_2']['nip'] }}</span></td>
+            <td class="right signature-name"><b>{{ mb_strtoupper((string) $suratKuasa['penandatangan_1']['nama'], 'UTF-8') }}</b><br><span class="signature-nip-text">NIP : {{ $suratKuasa['penandatangan_1']['nip'] }}</span></td>
         </tr>
     </table>
 

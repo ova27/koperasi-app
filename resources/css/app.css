@@ -170,22 +170,27 @@
 
 /* default */
 .sidebar {
-    width: 16rem; /* w-64 */
+    width: 14rem; /* w-56 */
 }
 
 /* collapsed */
 .sidebar.sidebar-collapsed {
-    width: 0rem; /* w-16 */
+    width: 4rem; /* w-16 */
 }
 
 #sidebar.sidebar-collapsed {
-    width: 0rem;
-    padding-left: 0rem;
-    padding-right: 0rem;
+    width: 4rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
 }
 
 /* text disembunyikan */
 .sidebar.sidebar-collapsed .menu-text {
+    display: none;
+}
+
+/* section header disembunyikan agar tidak terpotong saat collapsed */
+.sidebar.sidebar-collapsed .menu-header {
     display: none;
 }
 
@@ -199,6 +204,15 @@
     justify-content: center;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+}
+
+/* tombol parent submenu dirapikan saat collapsed */
+.sidebar.sidebar-collapsed .menu-toggle-btn {
+    justify-content: center;
+}
+
+.sidebar.sidebar-collapsed .menu-toggle-btn svg {
+    display: none;
 }
 
 /* optional: kasih gap lebih kecil */

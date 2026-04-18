@@ -19,7 +19,8 @@ use App\Http\Controllers\Admin\{
     SaldoController,
     ArusKasKoperasiController,
     ArusOperasionalController,
-    LaporanArusKasController
+    LaporanArusKasController,
+    RekeningKoperasiController
 };
 use App\Http\Controllers\Anggota\{
     SimpananSayaController,
@@ -200,10 +201,8 @@ Route::middleware(['auth','permission:view anggota list'])
 
         Route::middleware('permission:pencairan pinjaman')
             ->group(function () {
-
-                Route::post('/pinjaman/pencairan/{pengajuan}', [PencairanPinjamanController::class, 'process'])
+                Route::post('/pinjaman/pencairan/{pengajuan}', [PencairanPinjamanController::class, 'processPencairan'])
                     ->name('pinjaman.pencairan.process');
-
                 Route::patch('/pinjaman/pencairan/{pengajuan}/batal', [PencairanPinjamanController::class, 'batalPencairan'])
                     ->name('pinjaman.pencairan.batal');
             });
@@ -231,15 +230,11 @@ Route::middleware(['auth','permission:view anggota list'])
                     ->name('update');
             });
 
-        Route::middleware('permission:manage cicilan pinjaman')
-            ->group(function () {
-
-                Route::get('/pinjaman/{pinjaman}/cicil', [CicilanPinjamanController::class, 'create'])
-                    ->name('pinjaman.cicil.create');
-
-                Route::post('/pinjaman/{pinjaman}/cicil', [CicilanPinjamanController::class, 'store'])
-                    ->name('pinjaman.cicil.store');
-            });
+        // Route cicil pinjaman selalu tersedia
+        Route::get('/pinjaman/{pinjaman}/cicil', [CicilanPinjamanController::class, 'create'])
+            ->name('pinjaman.cicil.create');
+        Route::post('/pinjaman/{pinjaman}/cicil', [CicilanPinjamanController::class, 'store'])
+            ->name('pinjaman.cicil.store');
 
         /*
         | LAPORAN SIMPANAN BULANAN
@@ -300,7 +295,7 @@ Route::middleware(['auth','permission:view anggota list'])
                     ->get('/laporan/pinjaman/export', [LaporanPinjamanController::class, 'export'])
                     ->name('laporan.pinjaman.export');
 
-                Route::middleware('permission:export laporan pinjaman')
+                Route::middleware('permission:view laporan pinjaman')
                     ->get('/laporan/potongan-bulanan/export', [LaporanPotonganBulananController::class, 'export'])
                     ->name('laporan.potongan-bulanan.export');
 
@@ -314,6 +309,23 @@ Route::middleware(['auth','permission:view anggota list'])
 
                 Route::get('/laporan/pinjaman/{pinjaman}', [LaporanPinjamanController::class, 'show'])
                     ->name('laporan.pinjaman.show');
+            });
+
+        Route::prefix('master/rekening-koperasi')
+            ->name('master.rekening-koperasi.')
+            ->group(function () {
+                Route::get('/', [RekeningKoperasiController::class, 'index'])
+                    ->name('index');
+                Route::get('/create', [RekeningKoperasiController::class, 'create'])
+                    ->name('create');
+                Route::post('/', [RekeningKoperasiController::class, 'store'])
+                    ->name('store');
+                Route::get('/{rekeningKoperasi}/edit', [RekeningKoperasiController::class, 'edit'])
+                    ->name('edit');
+                Route::put('/{rekeningKoperasi}', [RekeningKoperasiController::class, 'update'])
+                    ->name('update');
+                Route::delete('/{rekeningKoperasi}', [RekeningKoperasiController::class, 'destroy'])
+                    ->name('destroy');
             });
     });
 
