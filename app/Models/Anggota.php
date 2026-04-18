@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\PotonganTitipan;
 
 class Anggota extends Model
 {
@@ -53,5 +54,10 @@ class Anggota extends Model
     {
         return $this->hasOne(Pinjaman::class)
             ->where('status', 'aktif'); // sesuaikan dengan field kamu
+    }
+
+    public function potonganTitipan()
+    {
+        return $this->hasOne(PotonganTitipan::class);
     }
 }

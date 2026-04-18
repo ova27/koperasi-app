@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\{
     SimpananController,
     AnggotaExitController,
     LaporanPinjamanController,
+    LaporanPotonganBulananController,
     LaporanSimpananController,
     GenerateSimpananWajibController,
     ApprovalPinjamanController,
@@ -273,9 +274,43 @@ Route::middleware(['auth','permission:view anggota list'])
                 Route::get('/laporan/pinjaman', [LaporanPinjamanController::class, 'index'])
                     ->name('laporan.pinjaman.index');
 
+                Route::get('/laporan/potongan-bulanan', [LaporanPotonganBulananController::class, 'index'])
+                    ->name('laporan.potongan-bulanan.index');
+
+                Route::get('/laporan/potongan-bulanan/bank', [LaporanPotonganBulananController::class, 'indexBank'])
+                    ->name('laporan.potongan-bulanan.bank.index');
+
+                Route::middleware('permission:manage simpanan anggota')
+                    ->post('/laporan/potongan-bulanan/{anggota}/nominal', [LaporanPotonganBulananController::class, 'updateAnggota'])
+                    ->name('laporan.potongan-bulanan.anggota.update');
+
+                Route::middleware('permission:manage simpanan anggota')
+                    ->post('/laporan/potongan-bulanan/upload/preview', [LaporanPotonganBulananController::class, 'uploadPreview'])
+                    ->name('laporan.potongan-bulanan.upload.preview');
+
+                Route::middleware('permission:manage simpanan anggota')
+                    ->post('/laporan/potongan-bulanan/upload/confirm', [LaporanPotonganBulananController::class, 'uploadConfirm'])
+                    ->name('laporan.potongan-bulanan.upload.confirm');
+
+                Route::middleware('permission:manage simpanan anggota')
+                    ->get('/laporan/potongan-bulanan/upload/template', [LaporanPotonganBulananController::class, 'downloadTemplate'])
+                    ->name('laporan.potongan-bulanan.template.download');
+
                 Route::middleware('permission:export laporan pinjaman')
                     ->get('/laporan/pinjaman/export', [LaporanPinjamanController::class, 'export'])
                     ->name('laporan.pinjaman.export');
+
+                Route::middleware('permission:export laporan pinjaman')
+                    ->get('/laporan/potongan-bulanan/export', [LaporanPotonganBulananController::class, 'export'])
+                    ->name('laporan.potongan-bulanan.export');
+
+                Route::middleware('permission:export laporan pinjaman')
+                    ->get('/laporan/potongan-bulanan/bank/export', [LaporanPotonganBulananController::class, 'exportBank'])
+                    ->name('laporan.potongan-bulanan.bank.export');
+
+                Route::middleware('permission:export laporan pinjaman')
+                    ->get('/laporan/potongan-bulanan/bank/export-word', [LaporanPotonganBulananController::class, 'exportBankWord'])
+                    ->name('laporan.potongan-bulanan.bank.export-word');
 
                 Route::get('/laporan/pinjaman/{pinjaman}', [LaporanPinjamanController::class, 'show'])
                     ->name('laporan.pinjaman.show');

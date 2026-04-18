@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('pinjamans') || Schema::hasColumn('pinjamans', 'pengajuan_id')) {
+            return;
+        }
+
         Schema::table('pinjamans', function (Blueprint $table) {
             $table->foreignId('pengajuan_id')
                 ->after('id')
@@ -24,8 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pinjamans', function (Blueprint $table) {
-            //
-        });
+        // Intentionally left empty to avoid dropping existing production data.
     }
 };

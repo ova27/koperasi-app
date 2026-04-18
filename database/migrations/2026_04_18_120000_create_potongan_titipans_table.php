@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('potongan_titipans', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('anggota_id')->constrained('anggotas')->cascadeOnDelete();
+            $table->unsignedBigInteger('iuran_dharma_wanita')->default(0);
+            $table->unsignedBigInteger('infaq_pegawai')->default(0);
+            $table->unsignedBigInteger('tabungan_qurban')->default(0);
+            $table->timestamps();
+
+            $table->unique('anggota_id');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('potongan_titipans');
+    }
+};

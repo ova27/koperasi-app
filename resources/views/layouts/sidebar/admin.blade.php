@@ -182,6 +182,13 @@
                     </svg>
                 </button>
                 <div x-show="open" x-transition class="ml-6 space-y-1 border-l-2 border-slate-200 pl-2">
+                    
+                    @can('view laporan pinjaman')
+                    <a href="{{ route('admin.laporan.potongan-bulanan.index') }}"
+                        class="sub-menu-link {{ request()->routeIs('admin.laporan.potongan-bulanan.*') ? 'active' : '' }}">
+                        Potongan Bulanan
+                    </a>
+                    @endcan
                     @can('view saldo')
                     <a href="{{ route('admin.keuangan.saldo') }}"
                         class="sub-menu-link {{ request()->routeIs('admin.keuangan.saldo') || request()->routeIs('admin.keuangan.arus.koperasi') || request()->routeIs('admin.keuangan.arus.operasional') ? 'active' : '' }}">
@@ -198,6 +205,7 @@
                         Laporan Bulanan
                     </a>
                     @endcanany
+
                 </div>
             </li>
             @endcanany
