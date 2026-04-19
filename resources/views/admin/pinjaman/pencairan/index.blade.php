@@ -23,7 +23,7 @@
     {{-- DAFTAR PINJAMAN YANG SIAP DICAIRKAN --}}
     <div class="mb-6">
         <h2 class="section-title">
-            Pengajuan Pinjaman Siap Dicairkan
+            Pengajuan Pinjaman Siap Dicairkan (Sudah Disetujui)
         </h2>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto mb-4">
