@@ -70,6 +70,7 @@ class LaporanPotonganBulananController extends Controller
             'canManagePotongan' => $canManagePotongan,
             'rows' => $rows,
             'totalWajib' => (int) $filteredRows->sum('wajib'),
+            'totalSukarela' => (int) $filteredRows->sum('sukarela'),
             'totalCicilan' => (int) $filteredRows->sum('cicilan'),
             'totalTitipan' => (int) $filteredRows->sum('total_titipan'),
             'totalIuranOperasional' => (int) $filteredRows->sum('iuran_operasional'),
@@ -142,6 +143,8 @@ class LaporanPotonganBulananController extends Controller
 
 
         $validated = $request->validate([
+            'simpanan_wajib' => ['required', 'integer', 'min:0'],
+            'simpanan_sukarela' => ['required', 'integer', 'min:0'],
             'iuran_dharma_wanita' => ['required', 'integer', 'min:0'],
             'infaq_pegawai' => ['required', 'integer', 'min:0'],
             'tabungan_qurban' => ['required', 'integer', 'min:0'],
@@ -166,16 +169,25 @@ class LaporanPotonganBulananController extends Controller
             ]
         );
 
-        // Update PotonganBulananDetail untuk bulan berjalan jika ada (jika belum difix)
-        PotonganBulananDetail::where('bulan_potongan', $bulanPotongan)
-            ->where('anggota_id', $anggota->id)
-            ->update([
+        // Update atau buat PotonganBulananDetail untuk bulan berjalan (jika belum difix)
+        PotonganBulananDetail::updateOrCreate(
+            [
+                'bulan_potongan' => $bulanPotongan,
+                'anggota_id' => $anggota->id,
+            ],
+            [
+                'nama' => $anggota->nama,
+                'bank' => $anggota->rekeningAktif->nama_bank ?? '-',
+                'nomor_rekening' => $anggota->rekeningAktif->nomor_rekening ?? '-',
+                'simpanan_wajib' => (int) $validated['simpanan_wajib'],
+                'simpanan_sukarela' => (int) $validated['simpanan_sukarela'],
                 'cicilan' => (int) $validated['cicilan'],
                 'iuran_operasional' => (int) $validated['iuran_operasional'],
                 'iuran_dharma_wanita' => (int) $validated['iuran_dharma_wanita'],
                 'infaq_pegawai' => (int) $validated['infaq_pegawai'],
                 'tabungan_qurban' => (int) $validated['tabungan_qurban'],
-            ]);
+            ]
+        );
 
         return redirect()
             ->route('admin.laporan.potongan-bulanan.index', ['bulan' => $bulanPotongan])
@@ -216,6 +228,7 @@ class LaporanPotonganBulananController extends Controller
                     'bank' => (string) ($row['bank'] ?? '-'),
                     'nomor_rekening' => (string) ($row['nomor_rekening'] ?? '-'),
                     'simpanan_wajib' => (int) ($row['wajib'] ?? 0),
+                    'simpanan_sukarela' => (int) ($row['sukarela'] ?? 0),
                     'cicilan' => (int) ($row['cicilan'] ?? 0),
                     'iuran_dharma_wanita' => (int) ($row['iuran_dharma_wanita'] ?? 0),
                     'infaq_pegawai' => (int) ($row['infaq_pegawai'] ?? 0),
@@ -487,6 +500,7 @@ class LaporanPotonganBulananController extends Controller
         $tabunganQurban = (int) config('koperasi.tabungan_qurban', 0);
         $iuranOperasional = (int) config('koperasi.iuran_operasional', 5000);
 
+        $details = PotonganBulananDetail::where('bulan_potongan', $bulanPotongan)->get()->keyBy('anggota_id');
         return Anggota::query()
             ->with([
                 'rekeningAktif',
@@ -498,7 +512,8 @@ class LaporanPotonganBulananController extends Controller
             ->where('status', 'aktif')
             ->orderBy('nama')
             ->get()
-            ->map(function ($anggota) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $batasRiwayatCicilan) {
+            ->map(function ($anggota) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $batasRiwayatCicilan, $details) {
+                $detail = $details[$anggota->id] ?? null;
                 $pinjamanAcuan = $this->pinjamanPadaAkhirBulan($anggota->pinjamans, $batasRiwayatCicilan);
                 $cicilan = 0;
                 $sisaPinjamanLalu = 0;
@@ -507,7 +522,16 @@ class LaporanPotonganBulananController extends Controller
                 $cicilanKe = '-';
                 $titipan = $anggota->potonganTitipan;
 
-                if ($pinjamanAcuan) {
+                // Ambil dari detail jika ada, jika tidak pakai perhitungan lama
+                $wajib = $detail ? (int) $detail->simpanan_wajib : $wajibDefault;
+                $sukarela = $detail ? (int) $detail->simpanan_sukarela : 0;
+                $cicilan = $detail ? (int) $detail->cicilan : 0;
+                $dharma = $detail ? (int) $detail->iuran_dharma_wanita : ($titipan ? (int) $titipan->iuran_dharma_wanita : $iuranDharmaWanita);
+                $infaq = $detail ? (int) $detail->infaq_pegawai : ($titipan ? (int) $titipan->infaq_pegawai : $infaqPegawai);
+                $qurban = $detail ? (int) $detail->tabungan_qurban : ($titipan ? (int) $titipan->tabungan_qurban : $tabunganQurban);
+                $iuranOp = $detail ? (int) $detail->iuran_operasional : $iuranOperasional;
+
+                if (!$detail && $pinjamanAcuan) {
                     $sisaPinjamanLalu = $this->sisaPinjamanPerAkhirBulan($pinjamanAcuan, $batasRiwayatCicilan);
                     if ($sisaPinjamanLalu > 0) {
                         $tenor = (int) ($pinjamanAcuan->tenor ?? 0) > 0
@@ -522,9 +546,6 @@ class LaporanPotonganBulananController extends Controller
                     }
                 }
 
-                $dharma = $titipan ? (int) $titipan->iuran_dharma_wanita : $iuranDharmaWanita;
-                $infaq = $titipan ? (int) $titipan->infaq_pegawai : $infaqPegawai;
-                $qurban = $titipan ? (int) $titipan->tabungan_qurban : $tabunganQurban;
                 $totalTitipan = $dharma + $infaq + $qurban;
 
                 return [
@@ -532,14 +553,15 @@ class LaporanPotonganBulananController extends Controller
                     'nama' => $anggota->nama,
                     'bank' => $anggota->rekeningAktif->nama_bank ?? '-',
                     'nomor_rekening' => $anggota->rekeningAktif->nomor_rekening ?? '-',
-                    'wajib' => $wajibDefault,
+                    'wajib' => $wajib,
+                    'sukarela' => $sukarela,
                     'cicilan' => $cicilan,
                     'iuran_dharma_wanita' => $dharma,
                     'infaq_pegawai' => $infaq,
                     'tabungan_qurban' => $qurban,
                     'total_titipan' => $totalTitipan,
-                    'iuran_operasional' => $iuranOperasional,
-                    'total' => $wajibDefault + $cicilan + $totalTitipan + $iuranOperasional,
+                    'iuran_operasional' => $iuranOp,
+                    'total' => $wajib + $sukarela + $cicilan + $totalTitipan + $iuranOp,
                     'sisa_pinjaman_lalu' => $sisaPinjamanLalu,
                     'sisa_pinjaman_sekarang' => $sisaPinjamanSekarang,
                     'tenor' => $tenor,
@@ -604,6 +626,7 @@ class LaporanPotonganBulananController extends Controller
                 'bank' => $detail->bank ?? '-',
                 'nomor_rekening' => $detail->nomor_rekening ?? '-',
                 'wajib' => (int) $detail->simpanan_wajib,
+                'sukarela' => (int) $detail->simpanan_sukarela,
                 'cicilan' => (int) $detail->cicilan,
                 'iuran_dharma_wanita' => (int) $detail->iuran_dharma_wanita,
                 'infaq_pegawai' => (int) $detail->infaq_pegawai,

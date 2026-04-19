@@ -231,6 +231,7 @@
                     <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Bank</th>
                     <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Nomor Rekening</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Simpanan Wajib</th>
+                    <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Simpanan Sukarela</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Cicilan Pinjaman</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Iuran Dharma Wanita</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Infaq Pegawai</th>
@@ -250,6 +251,7 @@
                         <td class="px-3 py-2 text-xs text-gray-700">{{ $row['bank'] }}</td>
                         <td class="px-3 py-2 text-xs text-gray-700">{{ $row['nomor_rekening'] }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['wajib'], 0, ',', '.') }}</td>
+                        <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['sukarela'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['cicilan'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['iuran_dharma_wanita'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['infaq_pegawai'], 0, ',', '.') }}</td>
@@ -258,7 +260,8 @@
                         <td class="px-3 py-2 text-right text-xs font-bold text-blue-700">Rp {{ number_format($row['total'], 0, ',', '.') }}</td>
                         @if($canManagePotongan && ! $isFixed)
                             <td class="px-3 py-2 text-center">
-                                <button type="button" onclick="openNominalModal({{ $row['anggota']->id }}, '{{ addslashes($row['nama']) }}', {{ $row['iuran_dharma_wanita'] }}, {{ $row['infaq_pegawai'] }}, {{ $row['tabungan_qurban'] }}, {{ $row['cicilan'] ?? 0 }}, {{ $row['iuran_operasional'] ?? 0 }})" class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
+                                <button type="button" onclick="openNominalModal({{ $row['anggota']->id }}, '{{ addslashes($row['nama']) }}', {{ $row['iuran_dharma_wanita'] }}, {{ $row['infaq_pegawai'] }}, {{ $row['tabungan_qurban'] }}, {{ $row['cicilan'] ?? 0 }}, {{ $row['iuran_operasional'] ?? 0 }}, {{ $row['wajib'] ?? 0 }}, {{ $row['sukarela'] ?? 0 }})"
+                                    class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
                                     Edit
                                 </button>
                             </td>
@@ -277,6 +280,7 @@
                     <tr>
                         <th colspan="4" class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalWajib, 0, ',', '.') }}</th>
+                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalSukarela, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalCicilan, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalDharma, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalInfaq, 0, ',', '.') }}</th>
@@ -304,6 +308,7 @@
                     </div>
                     <div class="grid grid-cols-2 gap-x-3 gap-y-1 mt-2 text-xs text-gray-700">
                         <div>Wajib: Rp {{ number_format($row['wajib'], 0, ',', '.') }}</div>
+                        <div>Sukarela: Rp {{ number_format($row['sukarela'], 0, ',', '.') }}</div>
                         <div>Cicilan: Rp {{ number_format($row['cicilan'], 0, ',', '.') }}</div>
                         <div>Dharma: Rp {{ number_format($row['iuran_dharma_wanita'], 0, ',', '.') }}</div>
                         <div>Infaq: Rp {{ number_format($row['infaq_pegawai'], 0, ',', '.') }}</div>
@@ -312,11 +317,11 @@
                     </div>
                     @if($canManagePotongan && ! $isFixed)
                         <div class="mt-2">
-                            <button type="button" onclick="openNominalModal({{ $row['anggota']->id }}, '{{ addslashes($row['nama']) }}', {{ $row['iuran_dharma_wanita'] }}, {{ $row['infaq_pegawai'] }}, {{ $row['tabungan_qurban'] }})" class="w-full px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
+                            <button type="button" onclick="openNominalModal({{ $row['anggota']->id }}, '{{ addslashes($row['nama']) }}', {{ $row['iuran_dharma_wanita'] }}, {{ $row['infaq_pegawai'] }}, {{ $row['tabungan_qurban'] }}, {{ $row['cicilan'] ?? 0 }}, {{ $row['iuran_operasional'] ?? 0 }}, {{ $row['wajib'] ?? 0 }}, {{ $row['sukarela'] ?? 0 }})" class="w-full px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
                                 Edit
                             </button>
                         </div>
-                    @endif
+            @endif
                 </div>
             @empty
                 <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-400 text-sm">
@@ -354,7 +359,14 @@
                     @csrf
                     <input type="hidden" name="bulan" value="{{ $bulanPotongan }}">
 
-
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Simpanan Wajib</label>
+                        <input type="text" min="0" name="simpanan_wajib" id="wajibInput" class="w-full border rounded px-3 py-2 rupiah-input">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Simpanan Sukarela</label>
+                        <input type="text" min="0" name="simpanan_sukarela" id="sukarelaInput" class="w-full border rounded px-3 py-2 rupiah-input">
+                    </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Cicilan Pinjaman</label>
                         <input type="text" min="0" name="cicilan" id="cicilanInput" class="w-full border rounded px-3 py-2 rupiah-input">
@@ -387,66 +399,66 @@
                 </form>
             </div>
         </div>
+    @endif
 
-        <script>
+    <script>
+        function openNominalModal(anggotaId, namaAnggota, dharma, infaq, qurban, cicilan = 0, operasional = 0, wajib = 0, sukarela = 0) {
+            console.log('openNominalModal', {anggotaId, namaAnggota, dharma, infaq, qurban, cicilan, operasional, wajib, sukarela});
+            document.getElementById('modalTitle').innerText = 'Edit Nominal: ' + namaAnggota;
+            document.getElementById('wajibInput').value = formatRupiah(wajib);
+            document.getElementById('sukarelaInput').value = formatRupiah(sukarela);
+            document.getElementById('dharmaInput').value = formatRupiah(dharma);
+            document.getElementById('infaqInput').value = formatRupiah(infaq);
+            document.getElementById('qurbanInput').value = formatRupiah(qurban);
+            document.getElementById('cicilanInput').value = formatRupiah(cicilan);
+            document.getElementById('operasionalInput').value = formatRupiah(operasional);
+            const form = document.getElementById('nominalForm');
+            form.action = '{{ route("admin.laporan.potongan-bulanan.anggota.update", ":id") }}'.replace(':id', anggotaId);
+            document.getElementById('nominalModal').classList.remove('hidden');
+            document.getElementById('nominalModal').classList.add('flex');
+        }
 
-            function openNominalModal(anggotaId, namaAnggota, dharma, infaq, qurban, cicilan = 0, operasional = 0) {
-                document.getElementById('modalTitle').innerText = 'Edit Nominal: ' + namaAnggota;
-                document.getElementById('dharmaInput').value = formatRupiah(dharma);
-                document.getElementById('infaqInput').value = formatRupiah(infaq);
-                document.getElementById('qurbanInput').value = formatRupiah(qurban);
-                document.getElementById('cicilanInput').value = formatRupiah(cicilan);
-                document.getElementById('operasionalInput').value = formatRupiah(operasional);
+        // Format input ke rupiah
+        function formatRupiah(angka) {
+            angka = angka.toString().replace(/[^\d]/g, '');
+            if (!angka) return '';
+            return 'Rp ' + angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
 
-                const form = document.getElementById('nominalForm');
-                form.action = '{{ route("admin.laporan.potongan-bulanan.anggota.update", ":id") }}'.replace(':id', anggotaId);
+        function parseRupiah(str) {
+            return str.replace(/[^\d]/g, '');
+        }
 
-                document.getElementById('nominalModal').classList.remove('hidden');
-                document.getElementById('nominalModal').classList.add('flex');
-            }
-
-            // Format input ke rupiah
-            function formatRupiah(angka) {
-                angka = angka.toString().replace(/[^\d]/g, '');
-                if (!angka) return '';
-                return 'Rp ' + angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            }
-
-            function parseRupiah(str) {
-                return str.replace(/[^\d]/g, '');
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.rupiah-input').forEach(function(input) {
-                    input.addEventListener('input', function(e) {
-                        let value = e.target.value.replace(/[^\d]/g, '');
-                        e.target.value = value ? formatRupiah(value) : '';
-                    });
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.rupiah-input').forEach(function(input) {
+                input.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/[^\d]/g, '');
+                    e.target.value = value ? formatRupiah(value) : '';
                 });
-
-                // Pastikan sebelum submit, value diubah ke angka
-                const nominalForm = document.getElementById('nominalForm');
-                if (nominalForm) {
-                    nominalForm.addEventListener('submit', function(e) {
-                        nominalForm.querySelectorAll('.rupiah-input').forEach(function(input) {
-                            input.value = parseRupiah(input.value);
-                        });
-                    });
-                }
             });
 
-            function closeNominalModal() {
-                document.getElementById('nominalModal').classList.remove('flex');
-                document.getElementById('nominalModal').classList.add('hidden');
+            // Pastikan sebelum submit, value diubah ke angka
+            const nominalForm = document.getElementById('nominalForm');
+            if (nominalForm) {
+                nominalForm.addEventListener('submit', function(e) {
+                    nominalForm.querySelectorAll('.rupiah-input').forEach(function(input) {
+                        input.value = parseRupiah(input.value);
+                    });
+                });
             }
+        });
 
-            function closePreview() {
-                const previewModal = document.getElementById('previewModal');
-                if (previewModal) {
-                    previewModal.style.display = 'none';
-                }
+        function closeNominalModal() {
+            document.getElementById('nominalModal').classList.remove('flex');
+            document.getElementById('nominalModal').classList.add('hidden');
+        }
+
+        function closePreview() {
+            const previewModal = document.getElementById('previewModal');
+            if (previewModal) {
+                previewModal.style.display = 'none';
             }
-        </script>
-    @endif
+        }
+    </script>
 </div>
 @endsection
