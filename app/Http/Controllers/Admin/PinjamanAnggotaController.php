@@ -49,7 +49,7 @@ class PinjamanAnggotaController extends Controller
     {
         $this->authorize('edit pinjaman'); // Ketua & Bendahara
         
-        return view('admin.pinjaman.data-anggota.edit', compact('pinjaman'));
+        return view('admin.pinjaman.data-anggota.index', compact('pinjaman'));
     }
 
     public function update(Request $request, Pinjaman $pinjaman)
@@ -75,7 +75,7 @@ class PinjamanAnggotaController extends Controller
         ]);
 
        return redirect()
-            ->route('admin.pinjaman.data-anggota.index', ['tab' => 'aktif'])
+            ->route('admin.pinjaman.data-anggota.index')
             ->with('success', 'Data pinjaman berhasil diperbarui');
     }
 }

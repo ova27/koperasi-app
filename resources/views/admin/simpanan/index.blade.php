@@ -7,10 +7,7 @@
 <div class="space-y-6">
 
 @php(
-    $canManageSimpanan = auth()->user()->can('manage simpanan anggota')
-)
-@php(
-    $canNonaktifkan = auth()->user()->can('nonaktifkan anggota')
+    $canManageSimpanan = auth()->user()->hasRole('bendahara')
 )
 
 <div x-data="{ tab: 'wajib' }" class="space-y-4">
@@ -105,7 +102,8 @@
             @else
                 <button
                     type="submit"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
+                    @disabled(!$canManageSimpanan)
+                    class="px-4 py-2 text-sm font-semibold text-white rounded-lg transition shadow-sm {{ $canManageSimpanan ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed' }}"
                 >
                     Generate Simpanan Wajib
                 </button>
@@ -208,7 +206,8 @@
             <div class="pt-2">
                 <button
                     type="submit"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm"
+                    @disabled(!$canManageSimpanan)
+                    class="px-4 py-2 text-sm font-semibold text-white rounded-lg transition shadow-sm {{ $canManageSimpanan ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed' }}"
                 >
                     Simpan
                 </button>
@@ -291,7 +290,8 @@
             <div class="pt-2">
                 <button
                     type="submit"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm"
+                    @disabled(!$canManageSimpanan)
+                    class="px-4 py-2 text-sm font-semibold text-white rounded-lg transition shadow-sm {{ $canManageSimpanan ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 cursor-not-allowed' }}"
                 >
                     Ambil Simpanan
                 </button>
@@ -318,7 +318,7 @@
                 <br>• Mengembalikan seluruh simpanan
             </p>
 
-            <fieldset @disabled(!$canNonaktifkan)>
+            <fieldset @disabled(!$canManageSimpanan)>
                 {{-- PILIH ANGGOTA --}}
                 <div>
                     <label class="text-xs text-gray-500">Anggota</label>
@@ -388,7 +388,8 @@
                 {{-- BUTTON --}}
                 <button type="button"
                     id="btnKeluar"
-                    class="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-sm cursor-not-allowed"
+                    @disabled(!$canManageSimpanan)
+                    class="px-4 py-2 text-sm font-semibold text-white rounded-lg transition shadow-sm cursor-not-allowed {{ $canManageSimpanan ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400' }}"
                 >
                     Proses Keluar
                 </button>
@@ -480,6 +481,7 @@ function toggleSection(name) {
 
 {{-- SCRIPT PENSIUN/MUTASI --}}
 <script>
+    const canManageSimpanan = @json($canManageSimpanan);
     const selectKeluar = document.getElementById('anggotaSelectKeluar');
     const btnKeluar = document.getElementById('btnKeluar');
 
@@ -501,6 +503,10 @@ function toggleSection(name) {
                     document.getElementById('saldoTotalKeluar').innerText = formatRupiah(data.total);
 
                     document.getElementById('saldoBoxKeluar').classList.remove('hidden');
+
+                    if (!canManageSimpanan) {
+                        return;
+                    }
 
                     // aktifkan tombol
                     btnKeluar.disabled = false;

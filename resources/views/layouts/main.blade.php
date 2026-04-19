@@ -11,16 +11,33 @@
 
 <div class="flex min-h-screen relative">
     {{-- SIDEBAR --}}
-    <aside id="sidebar"
-        class="sidebar fixed inset-y-0 left-0 z-40 w-56 -translate-x-full transition-all duration-300 overflow-hidden
-        bg-gradient-to-b from-slate-50 to-slate-100 border-r border-gray-200 shadow-lg px-3 pt-5 pb-6
-        lg:static lg:z-auto lg:translate-x-0 lg:shadow-sm">
 
-        @if(auth()->user()->hasAnyRole(['admin', 'ketua', 'bendahara']))
-            @include('layouts.sidebar.admin')
-        @elseif(auth()->user()->hasRole('anggota'))
-            @include('layouts.sidebar.anggota')
-        @endif
+    <aside id="sidebar"
+        class="sidebar fixed inset-y-0 left-0 z-40 w-72 transition-all duration-300 overflow-hidden
+        bg-gradient-to-b from-blue-50 to-slate-100 border-r border-gray-200 shadow-xl px-4 pb-8
+        lg:static lg:z-auto lg:translate-x-0 lg:shadow-md">
+
+        <!-- Sidebar Header / Logo (moved to very top, removed pt-7 from aside, add pt-7 to header) -->
+        <div class="flex items-center gap-1 mb-4 pt-6">
+            <img src="/images/logo_koperasi.png" alt="Logo" class="w-10 h-10 rounded-full shadow border border-blue-200 bg-white">
+            <div class="flex flex-col ml-1 sidebar-header-text">
+                <span class="font-bold text-base text-blue-700 tracking-wide whitespace-nowrap">Koperasi Simpatik</span>
+                <span class="text-xs text-slate-500 leading-tight">BPS Provinsi Banten</span>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="border-b border-blue-100 mb-6"></div>
+
+        <!-- Sidebar Menu -->
+        <nav class="flex flex-col gap-1">
+            @if(auth()->user()->hasAnyRole(['admin', 'ketua', 'bendahara']))
+                @include('layouts.sidebar.admin')
+            @elseif(auth()->user()->hasRole('anggota'))
+                @include('layouts.sidebar.anggota')
+            @endif
+        </nav>
+        
     </aside>
 
     {{-- OVERLAY MOBILE --}}
@@ -57,6 +74,11 @@
                 </div>
             </div>
         </main>
+        
+        <!-- Sidebar Footer (optional) -->
+        <div class="mt-auto pt-4 pb-4 text-sm text-slate-400 text-center select-none">
+            &copy; {{ date('Y') }} Koperasi Simpatik - BPS Provinsi Banten
+        </div>
 
     </div>
 
@@ -259,15 +281,30 @@ function closeModal() {
             setMobileOpenState(false);
         }
 
+
+        // Helper: hide/show sidebar header text on collapse
+        const updateSidebarHeaderText = () => {
+            const headerText = sidebar.querySelector('.sidebar-header-text');
+            if (sidebar.classList.contains('sidebar-collapsed')) {
+                headerText && headerText.classList.add('hidden');
+            } else {
+                headerText && headerText.classList.remove('hidden');
+            }
+        };
+
         toggleBtn.addEventListener('click', () => {
             if (isDesktop()) {
                 sidebar.classList.toggle('sidebar-collapsed');
+                updateSidebarHeaderText();
                 return;
             }
 
             const isOpen = sidebar.classList.contains('mobile-open');
             setMobileOpenState(!isOpen);
         });
+
+        // Initial state
+        updateSidebarHeaderText();
 
         sidebarOverlay.addEventListener('click', () => {
             setMobileOpenState(false);

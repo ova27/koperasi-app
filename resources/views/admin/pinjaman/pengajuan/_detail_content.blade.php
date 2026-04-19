@@ -73,9 +73,12 @@
                             </svg>
                             Tenor
                         </label>
-                        <input type="number" name="tenor" value="{{ $pengajuan->tenor }}"
+                        <input type="number" name="tenor" value="{{ $pinjaman ? $pinjaman->tenor : $pengajuan->tenor }}"
                             class="w-full border border-gray-300 rounded px-2 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                             placeholder="12" min="1" max="120">
+                        @if($pinjaman)
+                            <div class="text-[11px] text-blue-500 mt-1">Mengikuti Pinjaman Aktif (jika ada), ubah jika diperlukan.</div>
+                        @endif
                     </div>
 
                     <div>

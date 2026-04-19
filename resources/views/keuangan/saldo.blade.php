@@ -4,35 +4,8 @@
 @section('page-title', 'Neraca Saldo')
 
 @section('content')
-<div class="space-y-6 -mt-1">
+<div class="space-y-4 -mt-1">
     @include('keuangan._tabs')
-
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-2 border-b border-gray-200">
-            <h2 class="text-base font-semibold text-gray-900">Ringkasan Saldo</h2>
-        </div>
-
-        <table class="min-w-full text-sm">
-            <thead class="bg-gray-50 border-b">
-                <tr class="text-gray-600">
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">No.</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Ringkasan</th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Nilai (Rupiah)</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                @foreach ($ringkasanSaldo as $index => $item)
-                    <tr>
-                        <td class="px-4 py-3 text-sm text-gray-700 w-16">{{ $index + 1 }}</td>
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $item['label'] }}</td>
-                        <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
-                            Rp {{ number_format($item['nilai'], 0, ',', '.') }}
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -102,31 +75,58 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-200">
-            <h2 class="text-base font-semibold text-gray-900">Alokasi Saldo Koperasi</h2>
-            <p class="text-sm text-gray-500">Ringkasan sederhana dana yang ditahan dan saldo riil yang dapat dipinjamkan.</p>
-        </div>
-
-        <table class="min-w-full text-sm">
-            <thead class="bg-gray-50 border-b">
-                <tr class="text-gray-600">
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Uraian</th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Nilai (Rupiah)</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                @foreach ($alokasiSaldoKoperasi as $item)
-                    <tr>
-                        <td class="px-4 py-3 text-gray-900">{{ $item['label'] }}</td>
-                        <td class="px-4 py-3 text-right font-medium {{ $item['label'] === 'Saldo Riil untuk Dipinjam Anggota' ? 'text-green-700' : 'text-gray-900' }} whitespace-nowrap">
-                            Rp {{ number_format($item['nilai'], 0, ',', '.') }}
-                        </td>
+    <hr>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-5 py-2 border-b border-gray-200">
+                <h2 class="text-base font-semibold text-gray-900">Ringkasan Saldo</h2>
+            </div>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 border-b">
+                    <tr class="text-gray-600">
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">No.</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Ringkasan</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Nilai (Rupiah)</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach ($ringkasanSaldo as $index => $item)
+                        <tr>
+                            <td class="px-4 py-3 text-sm text-gray-700 w-16">{{ $index + 1 }}</td>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $item['label'] }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900 whitespace-nowrap">
+                                Rp {{ number_format($item['nilai'], 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-5 py-2 border-b border-gray-200">
+                <h2 class="text-base font-semibold text-gray-900">Alokasi Saldo Koperasi</h2>
+            </div>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 border-b">
+                    <tr class="text-gray-600">
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Uraian</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Nilai (Rupiah)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach ($alokasiSaldoKoperasi as $item)
+                        <tr>
+                            <td class="px-4 py-3 text-gray-900">{{ $item['label'] }}</td>
+                            <td class="px-4 py-3 text-right font-medium {{ $item['label'] === 'Saldo Riil untuk Dipinjam Anggota' ? 'text-green-700' : 'text-gray-900' }} whitespace-nowrap">
+                                Rp {{ number_format($item['nilai'], 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
+
 
     <div class="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
         <p class="text-sm font-semibold text-amber-900">Catatan Perhitungan</p>

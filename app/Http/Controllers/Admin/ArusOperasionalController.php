@@ -24,7 +24,7 @@ class ArusOperasionalController extends Controller
             ->whereRaw("DATE_FORMAT(tanggal, '%Y-%m') = ?", [$bulan])
             ->orderBy('tanggal')
             ->orderBy('id')
-            ->get();
+            ->paginate(20);
 
         $rekenings = RekeningKoperasi::where('aktif', true)
             ->orderBy('nama')

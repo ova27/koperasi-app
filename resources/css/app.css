@@ -23,10 +23,10 @@
 }
 
 .menu-header {
-    margin-top: 1.25rem;
-    margin-bottom: 0.4rem;
-    padding: 0 1rem;
-    font-size: 0.65rem;
+    margin-top: 0.8rem;
+    margin-bottom: 0.22rem;
+    padding: 0 0.75rem;
+    font-size: 0.63rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -37,10 +37,10 @@
 /* ITEM */
 .menu-item a {
     display: block;
-    padding: 0.55rem 1rem;
-    border-radius: 6px;
+    padding: 0.41rem 0.75rem;
+    border-radius: 4px;
     color: #0f172a; /* slate-900 */
-    font-size: 0.875rem;
+    font-size: 0.83rem;
 }
 
 .menu-item a.active {
@@ -54,11 +54,11 @@
 .menu-link {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.68rem 0.9rem;
-    border-radius: 10px;
+    gap: 0.48rem;
+    padding: 0.48rem 0.75rem;
+    border-radius: 6px;
     color: var(--ui-slate-700);
-    font-size: 0.875rem;
+    font-size: 0.83rem;
     font-weight: 500;
     border: 1px solid transparent;
     transition: all 0.22s ease;
@@ -86,28 +86,44 @@
 
 .sub-menu-link {
     display: block;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
+    padding: 0.32rem 0.6rem;
+    border-radius: 4px;
     color: var(--ui-slate-500);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s ease;
 }
 
 .sub-menu-link:hover {
-    background-color: #f1f5f9;
-    color: var(--ui-slate-800);
+    background-color: #f8fafc;
+    color: #64748b;
 }
 
 .sub-menu-link.active {
-    background-color: #e0ecff;
-    color: #1d4ed8;
-    font-weight: 600;
+    background-color: #e8f0fe;
+    color: #2563eb;
+    font-weight: 500;
+    box-shadow: none;
+    border: none;
 }
 
 .sidebar-shell {
     height: 100%;
+}
+
+/* Perkecil indentasi sub-menu dropdown sidebar admin */
+.sidebar .ml-6.border-l-2.pl-2 {
+    margin-left: 0.75rem !important; /* ml-3 */
+    padding-left: 0.25rem !important; /* pl-1 */
+    border-left-width: 2px;
+}
+
+/* Perkecil jarak antar menu utama */
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.19rem;
 }
 
 .sidebar-brand {

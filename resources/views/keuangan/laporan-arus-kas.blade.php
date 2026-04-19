@@ -28,39 +28,9 @@
             12 => 'Desember',
         ];
 
-        $filterLabel = match ($filter) {
-            'koperasi' => 'Hanya arus koperasi',
-            'operasional' => 'Hanya arus operasional',
-            default => 'Seluruh arus kas',
-        };
-
         $tahunSekarang = (int) now()->format('Y');
         $daftarTahun = range($tahunSekarang + 1, $tahunSekarang - 5);
-        $labelPeriode = ($namaBulan[$bulanAktif] ?? 'Bulan') . ' ' . $tahunAktif;
     @endphp
-
-    <div class="rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div class="max-w-2xl">
-                <div class="inline-flex w-fit items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                    Ringkasan bulanan
-                </div>
-                <h2 class="mt-3 text-lg font-semibold text-slate-900">Rekap arus kas untuk {{ $labelPeriode }}</h2>
-                <p class="mt-1 text-sm leading-6 text-slate-600">
-                    Halaman ini dipakai untuk membaca total pemasukan, pengeluaran, dan saldo bersih dalam satu periode tanpa melihat transaksi satu per satu terlebih dahulu.
-                </p>
-            </div>
-
-            <div class="flex flex-wrap gap-2">
-                <div class="inline-flex items-center rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200">
-                    Filter aktif: {{ $filterLabel }}
-                </div>
-                <div class="inline-flex items-center rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200">
-                    {{ $items->count() }} transaksi tercatat
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
@@ -87,14 +57,13 @@
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-200">
-                <h2 class="text-base font-semibold text-gray-900">Pemasukan</h2>
+            <div class="px-5 py-2 border-b border-gray-200">
+                <h2 class="text-base font-semibold text-gray-900">Arus Masuk</h2>
             </div>
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 border-b">
                     <tr class="text-gray-600">
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Jenis</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Jumlah</th>
+                        
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -113,7 +82,7 @@
                 </tbody>
                 <tfoot class="bg-gray-50 border-t">
                     <tr>
-                        <td class="px-4 py-3 font-semibold text-gray-900">Total Pemasukan</td>
+                        <td class="px-4 py-3 font-semibold text-gray-900">Total</td>
                         <td class="px-4 py-3 text-right font-semibold text-green-700 whitespace-nowrap">
                             Rp {{ number_format($totalMasuk, 0, ',', '.') }}
                         </td>
@@ -123,14 +92,12 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-200">
-                <h2 class="text-base font-semibold text-gray-900">Pengeluaran</h2>
+            <div class="px-5 py-2 border-b border-gray-200">
+                <h2 class="text-base font-semibold text-gray-900">Arus Keluar</h2>
             </div>
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 border-b">
                     <tr class="text-gray-600">
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Jenis</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Jumlah</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -149,7 +116,7 @@
                 </tbody>
                 <tfoot class="bg-gray-50 border-t">
                     <tr>
-                        <td class="px-4 py-3 font-semibold text-gray-900">Total Pengeluaran</td>
+                        <td class="px-4 py-3 font-semibold text-gray-900">Total</td>
                         <td class="px-4 py-3 text-right font-semibold text-red-700 whitespace-nowrap">
                             Rp {{ number_format($totalKeluar, 0, ',', '.') }}
                         </td>
@@ -160,11 +127,6 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-200">
-            <h2 class="text-base font-semibold text-gray-900">Daftar transaksi pendukung rekap</h2>
-            <p class="text-sm text-gray-500">Gunakan tabel ini untuk menelusuri transaksi yang membentuk total laporan pada periode terpilih.</p>
-        </div>
-
         <div class="px-5 py-3 border-b border-gray-200 bg-gray-50">
             <form method="GET" class="flex flex-wrap gap-3 items-end">
                 <div>

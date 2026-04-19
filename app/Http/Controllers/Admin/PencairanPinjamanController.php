@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Services\PinjamanService;
+use Illuminate\Validation\ValidationException;
 
 class PencairanPinjamanController extends Controller
 {
@@ -42,18 +43,27 @@ class PencairanPinjamanController extends Controller
             $r_direction = 'desc';
         }
 
-        $riwayatPencairan = PengajuanPinjaman::with('anggota.pinjamanAktif.transaksi', 'pinjaman.transaksi')
+        $pinjamanBelumLunas = function ($pinjaman) {
+            $pinjaman->where('status', 'aktif')
+                ->where('sisa_pinjaman', '>', 0)
+                ->whereDoesntHave('transaksi', function ($tx) {
+                    $tx->where('jenis', 'pelunasan');
+                });
+        };
+
+        $riwayatPencairan = PengajuanPinjaman::with([
+                'anggota.pinjamanAktif.transaksi',
+                'pinjaman.transaksi',
+            ])
             ->where('status', 'dicairkan')
-            ->where(function ($q) {
-                $q->whereHas('pinjaman', function ($pinjaman) {
-                    $pinjaman->where('status', 'aktif')
-                        ->whereDoesntHave('transaksi', function ($tx) {
-                            $tx->where('jenis', 'pelunasan');
-                        });
-                })
-                ->orWhere(function ($topup) {
+            ->where(function ($q) use ($pinjamanBelumLunas) {
+                $q->whereHas('pinjaman', $pinjamanBelumLunas)
+                ->orWhere(function ($topup) use ($pinjamanBelumLunas) {
                     $topup->whereDoesntHave('pinjaman')
-                        ->whereHas('anggota.pinjamanAktif');
+                        ->whereHas('anggota.pinjamans', function ($pinjaman) use ($pinjamanBelumLunas) {
+                            $pinjamanBelumLunas($pinjaman);
+                            $pinjaman->whereColumn('pinjamans.tanggal_pinjam', '<=', 'pengajuan_pinjaman.tanggal_pencairan');
+                        });
                 });
             })
             ->orderBy($r_sort, $r_direction)
@@ -70,13 +80,36 @@ class PencairanPinjamanController extends Controller
         ));
     }
 
-    public function processPencairan(PengajuanPinjaman $pengajuan, PinjamanService $service)
+    public function processPencairan(Request $request, PengajuanPinjaman $pengajuan, PinjamanService $service)
     {
         $this->authorize('pencairan pinjaman');
         abort_if($pengajuan->status !== 'disetujui', 400);
-        $service->cairkan($pengajuan, Auth::id());
-        return redirect()->route('admin.pinjaman.pencairan.index')
-            ->with('success', 'Pinjaman berhasil dicairkan');
+
+        try {
+            $data = $request->validate([
+                'jumlah_diajukan' => ['required', 'integer', 'min:100000'],
+                'tenor' => ['required', 'integer', 'min:1', 'max:20'],
+                'bulan_pinjam' => ['required', 'date_format:Y-m'],
+                'tujuan' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            $data['bulan_pinjam'] = $data['bulan_pinjam'] . '-01';
+
+            $service->cairkan($pengajuan, Auth::id(), $data);
+
+            return redirect()->route('admin.pinjaman.pencairan.index')
+                ->with('success', 'Pinjaman berhasil dicairkan');
+        } catch (ValidationException $e) {
+            return redirect()->route('admin.pinjaman.pencairan.index')
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('open_pencairan_modal', $pengajuan->id);
+        } catch (\Exception $e) {
+            return redirect()->route('admin.pinjaman.pencairan.index')
+                ->withErrors(['pencairan' => $e->getMessage()])
+                ->withInput()
+                ->with('open_pencairan_modal', $pengajuan->id);
+        }
     }
 
     public function batalPencairan(PengajuanPinjaman $pengajuan)
@@ -90,6 +123,15 @@ class PencairanPinjamanController extends Controller
                 $pengajuan->refresh();
                 $pinjaman = $pengajuan->pinjaman;
                 if (!$pinjaman) {
+                    $pinjamanAktif = $pengajuan->anggota?->pinjamanAktif;
+                    $cicilanSudahBerjalan = $pinjamanAktif?->transaksi()
+                        ->where('jenis', 'cicilan')
+                        ->exists();
+
+                    if ($pinjamanAktif && $cicilanSudahBerjalan) {
+                        throw new \Exception('Top-up tidak bisa dibatalkan karena cicilan pinjaman aktif sudah berjalan.');
+                    }
+
                     throw new \Exception('Data pinjaman tidak ditemukan.');
                 }
                 $sudahAdaCicilan = $pinjaman->transaksi()

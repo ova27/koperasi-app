@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Anggota;
+use App\Models\PotonganBulananDetail;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -25,45 +25,21 @@ class PotonganBankBulanDepanExport implements FromArray, WithColumnWidths, WithS
     {
         Carbon::setLocale('id');
 
-        $wajibDefault = (int) config('koperasi.simpanan_wajib', 0);
-        $iuranDharmaWanita = (int) config('koperasi.iuran_dharma_wanita', 0);
-        $infaqPegawai = (int) config('koperasi.infaq_pegawai', 0);
-        $tabunganQurban = (int) config('koperasi.tabungan_qurban', 0);
-        $iuranOperasional = (int) config('koperasi.iuran_operasional', 5000);
-
-        $rows = Anggota::query()
-            ->with(['rekeningAktif', 'pinjamanAktif', 'potonganTitipan'])
-            ->where('status', 'aktif')
+        $rows = PotonganBulananDetail::query()
+            ->where('bulan_potongan', $this->bulanPotongan)
             ->when(
                 filled($this->namaBank),
-                fn ($query) => $query->whereHas('rekeningAktif', fn ($rekening) => $rekening->where('nama_bank', $this->namaBank))
+                fn ($query) => $query->where('bank', $this->namaBank)
             )
             ->orderBy('nama')
             ->get()
             ->values()
-            ->map(function ($anggota, $index) use ($wajibDefault, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $iuranOperasional) {
-                $pinjamanAktif = $anggota->pinjamanAktif;
-                $cicilan = 0;
-
-                if ($pinjamanAktif) {
-                    $cicilan = (int) min(
-                        (int) ($pinjamanAktif->cicilan_per_bulan ?? 0),
-                        (int) ($pinjamanAktif->sisa_pinjaman ?? 0)
-                    );
-                }
-
-                $titipan = $anggota->potonganTitipan;
-                $dharma = $titipan ? (int) $titipan->iuran_dharma_wanita : $iuranDharmaWanita;
-                $infaq = $titipan ? (int) $titipan->infaq_pegawai : $infaqPegawai;
-                $qurban = $titipan ? (int) $titipan->tabungan_qurban : $tabunganQurban;
-                $totalTitipan = $dharma + $infaq + $qurban;
-                $totalSetoran = $wajibDefault + $cicilan + $totalTitipan + $iuranOperasional;
-
+            ->map(function (PotonganBulananDetail $detail) {
                 return [
-                    $anggota->nama,
-                    $anggota->rekeningAktif->nama_bank ?? '-',
-                    (string) ($anggota->rekeningAktif->nomor_rekening ?? '-'),
-                    $totalSetoran,
+                    $detail->nama,
+                    $detail->bank ?? '-',
+                    (string) ($detail->nomor_rekening ?? '-'),
+                    (int) $detail->total,
                 ];
             });
 

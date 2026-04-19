@@ -1,7 +1,7 @@
 <nav x-data="{ open: false }" class="border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
     <!-- Primary Navigation Menu -->
     <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex h-14 items-center justify-between sm:h-16">
+        <div class="flex h-20 items-center justify-between sm:h-20">
             <div class="flex min-w-0 items-center gap-2 sm:gap-3">
                 {{-- TOGGLE SIDEBAR DESKTOP --}}
                 <button id="toggleSidebar"
@@ -12,15 +12,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
-
-                <div class="min-w-0 flex flex-col">
-                    <div class="truncate text-sm font-semibold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
-                        Koperasi Simpatik
-                    </div>
-                    <div class="truncate text-xs text-slate-400 font-medium">
-                        BPS Provinsi Banten
-                    </div>
-                </div>
             </div>
 
             <!-- Settings Dropdown -->

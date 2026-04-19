@@ -4,9 +4,9 @@
 @section('page-title', 'Transaksi Pinjaman Anggota')
 @section('content')
 <div class="space-y-6">
-<div x-data="{ tab: 'aktif' }" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+<div x-data="{ tab: 'aktif' }">
     {{-- ================= TAB NAVIGATION ================= --}}
-    <div class="border-b flex gap-6 text-sm font-medium">
+    <div class="border-b flex gap-6 text-sm font-medium mb-4">
 
         <button @click="tab = 'aktif'"
             :class="tab === 'aktif' 
@@ -27,7 +27,7 @@
 
     {{-- FLASH MESSAGE --}}
     @if(session('success'))
-        <div id="flash-message" class="px-4 py-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center justify-between">
+        <div id="flash-message" class="px-4 py-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center justify-between mb-4">
             <span>{{ session('success') }}</span>
             <button type="button" 
                     onclick="closeFlashMessage()"
@@ -38,7 +38,7 @@
     @endif
 
     @if(session('error'))
-        <div id="flash-message" class="px-4 py-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center justify-between">
+        <div id="flash-message" class="px-4 py-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center justify-between mb-4">
             <span>{{ session('error') }}</span>
             <button type="button" 
                     onclick="closeFlashMessage()"
@@ -50,59 +50,57 @@
 
     {{-- TABLE PINJAMAN AKTIF --}}
     <div x-show="tab === 'aktif'" 
-        x-transition.opacity.duration.200ms
-        class="space-y-4 border rounded-xl p-4">
-        <h2 class="font-semibold text-gray-800 text-sm">
-            Pinjaman Aktif Anggota
-        </h2>
+        x-transition.opacity.duration.200ms>
+    
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
             <table class="min-w-full text-sm">
-                <thead class="bg-gray-50 border-b">
-                    <tr class="text-gray-600">
-                        <th No class="p-3 border-b text-left">No</th>
-                        <th class="p-3 border-b text-left">Anggota</th>
-                        <th class="p-3 border-b text-left">Tanggal Pinjam</th>
-                        <th class="p-3 border-b text-right">Jumlah Pinjaman</th>
-                        <th class="p-3 border-b text-right">Sisa Pinjaman</th>
-                        <th class="p-3 border-b text-center">Tenor</th>
-                        <th class="p-3 border-b text-center">Status</th>
-                        <th class="p-3 border-b text-center">Aksi</th>
+                <thead>
+                    <tr class="bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800">
+                        <th class="p-3 text-left font-semibold tracking-wide bg-orange-50 text-orange-700">No</th>
+                        <th class="p-3 text-left font-semibold tracking-wide bg-orange-50 text-orange-700">Anggota</th>
+                        <th class="p-3 text-left font-semibold tracking-wide bg-orange-50 text-orange-700">Tanggal Pinjam</th>
+                        <th class="p-3 text-right font-semibold tracking-wide bg-orange-50 text-orange-700">Jumlah Pinjaman</th>
+                        <th class="p-3 text-right font-semibold tracking-wide bg-orange-50 text-orange-700">Sisa Pinjaman</th>
+                        <th class="p-3 text-center font-semibold tracking-wide bg-orange-50 text-orange-700">Tenor</th>
+                        <th class="p-3 text-center font-semibold tracking-wide bg-orange-50 text-orange-700">Status</th>
+                        <th class="p-3 text-center font-semibold tracking-wide bg-orange-50 text-orange-700">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y">
+                <tbody>
                     @forelse($pinjamansAktif as $pinjaman)
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="p-3 border-b">{{ $loop->iteration }}</td>
-                            <td class="p-3 border-b">
-                                <div class="font-medium text-gray-800">
+                        <tr class="transition-all duration-200 hover:scale-[1.01] hover:shadow-lg bg-white even:bg-orange-50 rounded-xl">
+                            <td class="p-3 rounded-l-xl align-middle">{{ $loop->iteration }}</td>
+                            <td class="p-3 align-middle">
+                                <div class="font-medium text-gray-900">
                                     {{ $pinjaman->anggota->nama ?? '-' }}
                                 </div>
                             </td>
-                            <td class="p-3 border-b text-gray-500">
+                            <td class="p-3 text-gray-500 align-middle">
                                 {{ $pinjaman->tanggal_pinjam->format('d/m/Y') }}
                             </td>
-                            <td class="p-3 border-b text-right font-semibold text-gray-800">
+                            <td class="p-3 text-right font-bold text-blue-700 align-middle">
                                 Rp {{ number_format($pinjaman->jumlah_pinjaman, 0, ',', '.') }}
                             </td>
-                            <td class="p-3 border-b text-right font-semibold {{ $pinjaman->sisa_pinjaman > 0 ? 'text-red-600' : 'text-green-600' }}">
+                            <td class="p-3 text-right font-bold align-middle {{ $pinjaman->sisa_pinjaman > 0 ? 'text-red-600' : 'text-green-600' }}">
                                 Rp {{ number_format($pinjaman->sisa_pinjaman, 0, ',', '.') }}
                             </td>
-                            <td class="p-3 border-b text-center text-gray-700">
+                            <td class="p-3 text-center text-gray-700 align-middle">
                                 {{ $pinjaman->tenor ?? '-' }} bulan
                             </td>
-                            <td class="p-3 border-b text-center">
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $pinjaman->status === 'aktif' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                            <td class="p-3 text-center align-middle">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $pinjaman->status === 'aktif' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-800' }} shadow-sm">
                                     {{ ucfirst($pinjaman->status) }}
                                 </span>
                             </td>
-                            <td class="p-3 border-b text-center space-x-0">
+                            <td class="p-3 rounded-r-xl text-center space-x-1 align-middle">
                                 {{-- EDIT (Ketua & Bendahara) - hanya untuk pinjaman aktif --}}
                                 @can('edit pinjaman')
                                     @if($pinjaman->status === 'aktif')
                                         <button 
-                                            onclick="window.location.href='{{ route('admin.pinjaman.data-anggota.edit', $pinjaman) }}'"
+                                            type="button"
+                                            onclick='openEditModal(@json($pinjaman))'
                                             title="Edit"
-                                            class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm">
+                                            class="px-3 py-1.5 text-xs font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700 transition shadow-md">
                                             Ubah
                                         </button>
                                     @endif
@@ -113,7 +111,7 @@
                                     @if($pinjaman->status === 'aktif')
                                         <button onclick='openCicilanModal(@json($pinjaman))'
                                             title="Input Cicilan"
-                                            class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm"
+                                            class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-md"
                                             >
                                             Cicil
                                         </button>
@@ -121,7 +119,7 @@
                                         <button
                                             onclick="confirmPelunasan({{ $pinjaman->id }}, '{{ addslashes($pinjaman->anggota->nama) }}', {{ $pinjaman->sisa_pinjaman }})"
                                             title="Pelunasan Cepat"
-                                            class="px-3 py-1.5 text-xs font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition shadow-sm">
+                                            class="px-3 py-1.5 text-xs font-semibold text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 transition shadow-md">
                                             Pelunasan
                                         </button>
                                     @endif
@@ -130,7 +128,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="p-8 text-center text-gray-400">
+                            <td colspan="8" class="p-8 text-center text-gray-400 bg-white rounded-xl">
                                 Tidak ada pinjaman aktif
                             </td>
                         </tr>
@@ -160,17 +158,12 @@
 
     {{-- TABLE PINJAMAN LUNAS --}}
     <div x-show="tab === 'lunas'" 
-        x-transition.opacity.duration.200ms
-         class="space-y-4 border rounded-xl p-4">
-        
-        <h2 class="font-semibold text-gray-800 text-sm">
-            Pinjaman Lunas Anggota
-        </h2>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+        x-transition.opacity.duration.200ms>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto mb-2">
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 border-b">
                     <tr class="text-gray-600">
-                        <th No class="p-3 border-b text-left">No</th>
+                        <th class="p-3 border-b text-center">No</th>
                         <th class="p-3 border-b text-left">Anggota</th>
                         <th class="p-3 border-b text-left">Tanggal Pinjam</th>
                         <th class="p-3 border-b text-left">Tanggal Lunas</th>
@@ -185,29 +178,29 @@
                         {{-- BARIS PINJAMAN LUNAS --}}
                         {{-- ========================= --}}
                         <tr class="border-t hover:bg-gray-50 transition-colors duration-200">
-                            <td class="p-3 border-b">{{ $loop->iteration }}</td>
-                            <td class="p-3 border-b">
+                            <td class="px-3 py-1 border-b text-center">{{ $loop->iteration }}</td>
+                            <td class="px-3 py-1 border-b">
                                 <div class="font-medium text-gray-800">
                                     {{ $pinjaman->anggota->nama ?? '-' }}
                                 </div>
                             </td>
-                            <td class="p-3 border-b text-gray-500">
+                            <td class="px-3 py-1 border-b text-gray-500">
                                 {{ $pinjaman->tanggal_pinjam->format('d M Y') }}
                             </td>
 
-                            <td class="p-3 border-b text-gray-500">
+                            <td class="px-3 py-1 border-b text-gray-500">
                                 {{ $pinjaman->updated_at->translatedFormat('d M Y H:i') }}
                             </td>
 
-                            <td class="p-3 border-b text-right font-semibold text-gray-800">
+                            <td class="px-3 py-1 border-b text-right font-semibold text-gray-800">
                                 Rp {{ number_format($pinjaman->jumlah_pinjaman, 0, ',', '.') }}
                             </td>
 
-                            <td class="p-3 border-b text-center text-gray-700">
+                            <td class="px-3 py-1 border-b text-center text-gray-700">
                                 {{ $pinjaman->tenor ?? '-' }} bulan
                             </td>
 
-                            <td class="p-3 border-b text-center">
+                            <td class="px-3 py-1 border-b text-center">
                                 @if($pinjaman->transaksi->isNotEmpty())
                                     <button
                                         onclick="toggleCicilan({{ $pinjaman->id }})"
@@ -229,7 +222,7 @@
                         {{-- ========================= --}}
                         @if($pinjaman->transaksi->isNotEmpty())
                             <tr id="cicilan-{{ $pinjaman->id }}" class="hidden">
-                                <td colspan="6" class="px-6 py-4 bg-gray-50 border-l-4 border-gray-400 rounded-r-lg shadow-inner">
+                                <td colspan="7" class="px-6 py-4 bg-gray-50 border-l-4 border-gray-400 rounded-r-lg shadow-inner">
 
                                     <div class="text-sm font-semibold mb-3 text-gray-700">
                                         Riwayat Transaksi Lengkap
@@ -370,6 +363,43 @@
     </div>
 
 </div>
+</div>
+
+{{-- MODAL EDIT PINJAMAN --}}
+<div id="editPinjamanModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-6 relative">
+        <button type="button" onclick="closeEditModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">Edit Pinjaman</h3>
+        <div id="editPinjamanDetail" class="mb-4">
+            <!-- Detail pinjaman will be filled by JS -->
+        </div>
+        <form id="editPinjamanForm" method="POST" class="space-y-4">
+            @csrf
+            <input type="hidden" name="_method" value="PUT">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tenor Perubahan (bulan)</label>
+                <input type="number" name="tenor" id="editTenorInput" min="1" max="20" placeholder="Masukkan Perubahan Tenor"
+                    class="w-full border border-blue-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition shadow-sm">
+                <p id="editTenorError" class="text-red-600 text-sm mt-1 hidden"></p>
+            </div>
+            <div id="editEstimasiContainer" class="text-sm text-gray-700 hidden">
+                <div>Estimasi Perubahan Cicilan (mulai bulan berikutnya):</div>
+                <div class="text-lg font-bold text-blue-600">
+                    Rp <span id="editEstimasiCicilan">0</span>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
+                <textarea name="keterangan" id="editKeteranganInput" rows="3" class="w-full border border-blue-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-400 transition shadow-sm"
+                    placeholder="Tambahkan keterangan (opsional)"></textarea>
+                <p id="editKeteranganError" class="text-red-600 text-sm mt-1 hidden"></p>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition shadow">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow">Simpan</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 {{-- MODAL CICILAN --}}
@@ -560,6 +590,63 @@
             }, 5000);
         }
     });
+</script>
+
+{{-- SCRIPT UBAH PINJAMAN --}}
+<script>
+    // Modal Edit Pinjaman
+    let editPinjamanSisa = 0;
+    function openEditModal(pinjaman) {
+        // Fill detail
+        let html = `<ul class='text-sm text-gray-700 space-y-1 bg-blue-50 p-4 rounded-xl border border-blue-100 mb-2'>
+            <li><strong>Anggota:</strong> ${pinjaman.anggota?.nama ?? '-'}</li>
+            <li><strong>Nomor Anggota:</strong> ${pinjaman.anggota?.nomor_anggota ?? '-'}</li>
+            <li><strong>Tanggal Pinjam:</strong> ${formatTanggal(pinjaman.tanggal_pinjam)}</li>
+            <li><strong>Total Pinjaman:</strong> Rp ${formatRupiah(pinjaman.jumlah_pinjaman)}</li>
+            <li><strong>Sisa Pinjaman:</strong> <span class='${pinjaman.sisa_pinjaman>0?'text-red-600':'text-green-600'}'>Rp ${formatRupiah(pinjaman.sisa_pinjaman)}</span></li>
+            <li><strong>Tenor:</strong> ${pinjaman.tenor ?? '-'} bulan</li>
+            <li><strong>Cicilan saat ini:</strong> <span class="text-blue-700 font-semibold">Rp ${formatRupiah(pinjaman.cicilan_per_bulan ?? 0)}</span></li>
+            <li><strong>Status:</strong> <span class='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${pinjaman.status==='aktif'?'bg-blue-100 text-blue-800':'bg-green-100 text-green-800'} shadow-sm'>${capitalize(pinjaman.status)}</span></li>
+        </ul>`;
+        document.getElementById('editPinjamanDetail').innerHTML = html;
+        // Prefill form
+        document.getElementById('editTenorInput').value = '';
+        document.getElementById('editKeteranganInput').value = pinjaman.keterangan ?? '';
+        // Save sisa for estimasi
+        editPinjamanSisa = pinjaman.sisa_pinjaman ?? 0;
+        // Reset error
+        document.getElementById('editTenorError').classList.add('hidden');
+        document.getElementById('editKeteranganError').classList.add('hidden');
+        // Set form action
+        document.getElementById('editPinjamanForm').action = `/admin/pinjaman/data-anggota/${pinjaman.id}`;
+        // Show modal
+        document.getElementById('editPinjamanModal').classList.remove('hidden');
+        // Sembunyikan estimasi di awal
+        document.getElementById('editEstimasiContainer').classList.add('hidden');
+        // Estimasi update saat input berubah
+        editTenorTouched = false;
+    }
+    function closeEditModal() {
+        document.getElementById('editPinjamanModal').classList.add('hidden');
+    }
+    function updateEditEstimasiCicilan() {
+        const tenor = parseInt(document.getElementById('editTenorInput').value) || 0;
+        const estimasiContainer = document.getElementById('editEstimasiContainer');
+        const estimasiCicilanSpan = document.getElementById('editEstimasiCicilan');
+        if (tenor > 0) {
+            const estimasi = Math.ceil(editPinjamanSisa / tenor);
+            estimasiCicilanSpan.textContent = new Intl.NumberFormat('id-ID').format(estimasi);
+            estimasiContainer.classList.remove('hidden');
+        } else {
+            estimasiContainer.classList.add('hidden');
+            estimasiCicilanSpan.textContent = '0';
+        }
+    }
+    let editTenorTouched = false;
+    document.getElementById('editTenorInput').addEventListener('input', function() {
+        updateEditEstimasiCicilan();
+    });
+    document.getElementById('editTenorInput').addEventListener('change', updateEditEstimasiCicilan);
 </script>
 
 {{-- SCRIPT RIWAYAT CICILAN, PELUNASAN --}}

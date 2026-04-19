@@ -69,12 +69,12 @@ class ApprovalPinjamanController extends Controller
             $service->setujui($pengajuan, Auth::id(), $data);
 
             return redirect()
-                ->route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan'])
+                ->route('admin.pinjaman.pengajuan.index', ['tab' => 'pengajuan'])
                 ->with('success', 'Pengajuan berhasil diproses/diperbarui');
          
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()
-                ->route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan'])
+                ->route('admin.pinjaman.pengajuan.index', ['tab' => 'pengajuan'])
                 ->with('validation_errors', $e->errors()) // 🔥 ganti ini
                 ->withInput()
                 ->with('open_modal_pengajuan', true)
@@ -83,7 +83,7 @@ class ApprovalPinjamanController extends Controller
 
         catch (\Exception $e) {
             return redirect()
-                ->route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan']) // 🔥 sama
+                ->route('admin.pinjaman.pengajuan.index', ['tab' => 'pengajuan']) // 🔥 sama
                 ->with('validation_errors', [
                     'pengajuan' => [$e->getMessage()]
                 ])
@@ -112,7 +112,7 @@ class ApprovalPinjamanController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.pinjaman.data-anggota.index', ['tab' => 'pengajuan'])
+            ->route('admin.pinjaman.pengajuan.index', ['tab' => 'pengajuan'])
             ->with('success', 'Pengajuan pinjaman ditolak');
     }
 

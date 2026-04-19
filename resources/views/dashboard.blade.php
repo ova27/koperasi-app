@@ -80,10 +80,10 @@
                                      A2.25 2.25 0 014.5 6z" />
                         </svg>
                     </div>
-                    <div class="text-sm font-medium text-gray-600">Total Pinjaman</div>
+                    <div class="text-sm font-medium text-gray-600">Total Piutang Pinjaman</div>
                 </div>
                 <div class="mx-2 text-2xl font-bold text-gray-900">
-                    Rp {{ number_format($totalPinjaman ?? 0, 0, ',', '.') }}
+                    Rp {{ number_format($sisaPinjamanAktif ?? 0, 0, ',', '.') }}
                 </div>
             </div>
 

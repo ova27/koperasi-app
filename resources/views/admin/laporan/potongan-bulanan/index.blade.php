@@ -7,7 +7,23 @@
 <div class="space-y-3">
     @include('admin.laporan._tabs_potongan')
 
-    @can('manage simpanan anggota')
+    @if (session('success'))
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ session('error') }}
+        </div>
+    @endif
+    @if (session('info'))
+        <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            {{ session('info') }}
+        </div>
+    @endif
+
+    @if($canManagePotongan && ! $isFixed)
         <details class="bg-gray-50 border border-gray-200 rounded-lg" @if($errors->has('file') || session('upload_preview') || session('upload_error')) open @endif>
             <summary class="px-3.5 py-2.5 text-sm font-medium text-gray-700 cursor-pointer select-none">
                 Ubah Nominal per Anggota
@@ -111,24 +127,56 @@
                 @endif
             </div>
         @endif
-    @endcan
+    @endif
 
+    <div class="{{ $isFixed ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800' }} rounded-lg border px-4 py-3 text-sm">
+        @if($isFixed)
+            Potongan bulan {{ \Carbon\Carbon::createFromFormat('Y-m', $bulanPotongan)->translatedFormat('F Y') }} sudah difix oleh Bendahara.
+        @else
+            Rincian potongan bulan {{ \Carbon\Carbon::createFromFormat('Y-m', $bulanPotongan)->translatedFormat('F Y') }} belum difix oleh Bendahara.
+        @endif
+    </div>
     <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
-            <form method="GET" class="flex flex-col sm:flex-row sm:items-end gap-2">
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">Bulan (Potongan)</label>
-                    <input type="month" name="bulan" value="{{ $bulanPotongan }}" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
-                </div>
-                <button class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-all duration-200">
-                    Tampilkan
-                </button>
-            </form>
+        
+            <div class="flex flex-col sm:flex-row sm:items-end gap-2">
+                <form method="GET" class="flex flex-col sm:flex-row sm:items-end gap-2">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Bulan (Potongan)</label>
+                        <input type="month" name="bulan" value="{{ $bulanPotongan }}" max="{{ $batasBulanPotongan }}" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
+                        @error('bulan')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <button class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-all duration-200">
+                        Tampilkan
+                    </button>
+                </form>
 
+                @if($canManagePotongan && ! $isFixed)
+                    <form method="POST" action="{{ route('admin.laporan.potongan-bulanan.fix') }}" class="mb-0" onsubmit="return confirm('Fix potongan bulan ini? Setelah difix, nominal bulan ini akan terkunci sebagai snapshot resmi.');">
+                        @csrf
+                        <input type="hidden" name="bulan" value="{{ $bulanPotongan }}">
+                        <button class="px-4 py-2 rounded-lg text-sm font-medium bg-amber-500 text-white shadow-sm hover:bg-amber-600 transition-all duration-200">
+                            Fix Potongan Bulan Ini
+                        </button>
+                    </form>
+                @elseif($canManagePotongan && $isFixed)
+                    <form method="POST" action="{{ route('admin.laporan.potongan-bulanan.cancel-fix') }}" class="mb-0" onsubmit="return confirm('Batalkan fix potongan bulan ini? Snapshot fixed akan dihapus dan data bisa diedit kembali.');">
+                        @csrf
+                        <input type="hidden" name="bulan" value="{{ $bulanPotongan }}">
+                        <button class="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white shadow-sm hover:bg-red-700 transition-all duration-200">
+                            Batal Fix
+                        </button>
+                    </form>
+                @endif
+            </div>
+            
             <div class="text-sm text-gray-600">
                 Total Potongan:
                 <span class="font-bold text-emerald-700">Rp {{ number_format($totalPotongan, 0, ',', '.') }}</span>
             </div>
+            
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -139,20 +187,13 @@
                     <div class="font-semibold text-blue-700">Rp {{ number_format($item['total'], 0, ',', '.') }}</div>
                 </div>
             @empty
-                <div class="text-sm text-gray-500">Belum ada data.</div>
+                <div class="text-sm text-gray-500"></div>
             @endforelse
         </div>
     </div>
 
     <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
-            @can('view laporan pinjaman')
-                <a href="{{ route('admin.laporan.potongan-bulanan.export', ['bulan' => $bulanPotongan]) }}"
-                    class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white shadow-sm hover:bg-green-700 transition-all duration-200">
-                    Export Excel
-                </a>
-            @endcan
-
             <form method="GET" class="flex flex-col sm:flex-row sm:items-end gap-2">
                 <input type="hidden" name="bulan" value="{{ $bulanPotongan }}">
                 <div>
@@ -165,6 +206,20 @@
                     >
                 </div>
             </form>
+            
+            <div class="flex gap-2">
+
+                @if($isFixed)
+                    <a href="{{ route('admin.laporan.potongan-bulanan.export', ['bulan' => $bulanPotongan]) }}"
+                        class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white shadow-sm hover:bg-green-700 transition-all duration-200">
+                        Export Excel
+                    </a>
+                @else
+                    <button type="button" disabled class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-500 cursor-not-allowed">
+                        Export Excel
+                    </button>
+                @endif
+            </div>  
         </div>
 
         <div class="hidden md:block rounded-lg border border-gray-100 overflow-auto max-h-[65vh]">
@@ -182,9 +237,9 @@
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Tabungan Qurban</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Iuran Operasional</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Total Potongan</th>
-                    @can('manage simpanan anggota')
+                    @if($canManagePotongan && ! $isFixed)
                         <th class="px-3 py-2 text-center font-semibold text-xs text-blue-900 uppercase tracking-widest">Aksi</th>
-                    @endcan
+                    @endif
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -201,18 +256,18 @@
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['tabungan_qurban'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['iuran_operasional'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs font-bold text-blue-700">Rp {{ number_format($row['total'], 0, ',', '.') }}</td>
-                        @can('manage simpanan anggota')
+                        @if($canManagePotongan && ! $isFixed)
                             <td class="px-3 py-2 text-center">
                                 <button type="button" onclick="openNominalModal({{ $row['anggota']->id }}, '{{ addslashes($row['nama']) }}', {{ $row['iuran_dharma_wanita'] }}, {{ $row['infaq_pegawai'] }}, {{ $row['tabungan_qurban'] }})" class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
                                     Edit
                                 </button>
                             </td>
-                        @endcan
+                        @endif
                     </tr>
                 @empty
                     <tr>
                         <td colspan="12" class="px-3 py-8 text-center text-gray-500">
-                            Tidak ada data anggota aktif
+                            Tidak ada data.
                         </td>
                     </tr>
                 @endforelse
@@ -228,9 +283,9 @@
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalQurban, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalIuranOperasional, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-blue-700">Rp {{ number_format($totalPotongan, 0, ',', '.') }}</th>
-                        @can('manage simpanan anggota')
+                        @if($canManagePotongan && ! $isFixed)
                             <th class="px-3 py-2"></th>
-                        @endcan
+                        @endif
                     </tr>
                 </tfoot>
             @endif
@@ -255,13 +310,13 @@
                         <div>Qurban: Rp {{ number_format($row['tabungan_qurban'], 0, ',', '.') }}</div>
                         <div>Operasional: Rp {{ number_format($row['iuran_operasional'], 0, ',', '.') }}</div>
                     </div>
-                    @can('manage simpanan anggota')
+                    @if($canManagePotongan && ! $isFixed)
                         <div class="mt-2">
                             <button type="button" onclick="openNominalModal({{ $row['anggota']->id }}, '{{ addslashes($row['nama']) }}', {{ $row['iuran_dharma_wanita'] }}, {{ $row['infaq_pegawai'] }}, {{ $row['tabungan_qurban'] }})" class="w-full px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
                                 Edit
                             </button>
                         </div>
-                    @endcan
+                    @endif
                 </div>
             @empty
                 <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-400 text-sm">
@@ -289,7 +344,7 @@
     </div>
 
     {{-- MODAL EDIT NOMINAL PER ANGGOTA --}}
-    @can('manage simpanan anggota')
+    @if($canManagePotongan && ! $isFixed)
         <div id="nominalModal" class="hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
             <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h2 class="text-lg font-semibold mb-1" id="modalTitle"></h2>
@@ -350,6 +405,6 @@
                 }
             }
         </script>
-    @endcan
+    @endif
 </div>
 @endsection

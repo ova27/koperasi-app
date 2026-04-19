@@ -1,20 +1,4 @@
 <div class="sidebar-shell h-full">
-    {{-- SIDEBAR HEADER --}}
-    <div class="sidebar-brand mb-3 flex items-center gap-2 px-1 py-0">
-        {{-- ICON / LOGO --}}
-        <div class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 text-sm font-bold text-white shadow-md ring-2 ring-white">
-            K
-        </div>
-        {{-- TITLE & ROLE --}}
-        <div class="sidebar-title min-w-0">
-            <div class="truncate text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">Koperasi</div>
-            <div class="truncate text-xs font-bold tracking-wide text-slate-800 uppercase">
-                Simpatik
-            </div>
-        </div>
-    </div>
-
-    <hr class="mb-5 border-slate-200">
 
     <div class="space-y-2">
         {{-- MENU --}}
@@ -135,7 +119,7 @@
                 'manage cicilan pinjaman',
                 'view pengajuan pinjaman'
             ])
-            <li class="menu-item" x-data="{ open: {{ request()->routeIs('admin.simpanan.*') || request()->routeIs('admin.pinjaman.data-anggota.*') || request()->routeIs('admin.pinjaman.pencairan.*') ? 'true' : 'false' }} }">
+            <li class="menu-item" x-data="{ open: {{ request()->routeIs('admin.simpanan.*') || request()->routeIs('admin.pinjaman.data-anggota.*') || request()->routeIs('admin.pinjaman.pencairan.*') || request()->routeIs('admin.pinjaman.pengajuan.*') ? 'true' : 'false' }} }">
                 <button
                     type="button"
                     @click="open = !open"
@@ -167,7 +151,7 @@
                     @endcan
                     <a href="{{ route('admin.pinjaman.pencairan.index') }}"
                         class="sub-menu-link {{ request()->routeIs('admin.pinjaman.pencairan.*')  ? 'active' : '' }}">
-                        Pencairan Pengajuan Pinjaman
+                        Pencairan Pinjaman
                     </a>
                 </div>
             </li>

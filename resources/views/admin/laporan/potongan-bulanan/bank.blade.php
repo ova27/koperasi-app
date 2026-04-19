@@ -7,14 +7,33 @@
 <div class="space-y-3">
     @include('admin.laporan._tabs_potongan')
     @php
-        $canExportWord = $namaBank !== '' && $selectedRekeningKoperasiId !== null;
+        $canExportWord = $isFixed && $namaBank !== '' && $selectedRekeningKoperasiId !== null;
     @endphp
+
+    @if (session('error'))
+        <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <div class="{{ $isFixed ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800' }} rounded-lg border px-4 py-3 text-sm">
+        @if($isFixed)
+            Setoran bank bulan {{ \Carbon\Carbon::createFromFormat('Y-m', $bulanPotongan)->translatedFormat('F Y') }} sudah memakai data fixed.
+        @elseif($canManagePotongan)
+            Setoran bank ini masih draft dan hanya terlihat untuk Bendahara sampai potongan difix.
+        @else
+            Setoran bank bulan {{ \Carbon\Carbon::createFromFormat('Y-m', $bulanPotongan)->translatedFormat('F Y') }} belum difix oleh Bendahara.
+        @endif
+    </div>
 
     <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <form method="GET" class="flex flex-col sm:flex-row sm:items-end gap-2 mb-4">
             <div>
                 <label class="block text-sm text-gray-600 mb-1">Bulan (Potongan)</label>
-                <input type="month" name="bulan" value="{{ $bulanPotongan }}" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
+                <input type="month" name="bulan" value="{{ $bulanPotongan }}" max="{{ $batasBulanPotongan }}" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
+                @error('bulan')
+                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm text-gray-600 mb-1">Nama Bank</label>
@@ -49,10 +68,16 @@
             <h2 class="text-sm font-medium text-gray-700">Daftar Setoran Anggota</h2>
             @can('export laporan pinjaman')
                 <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <a href="{{ route('admin.laporan.potongan-bulanan.bank.export', ['bulan' => $bulanPotongan, 'nama_bank' => $namaBank]) }}"
-                        class="inline-flex items-center justify-center px-3.5 py-2 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-colors duration-150">
-                        Export Excel
-                    </a>
+                    @if($isFixed)
+                        <a href="{{ route('admin.laporan.potongan-bulanan.bank.export', ['bulan' => $bulanPotongan, 'nama_bank' => $namaBank]) }}"
+                            class="inline-flex items-center justify-center px-3.5 py-2 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-colors duration-150">
+                            Export Excel
+                        </a>
+                    @else
+                        <button type="button" disabled class="inline-flex items-center justify-center px-3.5 py-2 rounded-md text-sm font-medium bg-gray-200 text-gray-500 cursor-not-allowed">
+                            Export Excel
+                        </button>
+                    @endif
                     @if($canExportWord)
                         <a href="{{ route('admin.laporan.potongan-bulanan.bank.export-word', ['bulan' => $bulanPotongan, 'nama_bank' => $namaBank, 'rekening_koperasi_id' => $selectedRekeningKoperasiId]) }}"
                             class="inline-flex items-center justify-center px-3.5 py-2 rounded-md text-sm font-medium bg-slate-700 text-white hover:bg-slate-800 transition-colors duration-150">
@@ -70,7 +95,7 @@
         </div>
         @if(!$canExportWord)
             <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-3">
-                Belum ada informasi Rekening.
+                Pilih bank untuk bisa export surat kuasa dalam format Word.
             </p>
         @endif
 

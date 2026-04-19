@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Anggota;
+use App\Models\PotonganBulananDetail;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -31,75 +31,25 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
         
         $bulanPotongan = Carbon::createFromFormat('Y-m', $this->bulanPotongan);
         $bulanSebelumnya = $bulanPotongan->copy()->subMonthNoOverflow();
-        $batasRiwayatCicilan = $bulanSebelumnya->copy()->endOfMonth();
-
-        $wajibDefault = (int) config('koperasi.simpanan_wajib', 0);
-        $iuranDharmaWanita = (int) config('koperasi.iuran_dharma_wanita', 0);
-        $infaqPegawai = (int) config('koperasi.infaq_pegawai', 0);
-        $tabunganQurban = (int) config('koperasi.tabungan_qurban', 0);
-        $iuranOperasional = (int) config('koperasi.iuran_operasional', 5000);
-
-        $rows = Anggota::query()
-            ->with([
-                'rekeningAktif',
-                'pinjamans.transaksi' => function ($query) {
-                    $query->orderBy('tanggal')->orderBy('id');
-                },
-                'potonganTitipan',
-            ])
-            ->where('status', 'aktif')
+        $rows = PotonganBulananDetail::query()
+            ->where('bulan_potongan', $this->bulanPotongan)
             ->orderBy('nama')
             ->get()
-            ->map(function ($anggota, $index) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $batasRiwayatCicilan) {
-                $pinjamanAcuan = $this->pinjamanPadaAkhirBulan($anggota->pinjamans, $batasRiwayatCicilan);
-                $cicilan = 0;
-                $sisaPinjamanLalu = 0;
-                $sisaPinjamanSekarang = 0;
-                $tenor = '-';
-                $cicilanKe = '-';
-                $titipan = $anggota->potonganTitipan;
-
-                if ($pinjamanAcuan) {
-                    $sisaPinjamanLalu = $this->sisaPinjamanPerAkhirBulan($pinjamanAcuan, $batasRiwayatCicilan);
-
-                    if ($sisaPinjamanLalu > 0) {
-                        $tenor = (int) ($pinjamanAcuan->tenor ?? 0) > 0
-                            ? (int) $pinjamanAcuan->tenor
-                            : '-';
-                        $cicilan = (int) min(
-                            (int) ($pinjamanAcuan->cicilan_per_bulan ?? 0),
-                            $sisaPinjamanLalu
-                        );
-                        $sisaPinjamanSekarang = max(0, $sisaPinjamanLalu - $cicilan);
-                    }
-                    
-                    // Kolom ke- mengikuti urutan riwayat cicilan, termasuk saat ada topup.
-                    if ($cicilan > 0) {
-                        $jumlahCicilan = $this->jumlahCicilanSampaiBulan($pinjamanAcuan->transaksi, $batasRiwayatCicilan);
-                        $cicilanKe = $jumlahCicilan + 1;
-                    }
-                }
-
-                // Gunakan nominal per anggota jika ada, jika tidak pakai default
-                $dharma = $titipan ? (int) $titipan->iuran_dharma_wanita : $iuranDharmaWanita;
-                $infaq = $titipan ? (int) $titipan->infaq_pegawai : $infaqPegawai;
-                $qurban = $titipan ? (int) $titipan->tabungan_qurban : $tabunganQurban;
-                $totalTitipan = $dharma + $infaq + $qurban;
-
+            ->map(function (PotonganBulananDetail $detail, $index) {
                 return [
                     'no' => $index + 1,
-                    'nama' => $anggota->nama,
-                    'rekening' => $anggota->rekeningAktif->nomor_rekening ?? '-',
-                    'sisa_lalu' => $sisaPinjamanLalu,
-                    'tenor' => $tenor,
-                    'ke' => $cicilanKe,
-                    'cicilan' => $cicilan,
-                    'sisa_sekarang' => $sisaPinjamanSekarang,
-                    'simpanan_wajib' => $wajibDefault + $iuranOperasional,
-                    'dharma' => $dharma,
-                    'infaq' => $infaq,
-                    'qurban' => $qurban,
-                    'jumlah' => $wajibDefault + $iuranOperasional + $cicilan + $totalTitipan,
+                    'nama' => $detail->nama,
+                    'rekening' => $detail->nomor_rekening ?? '-',
+                    'sisa_lalu' => (int) $detail->sisa_pinjaman_lalu,
+                    'tenor' => $detail->tenor ?? '-',
+                    'ke' => $detail->cicilan_ke ?? '-',
+                    'cicilan' => (int) $detail->cicilan,
+                    'sisa_sekarang' => (int) $detail->sisa_pinjaman_sekarang,
+                    'simpanan_wajib' => (int) $detail->simpanan_wajib + (int) $detail->iuran_operasional,
+                    'dharma' => (int) $detail->iuran_dharma_wanita,
+                    'infaq' => (int) $detail->infaq_pegawai,
+                    'qurban' => (int) $detail->tabungan_qurban,
+                    'jumlah' => (int) $detail->total,
                 ];
             });
 

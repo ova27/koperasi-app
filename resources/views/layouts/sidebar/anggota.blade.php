@@ -1,27 +1,5 @@
 <div class="sidebar-shell h-full">
-    {{-- SIDEBAR HEADER --}}
-    <div class="sidebar-brand mb-5 flex items-center gap-3 px-1 py-1">
-
-        {{-- ICON / LOGO --}}
-        <div class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-500 text-base font-bold text-white shadow-md ring-2 ring-white">
-            K
-        </div>
-
-        {{-- TITLE & ROLE --}}
-        <div class="sidebar-title min-w-0">
-            <div class="truncate text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Koperasi</div>
-            <div class="truncate text-sm font-bold tracking-wide text-slate-800 uppercase">
-                Simpatik
-            </div>
-
-            <div class="truncate text-xs text-slate-500 capitalize">
-                BPS Provinsi Banten
-            </div>
-        </div>
-    </div>
-
-    <hr class="mb-5 border-slate-200">
-
+    
     <div class="space-y-2">
 
         {{-- MENU --}}

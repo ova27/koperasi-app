@@ -38,7 +38,7 @@ class DashboardController extends Controller
                             $totalCicilan = TransaksiPinjaman::where('pinjaman_id', $pinjaman->id)
                                 ->where('jenis', 'cicilan')
                                 ->sum('jumlah');
-            return max(0, $pinjaman->jumlah_pinjaman - $totalCicilan);
+            return max(0, $pinjaman->sisa_pinjaman - $totalCicilan);
         });
 
         $lastUpdated = collect([

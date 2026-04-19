@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\LaporanPotonganBulananExport;
 use App\Http\Controllers\Controller;
 use App\Models\Anggota;
+use App\Models\PotonganBulananDetail;
+use App\Models\PotonganBulananSetting;
 use App\Models\PotonganTitipan;
 use App\Models\RekeningKoperasi;
 use App\Services\NominalTitipanImportService;
@@ -12,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -21,13 +24,18 @@ class LaporanPotonganBulananController extends Controller
     {
         $this->authorize('view laporan pinjaman');
 
-        $bulanPotongan = $request->get('bulan', now()->addMonthNoOverflow()->format('Y-m'));
+        $bulanPotongan = $this->validatedBulanPotongan($request);
+        $batasBulanPotongan = $this->batasBulanPotongan();
+        $isFixed = $this->isBulanPotonganFixed($bulanPotongan);
+        $canManagePotongan = $request->user()?->can('manage simpanan anggota') ?? false;
         $search = trim((string) $request->get('search', ''));
         $bulanAcuan = Carbon::createFromFormat('Y-m', $bulanPotongan)
             ->subMonthNoOverflow()
             ->format('Y-m');
 
-        $allRows = $this->buildPotonganRows($bulanPotongan);
+        $allRows = $isFixed
+            ? $this->buildFixedPotonganRows($bulanPotongan)
+            : ($canManagePotongan ? $this->buildPotonganRows($bulanPotongan) : collect());
         $filteredRows = $allRows;
 
         if ($search !== '') {
@@ -57,6 +65,9 @@ class LaporanPotonganBulananController extends Controller
         return view('admin.laporan.potongan-bulanan.index', [
             'bulanAcuan' => $bulanAcuan,
             'bulanPotongan' => $bulanPotongan,
+            'batasBulanPotongan' => $batasBulanPotongan,
+            'isFixed' => $isFixed,
+            'canManagePotongan' => $canManagePotongan,
             'rows' => $rows,
             'totalWajib' => (int) $filteredRows->sum('wajib'),
             'totalCicilan' => (int) $filteredRows->sum('cicilan'),
@@ -77,9 +88,14 @@ class LaporanPotonganBulananController extends Controller
     {
         $this->authorize('view laporan pinjaman');
 
-        $bulanPotongan = $request->get('bulan', now()->addMonthNoOverflow()->format('Y-m'));
+        $bulanPotongan = $this->validatedBulanPotongan($request);
+        $batasBulanPotongan = $this->batasBulanPotongan();
+        $isFixed = $this->isBulanPotonganFixed($bulanPotongan);
+        $canManagePotongan = $request->user()?->can('manage simpanan anggota') ?? false;
         $namaBank = trim((string) $request->get('nama_bank', ''));
-        $allRows = $this->buildPotonganRows($bulanPotongan);
+        $allRows = $isFixed
+            ? $this->buildFixedPotonganRows($bulanPotongan)
+            : ($canManagePotongan ? $this->buildPotonganRows($bulanPotongan) : collect());
 
         $bankOptions = $allRows
             ->pluck('bank')
@@ -104,6 +120,9 @@ class LaporanPotonganBulananController extends Controller
 
         return view('admin.laporan.potongan-bulanan.bank', [
             'bulanPotongan' => $bulanPotongan,
+            'batasBulanPotongan' => $batasBulanPotongan,
+            'isFixed' => $isFixed,
+            'canManagePotongan' => $canManagePotongan,
             'namaBank' => $namaBank,
             'bankOptions' => $bankOptions,
             'rekeningKoperasiMap' => $rekeningKoperasiMap,
@@ -125,8 +144,13 @@ class LaporanPotonganBulananController extends Controller
             'iuran_dharma_wanita' => ['required', 'integer', 'min:0'],
             'infaq_pegawai' => ['required', 'integer', 'min:0'],
             'tabungan_qurban' => ['required', 'integer', 'min:0'],
-            'bulan' => ['nullable', 'date_format:Y-m'],
+            'bulan' => $this->bulanPotonganRules(),
         ]);
+
+        $bulanPotongan = $validated['bulan'] ?? now()->addMonthNoOverflow()->format('Y-m');
+        if ($this->isBulanPotonganFixed($bulanPotongan)) {
+            return back()->with('error', 'Potongan bulan ini sudah difix, nominal tidak bisa diubah.');
+        }
 
         PotonganTitipan::updateOrCreate(
             ['anggota_id' => $anggota->id],
@@ -138,15 +162,100 @@ class LaporanPotonganBulananController extends Controller
         );
 
         return redirect()
-            ->route('admin.laporan.potongan-bulanan.index', ['bulan' => $validated['bulan'] ?? now()->addMonthNoOverflow()->format('Y-m')])
+            ->route('admin.laporan.potongan-bulanan.index', ['bulan' => $bulanPotongan])
             ->with('success', 'Nominal titipan ' . $anggota->nama . ' berhasil diperbarui');
+    }
+
+    public function fix(Request $request)
+    {
+        $this->authorize('manage simpanan anggota');
+
+        $bulanPotongan = $this->validatedBulanPotongan($request);
+
+        if ($this->isBulanPotonganFixed($bulanPotongan)) {
+            return redirect()
+                ->route('admin.laporan.potongan-bulanan.index', ['bulan' => $bulanPotongan])
+                ->with('info', 'Potongan bulan ini sudah difix.');
+        }
+
+        $rows = $this->buildPotonganRows($bulanPotongan);
+
+        DB::transaction(function () use ($bulanPotongan, $rows, $request) {
+            $setting = PotonganBulananSetting::updateOrCreate(
+                ['bulan_potongan' => $bulanPotongan],
+                [
+                    'is_fixed' => true,
+                    'fixed_at' => now(),
+                    'fixed_by' => $request->user()?->id,
+                ]
+            );
+
+            PotonganBulananDetail::where('bulan_potongan', $setting->bulan_potongan)->delete();
+
+            foreach ($rows as $row) {
+                PotonganBulananDetail::create([
+                    'bulan_potongan' => $setting->bulan_potongan,
+                    'anggota_id' => $row['anggota']->id ?? null,
+                    'nama' => (string) ($row['nama'] ?? '-'),
+                    'bank' => (string) ($row['bank'] ?? '-'),
+                    'nomor_rekening' => (string) ($row['nomor_rekening'] ?? '-'),
+                    'simpanan_wajib' => (int) ($row['wajib'] ?? 0),
+                    'cicilan' => (int) ($row['cicilan'] ?? 0),
+                    'iuran_dharma_wanita' => (int) ($row['iuran_dharma_wanita'] ?? 0),
+                    'infaq_pegawai' => (int) ($row['infaq_pegawai'] ?? 0),
+                    'tabungan_qurban' => (int) ($row['tabungan_qurban'] ?? 0),
+                    'total_titipan' => (int) ($row['total_titipan'] ?? 0),
+                    'iuran_operasional' => (int) ($row['iuran_operasional'] ?? 0),
+                    'total' => (int) ($row['total'] ?? 0),
+                    'sisa_pinjaman_lalu' => (int) ($row['sisa_pinjaman_lalu'] ?? 0),
+                    'sisa_pinjaman_sekarang' => (int) ($row['sisa_pinjaman_sekarang'] ?? 0),
+                    'tenor' => (string) ($row['tenor'] ?? '-'),
+                    'cicilan_ke' => (string) ($row['cicilan_ke'] ?? '-'),
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('admin.laporan.potongan-bulanan.index', ['bulan' => $bulanPotongan])
+            ->with('success', 'Potongan bulan ' . $bulanPotongan . ' berhasil difix.');
+    }
+
+    public function cancelFix(Request $request)
+    {
+        $this->authorize('manage simpanan anggota');
+
+        $bulanPotongan = $this->validatedBulanPotongan($request);
+
+        if (! $this->isBulanPotonganFixed($bulanPotongan)) {
+            return redirect()
+                ->route('admin.laporan.potongan-bulanan.index', ['bulan' => $bulanPotongan])
+                ->with('info', 'Potongan bulan ini belum difix.');
+        }
+
+        DB::transaction(function () use ($bulanPotongan) {
+            PotonganBulananSetting::where('bulan_potongan', $bulanPotongan)
+                ->update([
+                    'is_fixed' => false,
+                    'fixed_at' => null,
+                    'fixed_by' => null,
+                ]);
+
+            PotonganBulananDetail::where('bulan_potongan', $bulanPotongan)->delete();
+        });
+
+        return redirect()
+            ->route('admin.laporan.potongan-bulanan.index', ['bulan' => $bulanPotongan])
+            ->with('success', 'Fix potongan bulan ' . $bulanPotongan . ' berhasil dibatalkan. Data sudah bisa diperbaiki lagi.');
     }
 
     public function export(Request $request)
     {
         $this->authorize('view laporan pinjaman');
 
-        $bulanPotongan = $request->get('bulan', now()->addMonthNoOverflow()->format('Y-m'));
+        $bulanPotongan = $this->validatedBulanPotongan($request);
+        if (! $this->isBulanPotonganFixed($bulanPotongan)) {
+            return back()->with('error', 'Rincian potongan bulan ini belum difix oleh Bendahara.');
+        }
 
         return Excel::download(
             new LaporanPotonganBulananExport($bulanPotongan),
@@ -158,7 +267,10 @@ class LaporanPotonganBulananController extends Controller
     {
         $this->authorize('export laporan pinjaman');
 
-        $bulanPotongan = $request->get('bulan', now()->addMonthNoOverflow()->format('Y-m'));
+        $bulanPotongan = $this->validatedBulanPotongan($request);
+        if (! $this->isBulanPotonganFixed($bulanPotongan)) {
+            return back()->with('error', 'Setoran bank bulan ini belum difix oleh Bendahara.');
+        }
         $namaBank = trim((string) $request->get('nama_bank', ''));
 
         return Excel::download(
@@ -172,12 +284,15 @@ class LaporanPotonganBulananController extends Controller
         $this->authorize('export laporan pinjaman');
 
         $validated = $request->validate([
-            'bulan' => ['nullable', 'date_format:Y-m'],
+            'bulan' => $this->bulanPotonganRules(),
             'nama_bank' => ['required', 'string'],
             'rekening_koperasi_id' => ['required', 'integer', 'exists:rekening_koperasis,id'],
         ]);
 
         $bulanPotongan = $validated['bulan'] ?? now()->addMonthNoOverflow()->format('Y-m');
+        if (! $this->isBulanPotonganFixed($bulanPotongan)) {
+            return back()->with('error', 'Setoran bank bulan ini belum difix oleh Bendahara.');
+        }
         $namaBank = trim((string) $validated['nama_bank']);
         $rekeningKoperasiId = (int) $validated['rekening_koperasi_id'];
 
@@ -367,15 +482,24 @@ class LaporanPotonganBulananController extends Controller
             ->map(function ($anggota) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $batasRiwayatCicilan) {
                 $pinjamanAcuan = $this->pinjamanPadaAkhirBulan($anggota->pinjamans, $batasRiwayatCicilan);
                 $cicilan = 0;
+                $sisaPinjamanLalu = 0;
+                $sisaPinjamanSekarang = 0;
+                $tenor = '-';
+                $cicilanKe = '-';
                 $titipan = $anggota->potonganTitipan;
 
                 if ($pinjamanAcuan) {
                     $sisaPinjamanLalu = $this->sisaPinjamanPerAkhirBulan($pinjamanAcuan, $batasRiwayatCicilan);
                     if ($sisaPinjamanLalu > 0) {
+                        $tenor = (int) ($pinjamanAcuan->tenor ?? 0) > 0
+                            ? (string) ((int) $pinjamanAcuan->tenor)
+                            : '-';
                         $cicilan = (int) min(
                             (int) ($pinjamanAcuan->cicilan_per_bulan ?? 0),
                             $sisaPinjamanLalu
                         );
+                        $sisaPinjamanSekarang = max(0, $sisaPinjamanLalu - $cicilan);
+                        $cicilanKe = (string) ($this->jumlahCicilanSampaiBulan($pinjamanAcuan->transaksi, $batasRiwayatCicilan) + 1);
                     }
                 }
 
@@ -397,8 +521,82 @@ class LaporanPotonganBulananController extends Controller
                     'total_titipan' => $totalTitipan,
                     'iuran_operasional' => $iuranOperasional,
                     'total' => $wajibDefault + $cicilan + $totalTitipan + $iuranOperasional,
+                    'sisa_pinjaman_lalu' => $sisaPinjamanLalu,
+                    'sisa_pinjaman_sekarang' => $sisaPinjamanSekarang,
+                    'tenor' => $tenor,
+                    'cicilan_ke' => $cicilanKe,
                 ];
             })
+            ->values();
+    }
+
+    private function validatedBulanPotongan(Request $request): string
+    {
+        $validated = $request->validate([
+            'bulan' => $this->bulanPotonganRules(),
+        ]);
+
+        return $validated['bulan'] ?? now()->addMonthNoOverflow()->format('Y-m');
+    }
+
+    private function bulanPotonganRules(): array
+    {
+        return [
+            'bail',
+            'nullable',
+            'date_format:Y-m',
+            function (string $attribute, mixed $value, \Closure $fail) {
+                if ($value === null || $value === '') {
+                    return;
+                }
+
+                $bulan = Carbon::createFromFormat('Y-m', (string) $value)->startOfMonth();
+                $batas = Carbon::createFromFormat('Y-m', $this->batasBulanPotongan())->startOfMonth();
+
+                if ($bulan->gt($batas)) {
+                    $fail('Bulan potongan maksimal hanya sampai bulan depan.');
+                }
+            },
+        ];
+    }
+
+    private function batasBulanPotongan(): string
+    {
+        return now()->addMonthNoOverflow()->format('Y-m');
+    }
+
+    private function isBulanPotonganFixed(string $bulanPotongan): bool
+    {
+        return PotonganBulananSetting::where('bulan_potongan', $bulanPotongan)
+            ->where('is_fixed', true)
+            ->exists();
+    }
+
+    private function buildFixedPotonganRows(string $bulanPotongan)
+    {
+        return PotonganBulananDetail::query()
+            ->with('anggota')
+            ->where('bulan_potongan', $bulanPotongan)
+            ->orderBy('nama')
+            ->get()
+            ->map(fn (PotonganBulananDetail $detail) => [
+                'anggota' => $detail->anggota,
+                'nama' => $detail->nama,
+                'bank' => $detail->bank ?? '-',
+                'nomor_rekening' => $detail->nomor_rekening ?? '-',
+                'wajib' => (int) $detail->simpanan_wajib,
+                'cicilan' => (int) $detail->cicilan,
+                'iuran_dharma_wanita' => (int) $detail->iuran_dharma_wanita,
+                'infaq_pegawai' => (int) $detail->infaq_pegawai,
+                'tabungan_qurban' => (int) $detail->tabungan_qurban,
+                'total_titipan' => (int) $detail->total_titipan,
+                'iuran_operasional' => (int) $detail->iuran_operasional,
+                'total' => (int) $detail->total,
+                'sisa_pinjaman_lalu' => (int) $detail->sisa_pinjaman_lalu,
+                'sisa_pinjaman_sekarang' => (int) $detail->sisa_pinjaman_sekarang,
+                'tenor' => $detail->tenor ?? '-',
+                'cicilan_ke' => $detail->cicilan_ke ?? '-',
+            ])
             ->values();
     }
 
@@ -412,7 +610,11 @@ class LaporanPotonganBulananController extends Controller
         $rekeningKoperasiMap = $this->buildRekeningKoperasiAliasMap($rekeningKoperasiList);
         $selectedRekeningKoperasiId = $this->resolveRekeningKoperasiIdFromBankName($namaBank, $rekeningKoperasiMap);
 
-        return $this->buildPotonganRows($bulanPotongan)
+        $rows = $this->isBulanPotonganFixed($bulanPotongan)
+            ? $this->buildFixedPotonganRows($bulanPotongan)
+            : $this->buildPotonganRows($bulanPotongan);
+
+        return $rows
             ->filter(function ($row) use ($selectedRekeningKoperasiId, $namaBank, $rekeningKoperasiMap) {
                 if ($selectedRekeningKoperasiId === null) {
                     return Str::lower(trim((string) ($row['bank'] ?? ''))) === Str::lower(trim($namaBank));
@@ -559,6 +761,16 @@ class LaporanPotonganBulananController extends Controller
         }
 
         return max(0, (int) ($pinjaman->jumlah_pinjaman ?? 0));
+    }
+
+    private function jumlahCicilanSampaiBulan($transaksi, Carbon $batasRiwayatCicilan): int
+    {
+        return $transaksi
+            ->where('jenis', 'cicilan')
+            ->filter(function ($item) use ($batasRiwayatCicilan) {
+                return $item->tanggal && $item->tanggal->lte($batasRiwayatCicilan);
+            })
+            ->count();
     }
 
     private function toTerbilang(int $value): string

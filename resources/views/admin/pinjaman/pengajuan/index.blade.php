@@ -55,47 +55,45 @@
     @endif
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto mb-4">
         <table class="min-w-full text-sm">
-            <thead class="bg-gray-50 border-b">
-                <tr class="text-gray-600">
-                    <th class="p-3 border-b text-left">Tanggal Pengajuan</th>
-                    <th class="p-3 border-b text-left">Anggota</th>
-                    <th class="p-3 border-b text-left">Rencana Pinjam</th>
-                    <th class="p-3 border-b text-right">Jumlah</th>
-                    <th class="p-3 border-b text-center">Tenor</th>
-                    <th class="p-3 border-b text-center">Aksi</th>
+            <thead>
+                <tr class="bg-gradient-to-r from-yellow-50 to-orange-100 text-amber-800">
+                    <th class="px-3 py-2 text-left font-semibold tracking-wide">Tanggal Pengajuan</th>
+                    <th class="px-3 py-2 text-left font-semibold tracking-wide">Anggota</th>
+                    <th class="px-3 py-2 text-left font-semibold tracking-wide">Rencana Pinjam</th>
+                    <th class="px-3 py-2 text-right font-semibold tracking-wide">Jumlah</th>
+                    <th class="px-3 py-2 text-center font-semibold tracking-wide">Tenor</th>
+                    <th class="px-3 py-2 text-center font-semibold tracking-wide">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y">
+            <tbody>
                 @forelse ($pengajuans as $p)
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="p-3 border-b text-gray-500">
+                    <tr class="transition-all duration-200 hover:scale-[1.01] hover:shadow-lg bg-white even:bg-yellow-50 rounded-xl">
+                        <td class="px-2 py-1.5 align-middle text-gray-500">
                             {{ $p->tanggal_pengajuan->format('d/m/Y') }}
                         </td>
-                        <td class="p-3 border-b">{{ $p->anggota->nama }}</td>
-                        <td class="p-3 border-b">
+                        <td class="px-2 py-1.5 align-middle">{{ $p->anggota->nama }}</td>
+                        <td class="px-2 py-1.5 align-middle">
                             {{ \Carbon\Carbon::parse($p->bulan_pinjam)->translatedFormat('F Y') }}
                         </td>
-                        <td class="p-3 border-b text-right font-semibold text-gray-800">
+                        <td class="px-2 py-1.5 text-right font-bold text-amber-700 align-middle">
                             Rp {{ number_format($p->jumlah_diajukan, 0, ',', '.') }}
                         </td>
-                        <td class="p-3 border-b text-center">{{ $p->tenor }} Bulan</td>
-                        <td class="p-3 border-b text-center space-x-0">
+                        <td class="px-2 py-1.5 text-center text-gray-700 align-middle">{{ $p->tenor }} Bulan</td>
+                        <td class="px-2 py-1.5 text-center space-x-0 align-middle">
                             {{-- Tombol Approval --}}
                             <button 
                                 onclick="openModalDetail({{ $p->id }})"
                                 title="Approval"
-                                class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-sm">
+                                class="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition shadow-md">
                                 Approval
                             </button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <tr>
-                            <td colspan="6" class="px-4 py-4 text-center text-gray-500">
-                                Tidak ada pengajuan pending.
-                            </td>
-                        </tr>
+                        <td colspan="6" class="px-4 py-4 text-center text-gray-500 bg-white rounded-xl">
+                            Tidak ada pengajuan belum disetujui.
+                        </td>
                     </tr>
                 @endforelse
             </tbody>
@@ -128,25 +126,25 @@
     <h2 class="section-title">Riwayat Approval</h2>
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto mb-2">
         <table class="min-w-full text-sm">
-            <thead class="bg-gray-50 border-b">
-                <tr class="text-gray-600">
-                    <th class="px-4 py-3 text-left">Tanggal Pengajuan</th>
-                    <th class="px-4 py-3 text-left">Anggota</th>
-                    <th class="px-4 py-3 text-right">Jumlah</th>
-                    <th class="px-4 py-3 text-center">Tenor</th>
-                    <th class="px-4 py-3 text-center">Status</th>
-                    <th class="px-4 py-3 text-center">Waktu Proses</th>
-                    <th class="px-4 py-3 text-center">Aksi</th>
+            <thead>
+                <tr class="bg-gray-100 text-gray-700">
+                    <th class="px-3 py-2 text-left font-semibold tracking-wide">Tanggal Pengajuan</th>
+                    <th class="px-3 py-2 text-left font-semibold tracking-wide">Anggota</th>
+                    <th class="px-3 py-2 text-right font-semibold tracking-wide">Jumlah</th>
+                    <th class="px-3 py-2 text-center font-semibold tracking-wide">Tenor</th>
+                    <th class="px-3 py-2 text-center font-semibold tracking-wide">Status</th>
+                    <th class="px-3 py-2 text-center font-semibold tracking-wide">Waktu Proses</th>
+                    <th class="px-3 py-2 text-center font-semibold tracking-wide">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y">
+            <tbody>
                 @forelse ($riwayatApproval as $r)
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-4 py-3 text-gray-500">{{ $r->tanggal_pengajuan->format('d/m/Y') }}</td>
-                        <td class="px-4 py-3">{{ $r->anggota->nama }}</td>
-                        <td class="px-4 py-3 text-right">Rp {{ number_format($r->jumlah_diajukan, 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-center">{{ $r->tenor }} Bulan</td>
-                        <td class="px-4 py-3 text-center">
+                    <tr class="transition-all duration-200 hover:scale-[1.01] hover:shadow-lg bg-white even:bg-gray-50 rounded-xl">
+                        <td class="px-2 py-1.5 rounded-l-xl align-middle text-gray-500">{{ $r->tanggal_pengajuan->format('d/m/Y') }}</td>
+                        <td class="px-2 py-1.5 align-middle">{{ $r->anggota->nama }}</td>
+                        <td class="px-2 py-1.5 text-right font-bold text-gray-700 align-middle">Rp {{ number_format($r->jumlah_diajukan, 0, ',', '.') }}</td>
+                        <td class="px-2 py-1.5 text-center text-gray-700 align-middle">{{ $r->tenor }} Bulan</td>
+                        <td class="px-2 py-1.5 text-center align-middle">
                             @php
                                 $statusClass = [
                                     'disetujui' => 'bg-blue-100 text-blue-700',
@@ -158,11 +156,10 @@
                                 {{ $r->status }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            {{-- Jam real-time Indonesia --}}
+                        <td class="px-2 py-1.5 text-center align-middle">
                             {{ $r->updated_at->timezone('Asia/Jakarta')->format('d/m/y H:i') }}
                         </td>
-                        <td class="px-4 py-3 text-center space-x-0">
+                        <td class="px-2 py-1.5 rounded-r-xl text-center space-x-0 align-middle">
                             @if($r->status !== 'dicairkan')
                                 <button onclick="openModalDetail({{ $r->id }})" 
                                     class="inline-flex items-center justify-center rounded-md border border-amber-200 bg-amber-50 p-1 text-xs text-amber-700 transition hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
@@ -172,13 +169,13 @@
                             @else
                                 <span class="text-gray-500 text-[10px] italic">Sudah Dicairkan</span>
                             @endif
-
-                            
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="12" class="px-4 py-10 text-center">Belum ada riwayat.</td>
+                        <td colspan="7" class="px-2 py-3 text-center text-gray-500 bg-white rounded-xl">
+                            Tidak ada riwayat approval.
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

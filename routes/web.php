@@ -276,6 +276,14 @@ Route::middleware(['auth','permission:view anggota list'])
                     ->name('laporan.potongan-bulanan.bank.index');
 
                 Route::middleware('permission:manage simpanan anggota')
+                    ->post('/laporan/potongan-bulanan/fix', [LaporanPotonganBulananController::class, 'fix'])
+                    ->name('laporan.potongan-bulanan.fix');
+
+                Route::middleware('permission:manage simpanan anggota')
+                    ->post('/laporan/potongan-bulanan/cancel-fix', [LaporanPotonganBulananController::class, 'cancelFix'])
+                    ->name('laporan.potongan-bulanan.cancel-fix');
+
+                Route::middleware('permission:manage simpanan anggota')
                     ->post('/laporan/potongan-bulanan/{anggota}/nominal', [LaporanPotonganBulananController::class, 'updateAnggota'])
                     ->name('laporan.potongan-bulanan.anggota.update');
 

@@ -17,25 +17,20 @@
             </a>
         </div>
 
-        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
-            <div class="md:col-span-2">
-                <label class="block text-sm text-gray-600 mb-1">Cari Rekening</label>
-                <input type="text" name="search" value="{{ $search }}" placeholder="Contoh: BRI / 1234567890 / Nama Pemilik"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
-            </div>
-            <div>
-                <label class="block text-sm text-gray-600 mb-1">Status</label>
-                <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
+        <form method="GET" class="flex flex-col md:flex-row md:items-end gap-2 mb-4">
+            <div class="flex gap-2 w-full">
+                <input type="text" name="search" value="{{ $search }}" placeholder="Cari: BRI / 1234567890 / Nama Pemilik" class="w-3/5 min-w-[140px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400" />
+                <select name="status" class="w-2/5 min-w-[120px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
                     <option value="">Semua</option>
                     <option value="1" @selected($status === '1')>Aktif</option>
                     <option value="0" @selected($status === '0')>Nonaktif</option>
                 </select>
             </div>
-            <div class="md:col-span-4 flex gap-2">
-                <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-800 transition-colors duration-150">
-                    Tampilkan
-                </button>
-                <a href="{{ route('admin.master.rekening-koperasi.index') }}" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-150">
+            <div class="flex gap-2 mt-2 md:mt-0">
+                    <button type="submit" class="px-3 py-2 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-800 transition-colors duration-150 flex items-center">
+                        Cari
+                    </button>
+                <a href="{{ route('admin.master.rekening-koperasi.index') }}" class="px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-150 flex items-center">
                     Reset
                 </a>
             </div>

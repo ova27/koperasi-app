@@ -133,13 +133,33 @@ class PinjamanService
      * ====================================================== */
     public function cairkan(
         PengajuanPinjaman $pengajuan,
-        int $userId
+        int $userId,
+        array $data = []
     ): void {
         if ($pengajuan->status !== 'disetujui') {
             throw new Exception('Pengajuan belum disetujui');
         }
 
-        DB::transaction(function () use ($pengajuan, $userId) {
+        if ($data) {
+            $this->validatePengajuan(
+                $pengajuan->anggota_id,
+                (int) $data['jumlah_diajukan'],
+                (int) $data['tenor'],
+                $pengajuan->id
+            );
+        }
+
+        DB::transaction(function () use ($pengajuan, $userId, $data) {
+            if ($data) {
+                $pengajuan->update([
+                    'jumlah_diajukan' => (int) $data['jumlah_diajukan'],
+                    'tenor'           => (int) $data['tenor'],
+                    'bulan_pinjam'    => $data['bulan_pinjam'],
+                    'tujuan'          => $data['tujuan'] ?? null,
+                ]);
+
+                $pengajuan->refresh();
+            }
 
             // 1. CEK PINJAMAN DARI PENGAJUAN INI (RE-CAIR)
             $pinjamanByPengajuan = Pinjaman::where('pengajuan_id', $pengajuan->id)->first();
