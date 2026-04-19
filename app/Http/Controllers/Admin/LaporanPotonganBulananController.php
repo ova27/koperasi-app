@@ -140,10 +140,13 @@ class LaporanPotonganBulananController extends Controller
     {
         $this->authorize('manage simpanan anggota');
 
+
         $validated = $request->validate([
             'iuran_dharma_wanita' => ['required', 'integer', 'min:0'],
             'infaq_pegawai' => ['required', 'integer', 'min:0'],
             'tabungan_qurban' => ['required', 'integer', 'min:0'],
+            'cicilan' => ['required', 'integer', 'min:0'],
+            'iuran_operasional' => ['required', 'integer', 'min:0'],
             'bulan' => $this->bulanPotonganRules(),
         ]);
 
@@ -152,6 +155,8 @@ class LaporanPotonganBulananController extends Controller
             return back()->with('error', 'Potongan bulan ini sudah difix, nominal tidak bisa diubah.');
         }
 
+
+        // Update PotonganTitipan
         PotonganTitipan::updateOrCreate(
             ['anggota_id' => $anggota->id],
             [
@@ -160,6 +165,17 @@ class LaporanPotonganBulananController extends Controller
                 'tabungan_qurban' => (int) $validated['tabungan_qurban'],
             ]
         );
+
+        // Update PotonganBulananDetail untuk bulan berjalan jika ada (jika belum difix)
+        PotonganBulananDetail::where('bulan_potongan', $bulanPotongan)
+            ->where('anggota_id', $anggota->id)
+            ->update([
+                'cicilan' => (int) $validated['cicilan'],
+                'iuran_operasional' => (int) $validated['iuran_operasional'],
+                'iuran_dharma_wanita' => (int) $validated['iuran_dharma_wanita'],
+                'infaq_pegawai' => (int) $validated['infaq_pegawai'],
+                'tabungan_qurban' => (int) $validated['tabungan_qurban'],
+            ]);
 
         return redirect()
             ->route('admin.laporan.potongan-bulanan.index', ['bulan' => $bulanPotongan])
@@ -428,27 +444,30 @@ class LaporanPotonganBulananController extends Controller
     {
         $this->authorize('manage simpanan anggota');
 
-        $anggotaList = Anggota::where('status', 'aktif')
-            ->orderBy('nama')
-            ->get(['nama', 'id']);
+        $bulanPotongan = now()->addMonthNoOverflow()->format('Y-m');
+        $rows = $this->buildPotonganRows($bulanPotongan);
 
         return Excel::download(
-            new class($anggotaList) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
-                public function __construct(private $anggotaList) {}
+            new class($rows) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
+                public function __construct(private $rows) {}
 
                 public function array(): array
                 {
-                    return $this->anggotaList->map(fn($a) => [
-                        $a->nama,
-                        0,
-                        0,
-                        0,
-                    ])->toArray();
+                    return $this->rows->map(function($row) {
+                        return [
+                            $row['nama'],
+                            $row['cicilan'] ?? 0,
+                            $row['iuran_operasional'] ?? 0,
+                            $row['iuran_dharma_wanita'] ?? 0,
+                            $row['infaq_pegawai'] ?? 0,
+                            $row['tabungan_qurban'] ?? 0,
+                        ];
+                    })->toArray();
                 }
 
                 public function headings(): array
                 {
-                    return ['Nama Anggota', 'Iuran Dharma Wanita', 'Infaq Pegawai', 'Tabungan Qurban'];
+                    return ['Nama Anggota', 'Cicilan Pinjaman', 'Iuran Operasional', 'Iuran Dharma Wanita', 'Infaq Pegawai', 'Tabungan Qurban'];
                 }
             },
             'template-nominal-titipan.xlsx'

@@ -29,6 +29,7 @@ class NominalTitipanImportService
                 ->pluck('id', 'nama')
                 ->toArray();
 
+
             foreach ($rows as $index => $row) {
                 $lineNum = $index + 2; // +1 for 0-based, +1 for header
 
@@ -37,9 +38,11 @@ class NominalTitipanImportService
                 }
 
                 $nama = trim($row[0] ?? '');
-                $dharma = $row[1] ?? 0;
-                $infaq = $row[2] ?? 0;
-                $qurban = $row[3] ?? 0;
+                $cicilan = $row[1] ?? 0;
+                $operasional = $row[2] ?? 0;
+                $dharma = $row[3] ?? 0;
+                $infaq = $row[4] ?? 0;
+                $qurban = $row[5] ?? 0;
 
                 if (empty($nama)) {
                     $errors[] = "Baris $lineNum: Nama anggota kosong";
@@ -51,16 +54,18 @@ class NominalTitipanImportService
                     continue;
                 }
 
-                if (!is_numeric($dharma) || !is_numeric($infaq) || !is_numeric($qurban)) {
-                    $errors[] = "Baris $lineNum: Nominal harus angka (Dharma: $dharma, Infaq: $infaq, Qurban: $qurban)";
+                if (!is_numeric($cicilan) || !is_numeric($operasional) || !is_numeric($dharma) || !is_numeric($infaq) || !is_numeric($qurban)) {
+                    $errors[] = "Baris $lineNum: Nominal harus angka (Cicilan: $cicilan, Operasional: $operasional, Dharma: $dharma, Infaq: $infaq, Qurban: $qurban)";
                     continue;
                 }
 
+                $cicilan = (int) $cicilan;
+                $operasional = (int) $operasional;
                 $dharma = (int) $dharma;
                 $infaq = (int) $infaq;
                 $qurban = (int) $qurban;
 
-                if ($dharma < 0 || $infaq < 0 || $qurban < 0) {
+                if ($cicilan < 0 || $operasional < 0 || $dharma < 0 || $infaq < 0 || $qurban < 0) {
                     $errors[] = "Baris $lineNum: Nominal tidak boleh negatif";
                     continue;
                 }
@@ -68,6 +73,8 @@ class NominalTitipanImportService
                 $data[] = [
                     'nama' => $nama,
                     'anggota_id' => $anggotaMap[$nama],
+                    'cicilan' => $cicilan,
+                    'iuran_operasional' => $operasional,
                     'iuran_dharma_wanita' => $dharma,
                     'infaq_pegawai' => $infaq,
                     'tabungan_qurban' => $qurban,
@@ -102,6 +109,19 @@ class NominalTitipanImportService
                     'tabungan_qurban' => $item['tabungan_qurban'],
                 ]
             );
+
+            // Update PotonganBulananDetail jika ada untuk bulan berjalan
+            $bulanPotongan = now()->addMonthNoOverflow()->format('Y-m');
+            \App\Models\PotonganBulananDetail::where('bulan_potongan', $bulanPotongan)
+                ->where('anggota_id', $item['anggota_id'])
+                ->update([
+                    'cicilan' => $item['cicilan'] ?? 0,
+                    'iuran_operasional' => $item['iuran_operasional'] ?? 0,
+                    'iuran_dharma_wanita' => $item['iuran_dharma_wanita'] ?? 0,
+                    'infaq_pegawai' => $item['infaq_pegawai'] ?? 0,
+                    'tabungan_qurban' => $item['tabungan_qurban'] ?? 0,
+                ]);
+
             $count++;
         }
         return $count;

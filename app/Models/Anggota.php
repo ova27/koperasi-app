@@ -60,4 +60,9 @@ class Anggota extends Model
     {
         return $this->hasOne(PotonganTitipan::class);
     }
+    
+    public function potonganBulananDetail()
+    {
+        return $this->hasMany(\App\Models\PotonganBulananDetail::class, 'anggota_id');
+    }
 }

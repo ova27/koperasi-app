@@ -258,7 +258,7 @@
                         <td class="px-3 py-2 text-right text-xs font-bold text-blue-700">Rp {{ number_format($row['total'], 0, ',', '.') }}</td>
                         @if($canManagePotongan && ! $isFixed)
                             <td class="px-3 py-2 text-center">
-                                <button type="button" onclick="openNominalModal({{ $row['anggota']->id }}, '{{ addslashes($row['nama']) }}', {{ $row['iuran_dharma_wanita'] }}, {{ $row['infaq_pegawai'] }}, {{ $row['tabungan_qurban'] }})" class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
+                                <button type="button" onclick="openNominalModal({{ $row['anggota']->id }}, '{{ addslashes($row['nama']) }}', {{ $row['iuran_dharma_wanita'] }}, {{ $row['infaq_pegawai'] }}, {{ $row['tabungan_qurban'] }}, {{ $row['cicilan'] ?? 0 }}, {{ $row['iuran_operasional'] ?? 0 }})" class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs">
                                     Edit
                                 </button>
                             </td>
@@ -354,17 +354,26 @@
                     @csrf
                     <input type="hidden" name="bulan" value="{{ $bulanPotongan }}">
 
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Cicilan Pinjaman</label>
+                        <input type="text" min="0" name="cicilan" id="cicilanInput" class="w-full border rounded px-3 py-2 rupiah-input">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Iuran Operasional</label>
+                        <input type="text" min="0" name="iuran_operasional" id="operasionalInput" class="w-full border rounded px-3 py-2 rupiah-input">
+                    </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Iuran Dharma Wanita</label>
-                        <input type="number" min="0" name="iuran_dharma_wanita" id="dharmaInput" class="w-full border rounded px-3 py-2">
+                        <input type="text" min="0" name="iuran_dharma_wanita" id="dharmaInput" class="w-full border rounded px-3 py-2 rupiah-input">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Infaq Pegawai</label>
-                        <input type="number" min="0" name="infaq_pegawai" id="infaqInput" class="w-full border rounded px-3 py-2">
+                        <input type="text" min="0" name="infaq_pegawai" id="infaqInput" class="w-full border rounded px-3 py-2 rupiah-input">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Tabungan Qurban</label>
-                        <input type="number" min="0" name="tabungan_qurban" id="qurbanInput" class="w-full border rounded px-3 py-2">
+                        <input type="text" min="0" name="tabungan_qurban" id="qurbanInput" class="w-full border rounded px-3 py-2 rupiah-input">
                     </div>
 
                     <div class="pt-3 flex gap-2 justify-end">
@@ -380,11 +389,14 @@
         </div>
 
         <script>
-            function openNominalModal(anggotaId, namaAnggota, dharma, infaq, qurban) {
+
+            function openNominalModal(anggotaId, namaAnggota, dharma, infaq, qurban, cicilan = 0, operasional = 0) {
                 document.getElementById('modalTitle').innerText = 'Edit Nominal: ' + namaAnggota;
-                document.getElementById('dharmaInput').value = dharma;
-                document.getElementById('infaqInput').value = infaq;
-                document.getElementById('qurbanInput').value = qurban;
+                document.getElementById('dharmaInput').value = formatRupiah(dharma);
+                document.getElementById('infaqInput').value = formatRupiah(infaq);
+                document.getElementById('qurbanInput').value = formatRupiah(qurban);
+                document.getElementById('cicilanInput').value = formatRupiah(cicilan);
+                document.getElementById('operasionalInput').value = formatRupiah(operasional);
 
                 const form = document.getElementById('nominalForm');
                 form.action = '{{ route("admin.laporan.potongan-bulanan.anggota.update", ":id") }}'.replace(':id', anggotaId);
@@ -392,6 +404,36 @@
                 document.getElementById('nominalModal').classList.remove('hidden');
                 document.getElementById('nominalModal').classList.add('flex');
             }
+
+            // Format input ke rupiah
+            function formatRupiah(angka) {
+                angka = angka.toString().replace(/[^\d]/g, '');
+                if (!angka) return '';
+                return 'Rp ' + angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+
+            function parseRupiah(str) {
+                return str.replace(/[^\d]/g, '');
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.rupiah-input').forEach(function(input) {
+                    input.addEventListener('input', function(e) {
+                        let value = e.target.value.replace(/[^\d]/g, '');
+                        e.target.value = value ? formatRupiah(value) : '';
+                    });
+                });
+
+                // Pastikan sebelum submit, value diubah ke angka
+                const nominalForm = document.getElementById('nominalForm');
+                if (nominalForm) {
+                    nominalForm.addEventListener('submit', function(e) {
+                        nominalForm.querySelectorAll('.rupiah-input').forEach(function(input) {
+                            input.value = parseRupiah(input.value);
+                        });
+                    });
+                }
+            });
 
             function closeNominalModal() {
                 document.getElementById('nominalModal').classList.remove('flex');
