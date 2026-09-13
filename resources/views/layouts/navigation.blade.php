@@ -1,7 +1,7 @@
 <nav x-data="{ open: false }" class="border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
     <!-- Primary Navigation Menu -->
     <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex h-20 items-center justify-between sm:h-20">
+        <div class="flex h-16 items-center justify-between">
             <div class="flex min-w-0 items-center gap-2 sm:gap-3">
                 {{-- TOGGLE SIDEBAR DESKTOP --}}
                 <button id="toggleSidebar"
