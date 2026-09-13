@@ -189,7 +189,8 @@
 
 /* default */
 .sidebar {
-    width: 14rem; /* w-56 */
+    width: 16rem;
+    min-width: 16rem;
 }
 
 /* collapsed */
@@ -309,4 +310,11 @@
 @media (max-width:640px) {
     .page-card { border-radius: .875rem; }
     .app-content table th, .app-content table td { white-space: nowrap; }
+}
+
+.sidebar-header-text { min-width: 0; }
+.sidebar-brand { overflow: visible; }
+#mainContent { min-width: 0; }
+@media (min-width:1024px) {
+    #sidebar:not(.sidebar-collapsed) { width: 16rem; min-width: 16rem; }
 }
