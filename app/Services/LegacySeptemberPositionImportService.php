@@ -86,6 +86,10 @@ class LegacySeptemberPositionImportService
 
             $anggotaIds = [];
             $usersByEmail = User::query()->get()->keyBy(fn (User $user) => mb_strtolower(trim($user->email)));
+            $creator = User::role('admin')->first() ?? User::first();
+            if (! $creator) {
+                throw new RuntimeException('Akun admin untuk mencatat migrasi tidak ditemukan.');
+            }
 
             foreach ($data['anggota'] as $row) {
                 $user = $usersByEmail->get(mb_strtolower($row['email']));
@@ -151,8 +155,23 @@ class LegacySeptemberPositionImportService
 
             foreach ($data['pinjaman'] as $row) {
                 $anggotaId = $anggotaIds[$this->normalizeName($row['nama'])];
+                $anggota = Anggota::findOrFail($anggotaId);
+                $pengajuan = PengajuanPinjaman::create([
+                    'anggota_id' => $anggotaId,
+                    'jumlah_diajukan' => $row['jumlah_pinjaman'],
+                    'tenor' => $row['tenor'],
+                    'bulan_pinjam' => Carbon::parse($row['tanggal_pinjam'])->startOfMonth()->toDateString(),
+                    'tujuan' => 'Migrasi posisi pinjaman aktif dari sistem lama',
+                    'status' => 'dicairkan',
+                    'diajukan_oleh' => $anggota->user_id ?: $creator->id,
+                    'disetujui_oleh' => $creator->id,
+                    'dicairkan_oleh' => $creator->id,
+                    'tanggal_pengajuan' => $row['tanggal_pinjam'],
+                    'tanggal_persetujuan' => $row['tanggal_pinjam'],
+                    'tanggal_pencairan' => $row['tanggal_pinjam'],
+                ]);
                 $pinjaman = Pinjaman::create([
-                    'pengajuan_id' => null,
+                    'pengajuan_id' => $pengajuan->id,
                     'anggota_id' => $anggotaId,
                     'tanggal_pinjam' => $row['tanggal_pinjam'],
                     'jumlah_pinjaman' => $row['jumlah_pinjaman'],
@@ -177,9 +196,8 @@ class LegacySeptemberPositionImportService
             }
 
             $rekeningKoperasi = RekeningKoperasi::where('aktif', true)->first();
-            $creator = User::role('admin')->first() ?? User::first();
-            if (! $rekeningKoperasi || ! $creator) {
-                throw new RuntimeException('Rekening koperasi aktif atau akun admin tidak ditemukan.');
+            if (! $rekeningKoperasi) {
+                throw new RuntimeException('Rekening koperasi aktif tidak ditemukan.');
             }
             foreach (['koperasi', 'operasional'] as $jenisArus) {
                 ArusKas::create([
