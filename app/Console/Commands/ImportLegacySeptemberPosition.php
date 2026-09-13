@@ -54,6 +54,7 @@ class ImportLegacySeptemberPosition extends Command
                 ['Potongan September', $this->rupiah($result['potongan'])],
                 ['Kas koperasi', $this->rupiah($result['kas_koperasi'])],
                 ['Kas operasional', $this->rupiah($result['kas_operasional'])],
+                ['Pengajuan aktif', $result['pengajuan_aktif']],
             ]);
 
             return self::SUCCESS;
@@ -102,13 +103,14 @@ class ImportLegacySeptemberPosition extends Command
         $this->info('RENCANA IMPORT POSISI SEPTEMBER 2026');
         $this->table(['Data', 'Jumlah/Total'], [
             ['Anggota aktif', count($data['anggota'])],
-            ['Anggota tidak aktif dengan pinjaman', 1],
+            ['Anggota tidak aktif dengan pinjaman', count($data['anggota_tidak_aktif'])],
             ['Saldo simpanan', $this->rupiah(array_sum(array_column($data['simpanan'], 'total')))],
             ['Pinjaman aktif', count($data['pinjaman'])],
             ['Sisa pinjaman', $this->rupiah(array_sum(array_column($data['pinjaman'], 'sisa_pinjaman')))],
             ['Potongan September', $this->rupiah(array_sum(array_column($data['potongan'], 'total')))],
             ['Kas koperasi', $this->rupiah($data['kas']['koperasi'])],
             ['Kas operasional', $this->rupiah($data['kas']['operasional'])],
+            ['Pengajuan waiting list aktif', count($data['pengajuan'])],
         ]);
         $this->line('Akun login, role, permission, dan rekening koperasi dipertahankan.');
     }
