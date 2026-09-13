@@ -8,7 +8,7 @@
             <li class="menu-item">
                 <a href="{{ route('dashboard') }}"
                 class="menu-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <span class="menu-text">Dashboard</span>
+                    <x-sidebar-icon name="home" /><span class="menu-text">Dashboard</span>
                 </a>
             </li>
 
@@ -17,7 +17,7 @@
             <li class="menu-item">
                 <a href="{{ route('anggota.profil.index') }}"
                 class="menu-link {{ request()->routeIs('anggota.profil.*') ? 'active' : '' }}">
-                    <span class="menu-text">Profil</span>
+                    <x-sidebar-icon name="user" /><span class="menu-text">Profil</span>
                 </a>
             </li>
 
@@ -25,7 +25,7 @@
             <li class="menu-item">
                 <a href="{{ route('anggota.simpanan.index') }}"
                 class="menu-link {{ request()->routeIs('anggota.simpanan.*') ? 'active' : '' }}">
-                    <span class="menu-text">Simpanan Saya</span>
+                    <x-sidebar-icon name="wallet" /><span class="menu-text">Simpanan Saya</span>
                 </a>
             </li>
             @endcan
@@ -34,7 +34,7 @@
                 <li class="menu-item">
                     <a href="{{ route('anggota.pinjaman.index') }}"
                     class="menu-link {{ request()->routeIs('anggota.pinjaman.index') || request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
-                        <span class="menu-text">Pinjaman Saya</span>
+                        <x-sidebar-icon name="credit-card" /><span class="menu-text">Pinjaman Saya</span>
                     </a>
                 </li>
             @endcan
@@ -44,7 +44,7 @@
             <li class="menu-item">
                 <a href="{{ route('admin.anggota.index') }}"
                 class="menu-link {{ request()->routeIs('admin.anggota.*') ? 'active' : '' }}">
-                    <span class="menu-text">Data Anggota</span>
+                    <x-sidebar-icon name="users" /><span class="menu-text">Data Anggota</span>
                 </a>
             </li>
             @endcan
@@ -57,7 +57,7 @@
                 <li class="menu-item">
                     <a href="{{ route('anggota.laporan.simpanan') }}"
                     class="menu-link {{ request()->routeIs('anggota.laporan.simpanan') ? 'active' : '' }}">
-                        <span class="menu-text">Laporan Simpanan</span>
+                        <x-sidebar-icon name="chart-bar" /><span class="menu-text">Laporan Simpanan</span>
                     </a>
                 </li>
                 @endcan
@@ -66,7 +66,7 @@
                 <li class="menu-item">
                     <a href="{{ route('anggota.laporan.pinjaman') }}"
                     class="menu-link {{ request()->routeIs('anggota.laporan.pinjaman') ? 'active' : '' }}">
-                       <span class="menu-text">Laporan Pinjaman</span>
+                       <x-sidebar-icon name="chart-bar" /><span class="menu-text">Laporan Pinjaman</span>
                     </a>
                 </li>
                 @endcan
@@ -77,7 +77,7 @@
             <li class="menu-item">
                 <a href="{{ route('admin.laporan.potongan-bulanan.index') }}"
                 class="menu-link {{ request()->routeIs('admin.laporan.potongan-bulanan.*') ? 'active' : '' }}">
-                    <span class="menu-text">Rincian Potongan Bulanan</span>
+                    <x-sidebar-icon name="check-circle" /><span class="menu-text">Rincian Potongan Bulanan</span>
                 </a>
             </li>
             @endcan
