@@ -7,22 +7,23 @@ use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use Illuminate\Support\Collection;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 
-class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnWidths, WithEvents
+class LaporanPotonganBulananExport extends DefaultValueBinder implements FromArray, WithStyles, WithColumnWidths, WithEvents, WithCustomValueBinder
 {
-    private $bulanPotongan;
-    private $titleEndRow = 6;
+    private int $dataCount = 0;
+    private int $titleEndRow = 6;
 
-    public function __construct($bulanPotongan)
-    {
-        $this->bulanPotongan = $bulanPotongan;
-    }
+    public function __construct(private string $bulanPotongan) {}
 
     public function array(): array
     {
@@ -45,7 +46,9 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
                     'ke' => $detail->cicilan_ke ?? '-',
                     'cicilan' => (int) $detail->cicilan,
                     'sisa_sekarang' => (int) $detail->sisa_pinjaman_sekarang,
-                    'simpanan_wajib' => (int) $detail->simpanan_wajib + (int) $detail->iuran_operasional,
+                    'simpanan' => (int) $detail->simpanan_wajib
+                        + (int) $detail->simpanan_sukarela
+                        + (int) $detail->iuran_operasional,
                     'dharma' => (int) $detail->iuran_dharma_wanita,
                     'infaq' => (int) $detail->infaq_pegawai,
                     'qurban' => (int) $detail->tabungan_qurban,
@@ -53,11 +56,13 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
                 ];
             });
 
+        $this->dataCount = $rows->count();
+
         // Calculate totals
         $totalSisaLalu = $rows->sum('sisa_lalu');
         $totalCicilan = $rows->sum('cicilan');
         $totalSisaSekarang = $rows->sum('sisa_sekarang');
-        $totalWajib = $rows->sum('simpanan_wajib');
+        $totalSimpanan = $rows->sum('simpanan');
         $totalDharma = $rows->sum('dharma');
         $totalInfaq = $rows->sum('infaq');
         $totalQurban = $rows->sum('qurban');
@@ -67,7 +72,7 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
 
         // Title rows (rows 1-5)
         $dataArray[] = ['DAFTAR POTONGAN ANGGOTA KOPERASI SIMPATIK'];
-        $dataArray[] = ['BPS PROVINSI BANTEN TAHUN 2026'];
+        $dataArray[] = ['BPS PROVINSI BANTEN TAHUN ' . $bulanPotongan->format('Y')];
         $dataArray[] = [''];
         $dataArray[] = ['Bulan ' . $bulanPotongan->translatedFormat('F') . ' ' . $bulanPotongan->format('Y')];
         $dataArray[] = [''];
@@ -82,7 +87,7 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
             'ke-',
             'Angsuran ' . $bulanPotongan->translatedFormat('F Y'),
             'Sisa Pinjaman',
-            'Simpanan Pokok/Wajib/Sukarela/Iuran',
+            'Simpanan Wajib/Sukarela + Iuran Operasional',
             'Iuran Dharma Wanita',
             'Infaq Pegawai',
             'Tabungan Qurban',
@@ -100,7 +105,7 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
                 $row['ke'],
                 $row['cicilan'],
                 $row['sisa_sekarang'],
-                $row['simpanan_wajib'],
+                $row['simpanan'],
                 $row['dharma'],
                 $row['infaq'],
                 $row['qurban'],
@@ -118,7 +123,7 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
             '',
             $totalCicilan,
             $totalSisaSekarang,
-            $totalWajib,
+            $totalSimpanan,
             $totalDharma,
             $totalInfaq,
             $totalQurban,
@@ -138,66 +143,6 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
 
         return $dataArray;
     }
-
-    private function pinjamanPadaAkhirBulan(Collection $pinjamans, Carbon $batasRiwayatCicilan)
-    {
-        $kandidat = $pinjamans
-            ->filter(function ($pinjaman) use ($batasRiwayatCicilan) {
-                return $pinjaman->tanggal_pinjam && $pinjaman->tanggal_pinjam->lte($batasRiwayatCicilan);
-            })
-            ->sortBy(function ($pinjaman) {
-                $tanggal = $pinjaman->tanggal_pinjam ? $pinjaman->tanggal_pinjam->format('Ymd') : '00000000';
-                return $tanggal . '-' . str_pad((string) $pinjaman->id, 10, '0', STR_PAD_LEFT);
-            })
-            ->values();
-
-        for ($i = $kandidat->count() - 1; $i >= 0; $i--) {
-            $pinjaman = $kandidat->get($i);
-            if ($this->sisaPinjamanPerAkhirBulan($pinjaman, $batasRiwayatCicilan) > 0) {
-                return $pinjaman;
-            }
-        }
-
-        return null;
-    }
-
-    private function sisaPinjamanPerAkhirBulan($pinjaman, Carbon $batasRiwayatCicilan): int
-    {
-        if (! $pinjaman) {
-            return 0;
-        }
-
-        if (! $pinjaman->tanggal_pinjam || $pinjaman->tanggal_pinjam->gt($batasRiwayatCicilan)) {
-            return 0;
-        }
-
-        $transaksiSampaiBatas = $pinjaman->transaksi
-            ->filter(function ($transaksi) use ($batasRiwayatCicilan) {
-                return $transaksi->tanggal && $transaksi->tanggal->lte($batasRiwayatCicilan);
-            })
-            ->values();
-
-        if ($transaksiSampaiBatas->isNotEmpty()) {
-            $sisaTerakhir = (int) ($transaksiSampaiBatas->last()->sisa_setelah ?? 0);
-            return max(0, $sisaTerakhir);
-        }
-
-        // Saat belum ada transaksi yang tercatat sampai bulan acuan,
-        // gunakan pokok awal pinjaman sebagai posisi sisa terakhir.
-        return max(0, (int) ($pinjaman->jumlah_pinjaman ?? 0));
-    }
-
-    private function jumlahCicilanSampaiBulan(Collection $transaksi, Carbon $batasRiwayatCicilan): int
-    {
-        return $transaksi
-            ->where('jenis', 'cicilan')
-            ->filter(function ($transaksi) use ($batasRiwayatCicilan) {
-                return $transaksi->tanggal && $transaksi->tanggal->lte($batasRiwayatCicilan);
-            })
-            ->count();
-    }
-
-
 
     public function styles(Worksheet $sheet)
     {
@@ -259,7 +204,7 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
         }
 
         // Data rows formatting
-        $totalRowNum = $totalRows - 9; // Total row position
+        $totalRowNum = $dataStartRow + $this->dataCount;
 
         for ($row = $dataStartRow; $row < $totalRowNum; $row++) {
             for ($col = 'A'; $col <= 'M'; $col++) {
@@ -348,12 +293,33 @@ class LaporanPotonganBulananExport implements FromArray, WithStyles, WithColumnW
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                // Format kolom No Rekening (C) sebagai text
-                $event->sheet->getStyle('C7:C' . ($event->sheet->getHighestRow() - 10))
-                    ->getNumberFormat()
-                    ->setFormatCode('@');
+                $sheet = $event->sheet->getDelegate();
+
+                $sheet->freezePane('A7');
+                $sheet->getPageSetup()
+                    ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+                    ->setFitToWidth(1)
+                    ->setFitToHeight(0);
+                $sheet->getPageMargins()
+                    ->setTop(0.4)
+                    ->setRight(0.3)
+                    ->setBottom(0.4)
+                    ->setLeft(0.3);
             },
         ];
+    }
+
+    public function bindValue(Cell $cell, mixed $value): bool
+    {
+        $lastDataRow = 6 + $this->dataCount;
+
+        if ($cell->getColumn() === 'C' && $cell->getRow() >= 7 && $cell->getRow() <= $lastDataRow) {
+            $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
+
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 
     public function columnWidths(): array

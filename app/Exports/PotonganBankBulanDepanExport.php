@@ -6,14 +6,19 @@ use App\Models\PotonganBulananDetail;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 
-class PotonganBankBulanDepanExport implements FromArray, WithColumnWidths, WithStyles, WithEvents
+class PotonganBankBulanDepanExport extends DefaultValueBinder implements FromArray, WithColumnWidths, WithStyles, WithEvents, WithCustomValueBinder
 {
     private int $dataCount = 0;
 
@@ -178,21 +183,32 @@ class PotonganBankBulanDepanExport implements FromArray, WithColumnWidths, WithS
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $dataStartRow = 6;
-                $dataEndRow = $this->dataCount > 0 ? ($dataStartRow + $this->dataCount - 1) : ($dataStartRow - 1);
-
-                if ($dataEndRow >= $dataStartRow) {
-                    $ws = $event->sheet->getDelegate();
-                    for ($row = $dataStartRow; $row <= $dataEndRow; $row++) {
-                        $cell = $ws->getCell('D' . $row);
-                        $cell->setValueExplicit(
-                            (string) $cell->getValue(),
-                            \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
-                        );
-                    }
-                }
+                $ws = $event->sheet->getDelegate();
+                $ws->freezePane('A6');
+                $ws->getPageSetup()
+                    ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)
+                    ->setFitToWidth(1)
+                    ->setFitToHeight(0);
+                $ws->getPageMargins()
+                    ->setTop(0.4)
+                    ->setRight(0.3)
+                    ->setBottom(0.4)
+                    ->setLeft(0.3);
             },
         ];
+    }
+
+    public function bindValue(Cell $cell, mixed $value): bool
+    {
+        $lastDataRow = 5 + $this->dataCount;
+
+        if ($cell->getColumn() === 'D' && $cell->getRow() >= 6 && $cell->getRow() <= $lastDataRow) {
+            $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
+
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 
     public function columnWidths(): array

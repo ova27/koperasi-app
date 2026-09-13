@@ -279,7 +279,7 @@ class LaporanPotonganBulananController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('view laporan pinjaman');
+        $this->authorize('export laporan pinjaman');
 
         $bulanPotongan = $this->validatedBulanPotongan($request);
         if (! $this->isBulanPotonganFixed($bulanPotongan)) {
@@ -302,9 +302,18 @@ class LaporanPotonganBulananController extends Controller
         }
         $namaBank = trim((string) $request->get('nama_bank', ''));
 
+        if ($namaBank !== '' && ! PotonganBulananDetail::query()
+            ->where('bulan_potongan', $bulanPotongan)
+            ->where('bank', $namaBank)
+            ->exists()) {
+            return back()->with('error', 'Data setoran untuk bank terpilih tidak ditemukan.');
+        }
+
+        $bankSlug = $namaBank !== '' ? '-' . Str::slug($namaBank) : '-semua-bank';
+
         return Excel::download(
             new \App\Exports\PotonganBankBulanDepanExport($bulanPotongan, $namaBank !== '' ? $namaBank : null),
-            'setoran-bank-potongan-' . $bulanPotongan . '.xlsx'
+            'setoran-bank-potongan-' . $bulanPotongan . $bankSlug . '.xlsx'
         );
     }
 

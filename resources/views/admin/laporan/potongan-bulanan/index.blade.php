@@ -207,19 +207,20 @@
                 </div>
             </form>
             
-            <div class="flex gap-2">
-
-                @if($isFixed)
-                    <a href="{{ route('admin.laporan.potongan-bulanan.export', ['bulan' => $bulanPotongan]) }}"
-                        class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white shadow-sm hover:bg-green-700 transition-all duration-200">
-                        Export Excel
-                    </a>
-                @else
-                    <button type="button" disabled class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-500 cursor-not-allowed">
-                        Export Excel
-                    </button>
-                @endif
-            </div>  
+            @can('export laporan pinjaman')
+                <div class="flex gap-2">
+                    @if($isFixed)
+                        <a href="{{ route('admin.laporan.potongan-bulanan.export', ['bulan' => $bulanPotongan]) }}"
+                            class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white shadow-sm hover:bg-green-700 transition-all duration-200">
+                            Export Excel
+                        </a>
+                    @else
+                        <button type="button" disabled title="Fix potongan terlebih dahulu" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-500 cursor-not-allowed">
+                            Export Excel
+                        </button>
+                    @endif
+                </div>
+            @endcan
         </div>
 
         <div class="hidden md:block rounded-lg border border-gray-100 overflow-auto max-h-[65vh]">
