@@ -382,3 +382,114 @@
 @media (max-width:1023px) {
     .page-heading h1 { font-size: 1.5rem; }
 }
+
+
+/* ELEGANT THEME — quieter surfaces, restrained accents */
+:root {
+    --ui-primary: #1e3a5f;
+    --ui-primary-dark: #172f4e;
+}
+.app-body { color: #27364a; background: #f5f7fa; }
+.app-sidebar { box-shadow: 1px 0 0 rgba(15,23,42,.05); }
+.app-header { box-shadow: 0 1px 0 rgba(15,23,42,.05); }
+.page-main { background: #f5f7fa; }
+.page-heading {
+    margin-bottom: 1.25rem;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+.page-heading h1 {
+    font-size: 1.55rem;
+    font-weight: 650;
+    letter-spacing: -.025em;
+}
+.page-heading p { color: #64748b; }
+.menu-link:hover {
+    transform: none;
+    background: #f8fafc;
+    border-color: transparent;
+}
+.menu-link.active {
+    color: #1e3a5f;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    box-shadow: inset 2px 0 0 #1e3a5f;
+}
+.menu-header {
+    color: #94a3b8;
+    font-size: .6rem;
+    letter-spacing: .13em;
+}
+.surface-card,
+.app-content .bg-white.border.border-gray-200.rounded-xl,
+.app-content .bg-white.rounded-xl.shadow-sm.border.border-gray-200 {
+    border-color: #e5e9ef !important;
+    box-shadow: 0 1px 2px rgba(15,23,42,.035) !important;
+}
+.app-content button,
+.app-content a { transition-duration: .15s !important; }
+.app-content button:hover,
+.app-content a:hover { transform: none !important; }
+.app-content button.bg-blue-600,
+.app-content a.bg-blue-600,
+.app-content button.bg-slate-700,
+.app-content a.bg-slate-700 {
+    background-color: #1e3a5f !important;
+}
+.app-content button.bg-blue-600:hover,
+.app-content a.bg-blue-600:hover,
+.app-content button.bg-slate-700:hover,
+.app-content a.bg-slate-700:hover {
+    background-color: #172f4e !important;
+}
+.app-content button.bg-amber-500,
+.app-content a.bg-amber-500 {
+    background-color: #b7791f !important;
+}
+.app-content button.bg-green-600,
+.app-content a.bg-green-600 {
+    background-color: #28765a !important;
+}
+.app-content table thead {
+    background: #f6f8fa !important;
+    border-bottom: 1px solid #dfe5ec !important;
+}
+.app-content table thead th {
+    color: #526175 !important;
+    text-transform: none !important;
+    letter-spacing: .015em !important;
+    font-size: .73rem !important;
+}
+.app-content table tbody tr:nth-child(even) { background: #fbfcfd !important; }
+.app-content table tbody tr:hover { background: #f5f8fb !important; }
+.app-content table td { border-color: #edf0f3; }
+.section-title {
+    margin-bottom: 1rem;
+    color: #334155;
+    font-size: .78rem;
+    letter-spacing: .05em;
+}
+.dashboard-summary-card {
+    background-image: none !important;
+    background-color: #fff !important;
+    border-color: #e2e8f0 !important;
+}
+.dashboard-summary-card:nth-child(1) { border-top: 3px solid #436b93 !important; }
+.dashboard-summary-card:nth-child(2) { border-top: 3px solid #4f806d !important; }
+.dashboard-summary-card:nth-child(3) { border-top: 3px solid #a17b3f !important; }
+.dashboard-summary-card::after { display: none; }
+.bank-summary-card {
+    background: #fff;
+    border-color: #e2e8f0;
+    box-shadow: none;
+}
+.bank-summary-card::after { display: none; }
+.stat-primary, .stat-success, .stat-warning, .stat-info, .stat-danger {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    color: #334155 !important;
+}
+details {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+}
