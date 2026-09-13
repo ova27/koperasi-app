@@ -2,21 +2,22 @@
 
 @section('title', 'Pinjaman Saya')
 @section('page-title', 'Pinjaman Saya')
+@section('page-description', 'Lihat posisi pinjaman, sisa kewajiban, dan riwayat pembayaran Anda.')
 
 @section('content')
-<div class="space-y-7 -mt-1">
+<div class="member-finance-page space-y-5">
     @include('anggota.pinjaman._tabs')
 
     {{-- ========================= --}}
     {{-- RINGKASAN PINJAMAN --}}
     {{-- ========================= --}}
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div class="surface-card p-5 sm:p-6">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {{-- TOTAL PINJAMAN --}}
-            <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl px-4 py-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="member-summary-card loan-summary-card rounded-xl border px-5 py-5">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-yellow-200 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="summary-icon flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M2.25 8.25h19.5M4.5 6h15a2.25 2.25 0 012.25 2.25v7.5A2.25 2.25 0 0119.5 18h-15a2.25 2.25 0 01-2.25-2.25v-7.5A2.25 2.25 0 014.5 6z" />
                         </svg>
                     </div>
@@ -28,10 +29,10 @@
             </div>
 
             {{-- SISA PINJAMAN --}}
-            <div class="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl px-4 py-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="member-summary-card loan-summary-card rounded-xl border px-5 py-5">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-orange-200 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="summary-icon flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 1.5a10.5 10.5 0 100 21 10.5 10.5 0 000-21zM8.625 12a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0z" />
                         </svg>
                     </div>
@@ -43,10 +44,10 @@
             </div>
 
             {{-- STATUS --}}
-            <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl px-4 py-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="member-summary-card loan-summary-card rounded-xl border px-5 py-5">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-green-200 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="summary-icon flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
@@ -54,7 +55,7 @@
                 </div>
 
                 @if($pinjamanAktifSaya)
-                    <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 border border-green-300">
+                    <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         Aktif
                     </span>
                 @else
@@ -70,23 +71,23 @@
     {{-- TABEL PINJAMAN AKTIF--}}
     {{-- ========================= --}}
     @if ($pinjamanAktif->isNotEmpty())
-        <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+        <div class="surface-card p-5 sm:p-6">
             <h2 class="text-base font-semibold text-gray-700 mb-6">
                 Pinjaman Aktif
             </h2>
 
-            <div class="overflow-hidden rounded-lg">
+            <div class="finance-table-shell overflow-hidden rounded-xl border border-slate-200">
                 <div class="overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-gradient-to-r from-orange-50 to-orange-100 border-b-2 border-orange-300">
+                        <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
-                                <th class="px-5 py-2.5 text-left font-semibold text-xs text-orange-900 uppercase tracking-widest">Tanggal</th>
-                                <th class="px-5 py-2.5 text-center font-semibold text-xs text-orange-900 uppercase tracking-widest">Status</th>
-                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-orange-900 uppercase tracking-widest">Jumlah</th>
-                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-orange-900 uppercase tracking-widest">Tenor</th>
-                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-orange-900 uppercase tracking-widest">Cicilan/Bulan</th>
-                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-orange-900 uppercase tracking-widest">Sisa</th>
-                                <th class="px-5 py-2.5 text-center font-semibold text-xs text-orange-900 uppercase tracking-widest">Detail</th>
+                                <th class="px-5 py-2.5 text-left font-semibold text-xs text-slate-600">Tanggal</th>
+                                <th class="px-5 py-2.5 text-center font-semibold text-xs text-slate-600">Status</th>
+                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-slate-600">Jumlah</th>
+                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-slate-600">Tenor</th>
+                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-slate-600">Cicilan/Bulan</th>
+                                <th class="px-5 py-2.5 text-right font-semibold text-xs text-slate-600">Sisa</th>
+                                <th class="px-5 py-2.5 text-center font-semibold text-xs text-slate-600">Detail</th>
                             </tr>
                         </thead>
 
@@ -290,20 +291,20 @@
     {{-- ========================= --}}
     {{-- RIWAYAT PINJAMAN LUNAS --}}
     {{-- ========================= --}}
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div class="surface-card p-5 sm:p-6">
         <h2 class="text-base font-semibold text-gray-700 mb-6">
             Riwayat Pinjaman Lunas
         </h2>
 
-        <div class="overflow-hidden rounded-lg">
+        <div class="finance-table-shell overflow-hidden rounded-xl border border-slate-200">
             <div class="overflow-x-auto">
                 <table class="w-full">
-                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300">
+                    <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th class="px-5 py-2.5 text-left font-semibold text-xs text-gray-900 uppercase tracking-widest">Tanggal Pinjam</th>
-                            <th class="px-5 py-2.5 text-left font-semibold text-xs text-gray-900 uppercase tracking-widest">Tanggal Lunas</th>
-                            <th class="px-5 py-2.5 text-right font-semibold text-xs text-gray-900 uppercase tracking-widest">Jumlah</th>
-                            <th class="px-5 py-2.5 text-center font-semibold text-xs text-gray-900 uppercase tracking-widest">Detail</th>
+                            <th class="px-5 py-2.5 text-left font-semibold text-xs text-slate-600">Tanggal Pinjam</th>
+                            <th class="px-5 py-2.5 text-left font-semibold text-xs text-slate-600">Tanggal Lunas</th>
+                            <th class="px-5 py-2.5 text-right font-semibold text-xs text-slate-600">Jumlah</th>
+                            <th class="px-5 py-2.5 text-center font-semibold text-xs text-slate-600">Detail</th>
                         </tr>
                     </thead>
 
@@ -522,9 +523,9 @@ function toggleCicilan(id) {
 
     // Change main row background when detail is open
     if (!row.classList.contains('hidden')) {
-        mainRow.classList.add('bg-blue-100', 'border-blue-300');
+        mainRow.classList.add('bg-slate-50', 'border-slate-300');
         mainRow.classList.remove('hover:bg-gray-50', 'border-transparent');
-        mainRow.classList.add('border-blue-400');
+        mainRow.classList.add('border-slate-300');
         button.innerHTML = `
             <svg class="w-3 h-3 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
@@ -532,9 +533,9 @@ function toggleCicilan(id) {
             Tutup
         `;
         button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
-        button.classList.add('bg-red-500', 'hover:bg-red-600');
+        button.classList.add('bg-slate-600', 'hover:bg-slate-700');
     } else {
-        mainRow.classList.remove('bg-blue-100', 'border-blue-300', 'border-blue-400');
+        mainRow.classList.remove('bg-slate-50', 'border-slate-300');
         mainRow.classList.add('hover:bg-gray-50', 'border-transparent');
         button.innerHTML = `
             <svg class="w-3 h-3 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -542,7 +543,7 @@ function toggleCicilan(id) {
             </svg>
             Lihat
         `;
-        button.classList.remove('bg-red-500', 'hover:bg-red-600');
+        button.classList.remove('bg-slate-600', 'hover:bg-slate-700');
         button.classList.add('bg-blue-500', 'hover:bg-blue-600');
     }
 }
