@@ -2,6 +2,7 @@
 
 @section('title', 'Dashboard')
 @section('page-title', 'Dashboard')
+@section('page-description', 'Ringkasan kondisi anggota, simpanan, pinjaman, dan aktivitas koperasi terkini.')
 
 @section('content')
 <div class="space-y-3">
@@ -20,7 +21,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
 
             {{-- ANGGOTA --}}
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 dashboard-summary-card rounded-xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="p-2 bg-blue-200 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -42,7 +43,7 @@
             </div>
 
             {{-- TOTAL SIMPANAN --}}
-            <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 dashboard-summary-card rounded-xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="p-2 bg-green-200 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -65,7 +66,7 @@
             </div>
 
             {{-- TOTAL PINJAMAN --}}
-            <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 dashboard-summary-card rounded-xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="p-2 bg-yellow-200 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg"
