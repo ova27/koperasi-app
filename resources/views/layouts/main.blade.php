@@ -18,8 +18,8 @@
 
         <!-- Sidebar Header / Logo (moved to very top, removed pt-7 from aside, add pt-7 to header) -->
         <div class="sidebar-brand flex items-center gap-2 mb-4 pt-6">
-            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white p-1 shadow-sm">
-                <img src="/images/logo_koperasi.png" alt="Logo Koperasi Simpatik" class="h-full w-full object-contain">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-sky-500 text-sm font-extrabold tracking-tight text-white shadow-md shadow-blue-500/20" aria-label="Koperasi Simpatik">
+                KS
             </span>
             <div class="flex flex-col ml-1 sidebar-header-text">
                 <span class="font-bold text-base text-slate-900 tracking-tight whitespace-nowrap">Koperasi Simpatik</span>
