@@ -12,6 +12,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
+                <div class="workspace-context min-w-0 border-l border-slate-200 pl-4">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-600">Sistem Informasi Koperasi</p>
+                    <p class="truncate text-sm font-semibold text-slate-700">@yield('page-title', 'Koperasi Simpatik')</p>
+                </div>
             </div>
 
             <!-- Settings Dropdown -->
