@@ -2,9 +2,10 @@
 
 @section('title', 'Rincian Potongan Anggota')
 @section('page-title', 'Rincian Potongan Anggota')
+@section('page-description', 'Kelola, periksa, dan finalisasi potongan bulanan anggota dalam satu halaman.')
 
 @section('content')
-<div class="space-y-3">
+<div class="potongan-page space-y-5">
     @include('admin.laporan._tabs_potongan')
 
     @if (session('success'))
@@ -136,7 +137,7 @@
             Rincian potongan bulan {{ \Carbon\Carbon::createFromFormat('Y-m', $bulanPotongan)->translatedFormat('F Y') }} belum difix oleh Bendahara.
         @endif
     </div>
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div class="surface-card p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
         
             <div class="flex flex-col sm:flex-row sm:items-end gap-2">
@@ -181,7 +182,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             @forelse($ringkasanBank as $bank => $item)
-                <div class="bg-gradient-to-r from-blue-50 to-white border border-blue-100 rounded-lg p-3 shadow-sm">
+                <div class="bank-summary-card">
                     <div class="text-xs uppercase tracking-wide text-gray-500">{{ $bank }}</div>
                     <div class="text-sm text-gray-700">{{ $item['jumlah_anggota'] }} anggota</div>
                     <div class="font-semibold text-blue-700">Rp {{ number_format($item['total'], 0, ',', '.') }}</div>
