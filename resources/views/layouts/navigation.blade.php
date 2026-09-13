@@ -13,7 +13,7 @@
                     </svg>
                 </button>
                 <div class="workspace-context min-w-0 border-l border-slate-200 pl-4">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-blue-600">Sistem Informasi Koperasi</p>
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">Sistem Informasi Koperasi</p>
                     <p class="truncate text-sm font-semibold text-slate-700">@yield('page-title', 'Koperasi Simpatik')</p>
                 </div>
             </div>
@@ -24,9 +24,9 @@
                     <x-slot name="trigger">
                         <button
                             type="button"
-                            class="inline-flex max-w-[72vw] items-center gap-2 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white px-2 py-1.5 text-left text-sm text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-sky-500 sm:max-w-none sm:gap-3 sm:px-3 sm:py-2"
+                            class="inline-flex max-w-[72vw] items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-left text-sm text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 sm:max-w-none sm:gap-3 sm:px-3 sm:py-2"
                         >
-                            <span class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-xs font-semibold text-white shadow-sm">
+                            <span class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-700 text-xs font-semibold text-white">
                                 {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
                             </span>
 
