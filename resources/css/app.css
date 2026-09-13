@@ -493,3 +493,40 @@ details {
     background-color: #f8fafc !important;
     border-color: #e2e8f0 !important;
 }
+
+
+/* MEMBER SAVINGS & LOANS */
+.member-finance-page .surface-card { background: #fff; }
+.member-summary-card {
+    min-height: 8rem;
+    background: #fff;
+    border-color: #e2e8f0;
+    box-shadow: none;
+}
+.member-summary-card .summary-icon { color: #526175; }
+.savings-summary-card:nth-child(1) { border-top: 3px solid #55789b; }
+.savings-summary-card:nth-child(2) { border-top: 3px solid #6b7280; }
+.savings-summary-card:nth-child(3) { border-top: 3px solid #5d806f; }
+.loan-summary-card:nth-child(1) { border-top: 3px solid #55789b; }
+.loan-summary-card:nth-child(2) { border-top: 3px solid #9a7442; }
+.loan-summary-card:nth-child(3) { border-top: 3px solid #5d806f; }
+.finance-filter-tabs a {
+    border-radius: .4rem;
+    padding: .45rem .8rem;
+    font-size: .78rem;
+    box-shadow: none !important;
+}
+.finance-table-shell table { border-collapse: separate; border-spacing: 0; }
+.finance-table-shell th { padding-top: .75rem !important; padding-bottom: .75rem !important; }
+.finance-table-shell td { padding-top: .7rem !important; padding-bottom: .7rem !important; }
+.finance-section-tabs a { border-radius: 0; background: transparent !important; box-shadow: none !important; }
+.member-finance-page h2 {
+    color: #334155;
+    font-weight: 650;
+}
+.member-finance-page .rounded-full { box-shadow: none !important; }
+@media (max-width:640px) {
+    .member-summary-card { min-height: auto; }
+    .finance-filter-tabs { width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+    .finance-filter-tabs a { white-space: nowrap; flex: 1 0 auto; text-align: center; }
+}
