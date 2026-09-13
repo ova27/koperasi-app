@@ -183,7 +183,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             @forelse($ringkasanBank as $bank => $item)
                 <div class="bank-summary-card">
-                    <div class="text-xs uppercase tracking-wide text-gray-500">{{ $bank }}</div>
+                    <div class="text-xs uppercase tracking-wide text-gray-500">{{ $bank === '-' ? 'Transfer Manual' : $bank }}</div>
                     <div class="text-sm text-gray-700">{{ $item['jumlah_anggota'] }} anggota</div>
                     <div class="font-semibold text-blue-700">Rp {{ number_format($item['total'], 0, ',', '.') }}</div>
                 </div>
