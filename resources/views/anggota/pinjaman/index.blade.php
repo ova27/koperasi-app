@@ -2,7 +2,6 @@
 
 @section('title', 'Pinjaman Saya')
 @section('page-title', 'Pinjaman Saya')
-@section('page-description', 'Lihat posisi pinjaman, sisa kewajiban, dan riwayat pembayaran Anda.')
 
 @section('content')
 <div class="member-finance-page space-y-5">
