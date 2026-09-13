@@ -53,6 +53,27 @@ class PotonganBulananExportTest extends TestCase
         $this->assertSame(100_000, $rows[6][4]);
     }
 
+    public function test_bank_export_excludes_manual_transfer(): void
+    {
+        PotonganBulananDetail::create($this->detail([
+            'nama' => 'Anggota Transfer Manual',
+            'bank' => 'BRI',
+            'metode_pembayaran' => 'transfer_manual',
+            'total' => 1_005_000,
+        ]));
+        PotonganBulananDetail::create($this->detail([
+            'nama' => 'Anggota Potong Bank',
+            'bank' => 'BRI',
+            'metode_pembayaran' => 'potong_bank',
+            'total' => 100_000,
+        ]));
+
+        $rows = (new PotonganBankBulanDepanExport('2026-09', 'BRI'))->array();
+
+        $this->assertSame('Anggota Potong Bank', $rows[5][1]);
+        $this->assertSame(100_000, $rows[6][4]);
+    }
+
     private function detail(array $overrides = []): array
     {
         return array_merge([
@@ -61,6 +82,7 @@ class PotonganBulananExportTest extends TestCase
             'nama' => 'Anggota Uji',
             'bank' => 'BRI',
             'nomor_rekening' => '0011223344',
+            'metode_pembayaran' => 'potong_bank',
             'simpanan_wajib' => 0,
             'simpanan_sukarela' => 0,
             'cicilan' => 0,

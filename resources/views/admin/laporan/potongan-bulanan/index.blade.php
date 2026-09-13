@@ -231,6 +231,7 @@
                     <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Nama Anggota</th>
                     <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Bank</th>
                     <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Nomor Rekening</th>
+                    <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Metode Pembayaran</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Simpanan Wajib</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Simpanan Sukarela</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Cicilan Pinjaman</th>
@@ -251,6 +252,13 @@
                         <td class="px-3 py-2 text-xs font-medium text-gray-800">{{ $row['nama'] }}</td>
                         <td class="px-3 py-2 text-xs text-gray-700">{{ $row['bank'] }}</td>
                         <td class="px-3 py-2 text-xs text-gray-700">{{ $row['nomor_rekening'] }}</td>
+                        <td class="px-3 py-2 text-xs">
+                            @if(($row['metode_pembayaran'] ?? 'potong_bank') === 'transfer_manual')
+                                <span class="inline-flex rounded-full bg-amber-100 px-2 py-1 font-medium text-amber-800">Transfer manual</span>
+                            @else
+                                <span class="inline-flex rounded-full bg-blue-100 px-2 py-1 font-medium text-blue-800">Potong bank</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['wajib'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['sukarela'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['cicilan'], 0, ',', '.') }}</td>
@@ -270,7 +278,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="12" class="px-3 py-8 text-center text-gray-500">
+                        <td colspan="13" class="px-3 py-8 text-center text-gray-500">
                             Tidak ada data.
                         </td>
                     </tr>
@@ -279,7 +287,7 @@
             @if($rows->count() > 0)
                 <tfoot class="bg-gray-50 border-t border-gray-200">
                     <tr>
-                        <th colspan="4" class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total</th>
+                        <th colspan="5" class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalWajib, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalSukarela, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalCicilan, 0, ',', '.') }}</th>
@@ -304,6 +312,9 @@
                         <div>
                             <div class="text-xs text-gray-500">{{ $index + 1 }}. {{ $row['nama'] }}</div>
                             <div class="text-xs text-gray-600">{{ $row['bank'] }} - {{ $row['nomor_rekening'] }}</div>
+                            <div class="mt-1 text-xs font-medium {{ ($row['metode_pembayaran'] ?? 'potong_bank') === 'transfer_manual' ? 'text-amber-700' : 'text-blue-700' }}">
+                                {{ ($row['metode_pembayaran'] ?? 'potong_bank') === 'transfer_manual' ? 'Transfer manual' : 'Potong bank' }}
+                            </div>
                         </div>
                         <div class="text-sm font-bold text-blue-700">Rp {{ number_format($row['total'], 0, ',', '.') }}</div>
                     </div>

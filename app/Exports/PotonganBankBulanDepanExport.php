@@ -32,6 +32,7 @@ class PotonganBankBulanDepanExport extends DefaultValueBinder implements FromArr
 
         $rows = PotonganBulananDetail::query()
             ->where('bulan_potongan', $this->bulanPotongan)
+            ->where('metode_pembayaran', 'potong_bank')
             ->when(
                 filled($this->namaBank),
                 fn ($query) => $query->where('bank', $this->namaBank)

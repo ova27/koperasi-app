@@ -12,6 +12,7 @@ class PotonganBulananDetail extends Model
         'nama',
         'bank',
         'nomor_rekening',
+        'metode_pembayaran',
         'simpanan_wajib',
         'simpanan_sukarela',
         'cicilan',
