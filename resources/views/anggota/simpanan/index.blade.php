@@ -2,7 +2,6 @@
 
 @section('title', 'Simpanan Saya')
 @section('page-title', 'Simpanan Saya')
-@section('page-description', 'Pantau saldo dan riwayat simpanan pokok, wajib, serta sukarela Anda.')
 
 @section('content')
 <div class="member-finance-page space-y-5">
