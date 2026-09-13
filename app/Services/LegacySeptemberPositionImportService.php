@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Anggota;
 use App\Models\ArusKas;
 use App\Models\Pinjaman;
+use App\Models\PengajuanPinjaman;
 use App\Models\PotonganBulananDetail;
 use App\Models\PotonganBulananSetting;
 use App\Models\PotonganTitipan;
@@ -23,22 +24,7 @@ class LegacySeptemberPositionImportService
 {
     private const SNAPSHOT_DATE = '2026-09-30';
 
-    private const EXPECTED = [
-        'anggota_aktif' => 84,
-        'simpanan' => 315_848_076,
-        'pinjaman' => 313_025_000,
-        'potongan' => 51_105_000,
-        'kas_koperasi' => 2_823_076,
-        'kas_operasional' => 1_108_517,
-    ];
-
-    /** @var array<string, array{balance:int, tenor:int, cicilan:int, tanggal:string, pencairan:int}> */
-    private const SEPTEMBER_RESTRUCTURES = [
-        'pramitagayatri' => ['balance' => 20_000_000, 'tenor' => 10, 'cicilan' => 2_000_000, 'tanggal' => '2026-09-04', 'pencairan' => 20_000_000],
-        'viskaekayani' => ['balance' => 9_000_000, 'tenor' => 3, 'cicilan' => 3_000_000, 'tanggal' => '2026-09-08', 'pencairan' => 3_000_000],
-        'maulani' => ['balance' => 16_000_000, 'tenor' => 16, 'cicilan' => 1_000_000, 'tanggal' => '2026-09-04', 'pencairan' => 10_000_000],
-        'rikamustikaasjaya' => ['balance' => 15_000_000, 'tenor' => 15, 'cicilan' => 1_000_000, 'tanggal' => '2026-09-04', 'pencairan' => 8_500_000],
-    ];
+    private const DEFAULT_PENDING_TENOR = 20;
 
     public function prepare(string $masterPath, string $rincianPath, string $bankPath, string $cashPath): array
     {
@@ -58,27 +44,36 @@ class LegacySeptemberPositionImportService
         $pinjamanSheet = $master->getSheetByName('Pinjaman');
         $neracaSheet = $master->getSheetByName('Neraca');
         $operasionalSheet = $master->getSheetByName('Operasional');
+        $undurDiriSheet = $master->getSheetByName('Undur Diri');
         $rincianSheet = $rincian->getSheetByName('September');
         $briSheet = $bank->getSheetByName('BRI');
         $bsiSheet = $bank->getSheetByName('BSI');
         $cashSheet = $cash->getSheetByName('2026');
+        $waitingListSheet = $cash->getSheetByName('WAITING LIST');
 
-        if (! $anggotaSheet || ! $simpananSheet || ! $pinjamanSheet || ! $neracaSheet || ! $operasionalSheet || ! $rincianSheet || ! $briSheet || ! $bsiSheet || ! $cashSheet) {
+        if (! $anggotaSheet || ! $simpananSheet || ! $pinjamanSheet || ! $neracaSheet || ! $operasionalSheet || ! $undurDiriSheet || ! $rincianSheet || ! $briSheet || ! $bsiSheet || ! $cashSheet || ! $waitingListSheet) {
             throw new RuntimeException('Ada sheet sumber wajib yang tidak ditemukan.');
         }
 
+        $anggota = $this->readAnggota($anggotaSheet);
+        $potongan = $this->readPotongan($rincianSheet, $briSheet, $bsiSheet);
         $data = [
-            'anggota' => $this->readAnggota($anggotaSheet),
+            'anggota' => $anggota,
+            'anggota_tidak_aktif' => $this->readInactiveMembers($anggota, $potongan, $undurDiriSheet),
             'simpanan' => $this->readSimpanan($simpananSheet),
-            'pinjaman' => $this->readPinjaman($pinjamanSheet, $rincianSheet),
-            'potongan' => $this->readPotongan($rincianSheet, $briSheet, $bsiSheet),
+            'pinjaman' => $this->readPinjaman($pinjamanSheet, $rincianSheet, $cashSheet),
+            'pengajuan' => $this->readPendingApplications($waitingListSheet, $anggota),
+            'potongan' => $potongan,
             'kas' => [
                 'koperasi' => $this->integerValue($neracaSheet, 'F7'),
                 'operasional' => $this->integerValue($operasionalSheet, 'C18'),
             ],
+            'controls' => [
+                'simpanan' => $this->integerValue($neracaSheet, 'C5') + $this->integerValue($neracaSheet, 'C6'),
+                'pinjaman' => $this->integerValue($neracaSheet, 'F5'),
+            ],
         ];
 
-        $this->validateCashSource($cashSheet);
         $this->validatePreparedData($data);
 
         return $data;
@@ -108,22 +103,24 @@ class LegacySeptemberPositionImportService
                 $anggotaIds[$this->normalizeName($row['nama'])] = $anggota->id;
             }
 
-            $faizal = Anggota::create([
-                'user_id' => null,
-                'nomor_anggota' => 'LEGACY-FAIZAL-AHKAMI',
-                'nip' => null,
-                'nama' => 'Faizal Ahkami',
-                'jenis_kelamin' => 'L',
-                'jabatan' => null,
-                'status' => 'tidak_aktif',
-                'tanggal_masuk' => '2015-01-01',
-                'tanggal_keluar' => '2026-05-01',
-            ]);
-            $anggotaIds[$this->normalizeName($faizal->nama)] = $faizal->id;
+            foreach ($data['anggota_tidak_aktif'] as $index => $row) {
+                $anggota = Anggota::create([
+                    'user_id' => null,
+                    'nomor_anggota' => sprintf('LEGACY-%04d', $index + 1),
+                    'nip' => null,
+                    'nama' => $row['nama'],
+                    'jenis_kelamin' => null,
+                    'jabatan' => null,
+                    'status' => 'tidak_aktif',
+                    'tanggal_masuk' => $row['tanggal_masuk'],
+                    'tanggal_keluar' => $row['tanggal_keluar'],
+                ]);
+                $anggotaIds[$this->normalizeName($row['nama'])] = $anggota->id;
+            }
 
             foreach ($data['potongan'] as $row) {
                 $key = $this->normalizeName($row['nama']);
-                if ($row['bank'] && $key !== 'faizalahkami') {
+                if ($row['bank']) {
                     RekeningAnggota::create([
                         'anggota_id' => $anggotaIds[$key],
                         'nama_bank' => $row['bank'],
@@ -199,6 +196,25 @@ class LegacySeptemberPositionImportService
                 ]);
             }
 
+            foreach ($data['pengajuan'] as $row) {
+                $anggotaId = $anggotaIds[$row['anggota_key']];
+                $anggota = Anggota::findOrFail($anggotaId);
+                PengajuanPinjaman::create([
+                    'anggota_id' => $anggotaId,
+                    'jumlah_diajukan' => $row['jumlah_diajukan'],
+                    'tenor' => $row['tenor'],
+                    'bulan_pinjam' => $row['bulan_pinjam'],
+                    'tujuan' => 'Migrasi antrian waiting list manual',
+                    'status' => 'diajukan',
+                    'diajukan_oleh' => $anggota->user_id ?: $creator->id,
+                    'disetujui_oleh' => null,
+                    'dicairkan_oleh' => null,
+                    'tanggal_pengajuan' => $row['tanggal_pengajuan'],
+                    'tanggal_persetujuan' => null,
+                    'tanggal_pencairan' => null,
+                ]);
+            }
+
             PotonganBulananSetting::create([
                 'bulan_potongan' => '2026-09',
                 'iuran_dharma_wanita' => 0,
@@ -251,14 +267,17 @@ class LegacySeptemberPositionImportService
                 'potongan' => (int) PotonganBulananDetail::where('bulan_potongan', '2026-09')->sum('total'),
                 'kas_koperasi' => (int) ArusKas::where('jenis_arus', 'koperasi')->selectRaw("SUM(CASE WHEN tipe = 'masuk' THEN jumlah ELSE -jumlah END) AS saldo")->value('saldo'),
                 'kas_operasional' => (int) ArusKas::where('jenis_arus', 'operasional')->selectRaw("SUM(CASE WHEN tipe = 'masuk' THEN jumlah ELSE -jumlah END) AS saldo")->value('saldo'),
+                'pengajuan_aktif' => PengajuanPinjaman::where('status', 'diajukan')->count(),
             ];
 
-            if ($result['anggota_aktif'] !== self::EXPECTED['anggota_aktif']
-                || $result['simpanan'] !== self::EXPECTED['simpanan']
-                || $result['pinjaman'] !== self::EXPECTED['pinjaman']
-                || $result['potongan'] !== self::EXPECTED['potongan']
-                || $result['kas_koperasi'] !== self::EXPECTED['kas_koperasi']
-                || $result['kas_operasional'] !== self::EXPECTED['kas_operasional']) {
+            if ($result['anggota_aktif'] !== count($data['anggota'])
+                || $result['anggota_tidak_aktif'] !== count($data['anggota_tidak_aktif'])
+                || $result['simpanan'] !== array_sum(array_column($data['simpanan'], 'total'))
+                || $result['pinjaman'] !== array_sum(array_column($data['pinjaman'], 'sisa_pinjaman'))
+                || $result['potongan'] !== array_sum(array_column($data['potongan'], 'total'))
+                || $result['kas_koperasi'] !== $data['kas']['koperasi']
+                || $result['kas_operasional'] !== $data['kas']['operasional']
+                || $result['pengajuan_aktif'] !== count($data['pengajuan'])) {
                 throw new RuntimeException('Validasi setelah import gagal. Seluruh perubahan dibatalkan otomatis.');
             }
 
@@ -316,7 +335,7 @@ class LegacySeptemberPositionImportService
             }
             $total = $this->integerValue($sheet, "CB{$row}");
             $pokok = min($total, max(0, $this->integerValue($sheet, "C{$row}")));
-            // Mengikuti angka Neraca: BZ (2026) + BP (2025) + koreksi BI61 = Rp1.500.000.
+            // Mengikuti komponen formula simpanan sukarela pada Neraca sumber.
             $sukarelaSource = $this->integerValue($sheet, "BZ{$row}")
                 + $this->integerValue($sheet, "BP{$row}")
                 + ($row === 61 ? $this->integerValue($sheet, "BI{$row}") : 0);
@@ -333,7 +352,7 @@ class LegacySeptemberPositionImportService
         return $rows;
     }
 
-    private function readPinjaman(Worksheet $sheet, Worksheet $rincianSheet): array
+    private function readPinjaman(Worksheet $sheet, Worksheet $rincianSheet, Worksheet $cashSheet): array
     {
         $details = [];
         for ($row = 7; $row <= $rincianSheet->getHighestDataRow(); $row++) {
@@ -347,6 +366,7 @@ class LegacySeptemberPositionImportService
             ];
         }
 
+        $cashAdjustments = $this->readSeptemberLoanAdjustments($cashSheet);
         $rows = [];
         for ($row = 6; $row <= $sheet->getHighestDataRow(); $row++) {
             if (! is_numeric($sheet->getCell("A{$row}")->getValue())) {
@@ -359,21 +379,25 @@ class LegacySeptemberPositionImportService
                 continue;
             }
 
-            if (isset(self::SEPTEMBER_RESTRUCTURES[$key])) {
-                $special = self::SEPTEMBER_RESTRUCTURES[$key];
+            $detail = $details[$key] ?? null;
+            $detailBalance = $detail ? max(0, $this->findDetailBalance($rincianSheet, $key)) : 0;
+            if ($sisa !== $detailBalance) {
+                $special = $this->matchCashAdjustment($cashAdjustments, $key);
+                if (! $special || $special['tenor'] <= 0 || $sisa % $special['tenor'] !== 0) {
+                    throw new RuntimeException("Jadwal pinjaman baru/top-up September tidak lengkap untuk {$nama}.");
+                }
                 $rows[] = [
                     'nama' => $nama,
                     'tanggal_pinjam' => $special['tanggal'],
-                    'jumlah_pinjaman' => $special['balance'],
+                    'jumlah_pinjaman' => $sisa,
                     'sisa_pinjaman' => $sisa,
                     'tenor' => $special['tenor'],
-                    'cicilan_per_bulan' => $special['cicilan'],
+                    'cicilan_per_bulan' => (int) ($sisa / $special['tenor']),
                     'keterangan' => 'Pinjaman baru/top-up/restruktur September 2026; cicilan baru mulai Oktober 2026',
                 ];
                 continue;
             }
 
-            $detail = $details[$key] ?? null;
             if (! $detail || $detail['tenor'] <= 0 || $detail['cicilan'] <= 0) {
                 throw new RuntimeException("Jadwal pinjaman aktif tidak ditemukan untuk {$nama}.");
             }
@@ -439,56 +463,52 @@ class LegacySeptemberPositionImportService
         return $rows;
     }
 
-    private function validateCashSource(Worksheet $sheet): void
+    private function readSeptemberLoanAdjustments(Worksheet $sheet): array
     {
-        $found = [];
+        $rows = [];
         for ($row = 1; $row <= $sheet->getHighestDataRow(); $row++) {
-            $date = $sheet->getCell("B{$row}")->getValue();
+            $date = $sheet->getCell("B{$row}")->getCalculatedValue();
             $description = trim((string) $sheet->getCell("C{$row}")->getValue());
-            if (! $date || ! str_contains(mb_strtolower($description), 'pinjaman')) {
+            $dateValue = $this->dateValue($date);
+            if (! $dateValue || ! str_starts_with($dateValue, '2026-09-') || ! str_contains(mb_strtolower($description), 'pinjaman')) {
                 continue;
             }
             $key = $this->normalizeName(preg_replace('/^.*?\ban\.?\s*/iu', '', $description) ?? $description);
-            foreach (self::SEPTEMBER_RESTRUCTURES as $nameKey => $expected) {
-                if (str_contains($key, $nameKey) || str_contains($nameKey, $key)) {
-                    $amount = $this->integerValue($sheet, "E{$row}");
-                    if ($amount === $expected['pencairan']) {
-                        $found[$nameKey] = true;
-                    }
-                }
+            $note = trim((string) $sheet->getCell("F{$row}")->getValue());
+            if (! preg_match('/(\d+)\s*x/iu', $note, $match)
+                && ! preg_match('/(\d+)\s*bulan/iu', $note, $match)) {
+                continue;
             }
+            $rows[] = [
+                'name_key' => $key,
+                'tanggal' => $dateValue,
+                'pencairan' => $this->integerValue($sheet, "E{$row}"),
+                'tenor' => (int) $match[1],
+            ];
         }
-        $missing = array_diff(array_keys(self::SEPTEMBER_RESTRUCTURES), array_keys($found));
-        if ($missing !== []) {
-            throw new RuntimeException('Pencairan September tidak lengkap di file arus kas: ' . implode(', ', $missing));
-        }
+
+        return $rows;
     }
 
     private function validatePreparedData(array $data): void
     {
-        $activeKeys = array_column($data['anggota'], null, 'nama');
-        if (count($activeKeys) !== self::EXPECTED['anggota_aktif']) {
-            throw new RuntimeException('Jumlah anggota aktif sumber tidak sesuai 84.');
+        if (array_sum(array_column($data['simpanan'], 'total')) !== $data['controls']['simpanan']) {
+            throw new RuntimeException('Rincian simpanan tidak sama dengan kontrol Neraca.');
         }
-        if (array_sum(array_column($data['simpanan'], 'total')) !== self::EXPECTED['simpanan']) {
-            throw new RuntimeException('Total simpanan sumber tidak sesuai Rp315.848.076.');
+        if (array_sum(array_column($data['pinjaman'], 'sisa_pinjaman')) !== $data['controls']['pinjaman']) {
+            throw new RuntimeException('Rincian pinjaman tidak sama dengan kontrol Neraca.');
         }
-        if (array_sum(array_column($data['pinjaman'], 'sisa_pinjaman')) !== self::EXPECTED['pinjaman']) {
-            throw new RuntimeException('Total pinjaman sumber tidak sesuai Rp313.025.000.');
-        }
-        if (array_sum(array_column($data['potongan'], 'total')) !== self::EXPECTED['potongan']) {
-            throw new RuntimeException('Total potongan sumber tidak sesuai Rp51.105.000.');
-        }
-        if ($data['kas']['koperasi'] !== self::EXPECTED['kas_koperasi']
-            || $data['kas']['operasional'] !== self::EXPECTED['kas_operasional']) {
-            throw new RuntimeException('Saldo kas koperasi atau operasional tidak sesuai Neraca September 2026.');
+        if ($data['kas']['koperasi'] !== $data['controls']['simpanan'] - $data['controls']['pinjaman']) {
+            throw new RuntimeException('Saldo kas koperasi tidak sama dengan simpanan dikurangi piutang anggota.');
         }
 
         $known = [];
         foreach ($data['anggota'] as $row) {
             $known[$this->normalizeName($row['nama'])] = true;
         }
-        $known['faizalahkami'] = true;
+        foreach ($data['anggota_tidak_aktif'] as $row) {
+            $known[$this->normalizeName($row['nama'])] = true;
+        }
         foreach (['simpanan', 'pinjaman', 'potongan'] as $section) {
             foreach ($data[$section] as $row) {
                 if (! isset($known[$this->normalizeName($row['nama'])])) {
@@ -496,6 +516,173 @@ class LegacySeptemberPositionImportService
                 }
             }
         }
+    }
+
+    private function readPendingApplications(Worksheet $sheet, array $activeMembers): array
+    {
+        $memberKeys = [];
+        foreach ($activeMembers as $member) {
+            $memberKeys[$this->normalizeName($member['nama'])] = $member['nama'];
+        }
+
+        $rows = [];
+        for ($row = 3; $row <= $sheet->getHighestDataRow(); $row++) {
+            if (strtoupper(trim((string) $sheet->getCell("F{$row}")->getValue())) !== 'BELUM') {
+                continue;
+            }
+            $sourceName = trim((string) $sheet->getCell("C{$row}")->getValue());
+            $anggotaKey = $this->resolveMemberKey($sourceName, array_keys($memberKeys));
+            if (! $anggotaKey) {
+                throw new RuntimeException("Nama waiting list tidak cocok dengan anggota aktif: {$sourceName}.");
+            }
+            $jumlah = $this->integerValue($sheet, "D{$row}");
+            $note = trim((string) $sheet->getCell("G{$row}")->getValue());
+            preg_match('/(\d+)\s*x/iu', $note, $tenorMatch);
+            $tenor = isset($tenorMatch[1]) ? (int) $tenorMatch[1] : self::DEFAULT_PENDING_TENOR;
+            $tanggal = $this->dateValue($sheet->getCell("B{$row}")->getValue());
+            $bulan = $this->monthValue($sheet->getCell("E{$row}")->getValue());
+            if ($jumlah <= 0 || ! $tanggal || ! $bulan || $tenor <= 0) {
+                throw new RuntimeException("Data waiting list pada baris {$row} belum lengkap.");
+            }
+            $dedupeKey = implode('|', [$anggotaKey, $jumlah, $bulan]);
+            $rows[$dedupeKey] = [
+                'anggota_key' => $anggotaKey,
+                'jumlah_diajukan' => $jumlah,
+                'tenor' => $tenor,
+                'bulan_pinjam' => $bulan,
+                'tanggal_pengajuan' => $tanggal,
+            ];
+        }
+
+        return array_values($rows);
+    }
+
+    private function readInactiveMembers(array $activeMembers, array $potongan, Worksheet $undurDiriSheet): array
+    {
+        $active = [];
+        foreach ($activeMembers as $row) {
+            $active[$this->normalizeName($row['nama'])] = true;
+        }
+        $exitDates = [];
+        for ($row = 6; $row <= $undurDiriSheet->getHighestDataRow(); $row++) {
+            $name = trim((string) $undurDiriSheet->getCell("C{$row}")->getValue());
+            if ($name !== '') {
+                $exitDates[$this->normalizeName($name)] = $this->dateValue($undurDiriSheet->getCell("B{$row}")->getValue());
+            }
+        }
+
+        $result = [];
+        foreach ($potongan as $row) {
+            $key = $this->normalizeName($row['nama']);
+            if (isset($active[$key])) {
+                continue;
+            }
+            $result[$key] = [
+                'nama' => $row['nama'],
+                'tanggal_masuk' => '2011-01-01',
+                'tanggal_keluar' => $this->matchDateByName($exitDates, $key) ?? self::SNAPSHOT_DATE,
+            ];
+        }
+
+        return array_values($result);
+    }
+
+    private function findDetailBalance(Worksheet $sheet, string $nameKey): int
+    {
+        for ($row = 7; $row <= $sheet->getHighestDataRow(); $row++) {
+            if ($this->normalizeName((string) $sheet->getCell("B{$row}")->getValue()) === $nameKey) {
+                return $this->integerValue($sheet, "H{$row}");
+            }
+        }
+
+        return 0;
+    }
+
+    private function matchCashAdjustment(array $rows, string $nameKey): ?array
+    {
+        foreach ($rows as $row) {
+            if (str_contains($row['name_key'], $nameKey) || str_contains($nameKey, $row['name_key'])) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    private function matchDateByName(array $dates, string $nameKey): ?string
+    {
+        foreach ($dates as $key => $date) {
+            if (str_contains($key, $nameKey) || str_contains($nameKey, $key)) {
+                return $date;
+            }
+        }
+
+        return null;
+    }
+
+    private function dateValue(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return Carbon::instance($value)->toDateString();
+        }
+        if (is_numeric($value)) {
+            return Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float) $value))->toDateString();
+        }
+        $text = mb_strtolower(trim((string) $value));
+        foreach ($this->indonesianMonths() as $name => $month) {
+            if (preg_match('/\b(\d{1,2})\s+' . $name . '\s+(\d{4})\b/u', $text, $match)) {
+                return Carbon::create((int) $match[2], $month, (int) $match[1])->toDateString();
+            }
+        }
+        try {
+            return $text !== '' ? Carbon::parse((string) $value)->toDateString() : null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function monthValue(mixed $value): ?string
+    {
+        $date = $this->dateValue($value);
+        if ($date) {
+            return Carbon::parse($date)->startOfMonth()->toDateString();
+        }
+        $text = mb_strtolower(trim((string) $value));
+        foreach ($this->indonesianMonths() as $name => $month) {
+            if (preg_match('/\b' . $name . '\s+(\d{4})\b/u', $text, $match)) {
+                return Carbon::create((int) $match[1], $month, 1)->toDateString();
+            }
+        }
+
+        return null;
+    }
+
+    private function indonesianMonths(): array
+    {
+        return [
+            'januari' => 1, 'februari' => 2, 'maret' => 3, 'april' => 4,
+            'mei' => 5, 'juni' => 6, 'juli' => 7, 'agustus' => 8,
+            'september' => 9, 'oktober' => 10, 'november' => 11, 'desember' => 12,
+        ];
+    }
+
+    private function resolveMemberKey(string $name, array $memberKeys): ?string
+    {
+        $source = $this->normalizeName($name);
+        if (in_array($source, $memberKeys, true)) {
+            return $source;
+        }
+        $best = null;
+        $distance = PHP_INT_MAX;
+        foreach ($memberKeys as $key) {
+            $current = levenshtein($source, $key);
+            if ($current < $distance) {
+                $distance = $current;
+                $best = $key;
+            }
+        }
+
+        return $distance <= 2 ? $best : null;
     }
 
     private function deleteLegacyDomainData(): void
