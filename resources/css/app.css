@@ -11,6 +11,9 @@
     --ui-slate-800: #1e293b;
     --ui-sky-500: #0ea5e9;
     --ui-blue-600: #2563eb;
+    --ui-primary: #2563eb;
+    --ui-primary-dark: #1d4ed8;
+    --ui-border: #e2e8f0;
 }
 
 [x-cloak] {
@@ -254,4 +257,56 @@
     #sidebar.mobile-open {
         transform: translateX(0);
     }
+}
+
+
+/* DESIGN SYSTEM KOPERASI SIMPATIK */
+@layer base {
+    body { @apply antialiased; font-feature-settings: "cv02", "cv03", "cv04", "cv11"; }
+    button, a, input, select, textarea { @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-1; }
+}
+@layer components {
+    .app-sidebar { @apply border-r border-slate-200 bg-white shadow-xl shadow-slate-900/5; }
+    .app-header { @apply sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-xl; }
+    .page-main { @apply flex-1 bg-slate-100/70 p-4 sm:p-6 lg:p-8; }
+    .page-card { @apply rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-6; }
+    .surface-card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5; }
+    .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md; }
+    .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700; }
+    .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700; }
+}
+.app-body { background: #f1f5f9; }
+.page-heading { @apply mb-5 flex flex-col gap-1 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between; }
+.page-heading h1 { @apply text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl; }
+.page-heading p { @apply mt-1 text-sm text-slate-500; }
+.app-content .bg-white.border.border-gray-200.rounded-xl,
+.app-content .bg-white.rounded-xl.shadow-sm.border.border-gray-200 {
+    border-color: #e2e8f0 !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 12px 28px -22px rgba(15,23,42,.28) !important;
+}
+.app-content table thead { background: #f8fafc !important; border-color: #e2e8f0 !important; }
+.app-content table thead th { color: #475569 !important; font-size: .7rem !important; font-weight: 700 !important; letter-spacing: .055em !important; }
+.app-content table tbody tr { transition: background-color .15s ease; }
+.app-content table tbody tr:hover { background-color: #eff6ff !important; }
+.app-content input:not([type="checkbox"]):not([type="radio"]), .app-content select, .app-content textarea {
+    border-color: #cbd5e1; border-radius: .625rem; transition: border-color .15s ease, box-shadow .15s ease;
+}
+.app-content input:not([type="checkbox"]):not([type="radio"]):focus, .app-content select:focus, .app-content textarea:focus {
+    border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+}
+.menu-link { padding-top: .58rem; padding-bottom: .58rem; border-radius: .625rem; transition-duration: .18s; }
+.menu-link.active { box-shadow: inset 3px 0 0 #2563eb, 0 8px 18px -14px rgba(37,99,235,.7); }
+.bank-summary-card {
+    position: relative; overflow: hidden; border: 1px solid #dbeafe; border-radius: .875rem;
+    background: linear-gradient(145deg,#eff6ff 0%,#fff 68%); padding: 1rem;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04);
+}
+.bank-summary-card::after {
+    content: ""; position: absolute; width: 4.5rem; height: 4.5rem; right: -1.5rem; top: -1.8rem;
+    border-radius: 9999px; background: rgba(59,130,246,.08);
+}
+@media (max-width:640px) {
+    .page-card { border-radius: .875rem; }
+    .app-content table th, .app-content table td { white-space: nowrap; }
 }
