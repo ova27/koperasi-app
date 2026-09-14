@@ -106,8 +106,8 @@ class LaporanPotonganBulananController extends Controller
             ->values();
 
         $rows = $namaBank !== ''
-            ? $allRows->where('bank', $namaBank)->values()
-            : $allRows;
+            ? $allRows->where('metode_pembayaran', 'potong_bank')->where('bank', $namaBank)->values()
+            : $allRows->where('metode_pembayaran', 'potong_bank')->values();
 
         $rekeningKoperasiList = RekeningKoperasi::query()
             ->where('jenis', 'bank')
@@ -179,6 +179,7 @@ class LaporanPotonganBulananController extends Controller
                 'nama' => $anggota->nama,
                 'bank' => $anggota->rekeningAktif->nama_bank ?? '-',
                 'nomor_rekening' => $anggota->rekeningAktif->nomor_rekening ?? '-',
+                'metode_pembayaran' => $anggota->status === 'aktif' ? 'potong_bank' : 'transfer_manual',
                 'simpanan_wajib' => (int) $validated['simpanan_wajib'],
                 'simpanan_sukarela' => (int) $validated['simpanan_sukarela'],
                 'cicilan' => (int) $validated['cicilan'],
@@ -227,6 +228,7 @@ class LaporanPotonganBulananController extends Controller
                     'nama' => (string) ($row['nama'] ?? '-'),
                     'bank' => (string) ($row['bank'] ?? '-'),
                     'nomor_rekening' => (string) ($row['nomor_rekening'] ?? '-'),
+                    'metode_pembayaran' => (string) ($row['metode_pembayaran'] ?? 'potong_bank'),
                     'simpanan_wajib' => (int) ($row['wajib'] ?? 0),
                     'simpanan_sukarela' => (int) ($row['sukarela'] ?? 0),
                     'cicilan' => (int) ($row['cicilan'] ?? 0),
@@ -279,7 +281,7 @@ class LaporanPotonganBulananController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('view laporan pinjaman');
+        $this->authorize('export laporan pinjaman');
 
         $bulanPotongan = $this->validatedBulanPotongan($request);
         if (! $this->isBulanPotonganFixed($bulanPotongan)) {
@@ -302,9 +304,19 @@ class LaporanPotonganBulananController extends Controller
         }
         $namaBank = trim((string) $request->get('nama_bank', ''));
 
+        if ($namaBank !== '' && ! PotonganBulananDetail::query()
+            ->where('bulan_potongan', $bulanPotongan)
+            ->where('metode_pembayaran', 'potong_bank')
+            ->where('bank', $namaBank)
+            ->exists()) {
+            return back()->with('error', 'Data setoran untuk bank terpilih tidak ditemukan.');
+        }
+
+        $bankSlug = $namaBank !== '' ? '-' . Str::slug($namaBank) : '-semua-bank';
+
         return Excel::download(
             new \App\Exports\PotonganBankBulanDepanExport($bulanPotongan, $namaBank !== '' ? $namaBank : null),
-            'setoran-bank-potongan-' . $bulanPotongan . '.xlsx'
+            'setoran-bank-potongan-' . $bulanPotongan . $bankSlug . '.xlsx'
         );
     }
 
@@ -509,7 +521,13 @@ class LaporanPotonganBulananController extends Controller
                 },
                 'potonganTitipan',
             ])
-            ->where('status', 'aktif')
+            ->where(function ($query) {
+                $query->where('status', 'aktif')
+                    ->orWhereHas('pinjamans', function ($pinjamanQuery) {
+                        $pinjamanQuery->where('status', 'aktif')
+                            ->where('sisa_pinjaman', '>', 0);
+                    });
+            })
             ->orderBy('nama')
             ->get()
             ->map(function ($anggota) use ($wajibDefault, $iuranOperasional, $iuranDharmaWanita, $infaqPegawai, $tabunganQurban, $batasRiwayatCicilan, $details) {
@@ -523,7 +541,9 @@ class LaporanPotonganBulananController extends Controller
                 $titipan = $anggota->potonganTitipan;
 
                 // Ambil dari detail jika ada, jika tidak pakai perhitungan lama
-                $wajib = $detail ? (int) $detail->simpanan_wajib : $wajibDefault;
+                $wajib = $detail
+                    ? (int) $detail->simpanan_wajib
+                    : ($anggota->status === 'aktif' ? $wajibDefault : 0);
                 $sukarela = $detail ? (int) $detail->simpanan_sukarela : 0;
                 $cicilan = $detail ? (int) $detail->cicilan : 0;
                 $dharma = $detail ? (int) $detail->iuran_dharma_wanita : ($titipan ? (int) $titipan->iuran_dharma_wanita : $iuranDharmaWanita);
@@ -553,6 +573,9 @@ class LaporanPotonganBulananController extends Controller
                     'nama' => $anggota->nama,
                     'bank' => $anggota->rekeningAktif->nama_bank ?? '-',
                     'nomor_rekening' => $anggota->rekeningAktif->nomor_rekening ?? '-',
+                    'metode_pembayaran' => $detail
+                        ? (string) $detail->metode_pembayaran
+                        : ($anggota->status === 'aktif' ? 'potong_bank' : 'transfer_manual'),
                     'wajib' => $wajib,
                     'sukarela' => $sukarela,
                     'cicilan' => $cicilan,
@@ -625,6 +648,7 @@ class LaporanPotonganBulananController extends Controller
                 'nama' => $detail->nama,
                 'bank' => $detail->bank ?? '-',
                 'nomor_rekening' => $detail->nomor_rekening ?? '-',
+                'metode_pembayaran' => $detail->metode_pembayaran ?? 'potong_bank',
                 'wajib' => (int) $detail->simpanan_wajib,
                 'sukarela' => (int) $detail->simpanan_sukarela,
                 'cicilan' => (int) $detail->cicilan,
@@ -657,6 +681,7 @@ class LaporanPotonganBulananController extends Controller
             : $this->buildPotonganRows($bulanPotongan);
 
         return $rows
+            ->where('metode_pembayaran', 'potong_bank')
             ->filter(function ($row) use ($selectedRekeningKoperasiId, $namaBank, $rekeningKoperasiMap) {
                 if ($selectedRekeningKoperasiId === null) {
                     return Str::lower(trim((string) ($row['bank'] ?? ''))) === Str::lower(trim($namaBank));

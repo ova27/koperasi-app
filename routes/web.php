@@ -303,7 +303,7 @@ Route::middleware(['auth','permission:view anggota list'])
                     ->get('/laporan/pinjaman/export', [LaporanPinjamanController::class, 'export'])
                     ->name('laporan.pinjaman.export');
 
-                Route::middleware('permission:view laporan pinjaman')
+                Route::middleware('permission:export laporan pinjaman')
                     ->get('/laporan/potongan-bulanan/export', [LaporanPotonganBulananController::class, 'export'])
                     ->name('laporan.potongan-bulanan.export');
 

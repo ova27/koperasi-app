@@ -1,7 +1,7 @@
 <nav x-data="{ open: false }" class="border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
     <!-- Primary Navigation Menu -->
     <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex h-20 items-center justify-between sm:h-20">
+        <div class="flex h-16 items-center justify-between">
             <div class="flex min-w-0 items-center gap-2 sm:gap-3">
                 {{-- TOGGLE SIDEBAR DESKTOP --}}
                 <button id="toggleSidebar"
@@ -12,6 +12,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
+                <div class="workspace-context min-w-0 border-l border-slate-200 pl-4">
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">Sistem Informasi Koperasi</p>
+                    <p class="truncate text-sm font-semibold text-slate-700">@yield('page-title', 'Koperasi Simpatik')</p>
+                </div>
             </div>
 
             <!-- Settings Dropdown -->
@@ -20,9 +24,9 @@
                     <x-slot name="trigger">
                         <button
                             type="button"
-                            class="inline-flex max-w-[72vw] items-center gap-2 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white px-2 py-1.5 text-left text-sm text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-sky-500 sm:max-w-none sm:gap-3 sm:px-3 sm:py-2"
+                            class="inline-flex max-w-[72vw] items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-left text-sm text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 sm:max-w-none sm:gap-3 sm:px-3 sm:py-2"
                         >
-                            <span class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-blue-600 text-xs font-semibold text-white shadow-sm">
+                            <span class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-700 text-xs font-semibold text-white">
                                 {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
                             </span>
 

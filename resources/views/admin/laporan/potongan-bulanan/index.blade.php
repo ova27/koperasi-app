@@ -2,9 +2,10 @@
 
 @section('title', 'Rincian Potongan Anggota')
 @section('page-title', 'Rincian Potongan Anggota')
+@section('page-description', 'Kelola, periksa, dan finalisasi potongan bulanan anggota dalam satu halaman.')
 
 @section('content')
-<div class="space-y-3">
+<div class="potongan-page space-y-5">
     @include('admin.laporan._tabs_potongan')
 
     @if (session('success'))
@@ -136,7 +137,7 @@
             Rincian potongan bulan {{ \Carbon\Carbon::createFromFormat('Y-m', $bulanPotongan)->translatedFormat('F Y') }} belum difix oleh Bendahara.
         @endif
     </div>
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div class="surface-card p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-4">
         
             <div class="flex flex-col sm:flex-row sm:items-end gap-2">
@@ -181,8 +182,8 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             @forelse($ringkasanBank as $bank => $item)
-                <div class="bg-gradient-to-r from-blue-50 to-white border border-blue-100 rounded-lg p-3 shadow-sm">
-                    <div class="text-xs uppercase tracking-wide text-gray-500">{{ $bank }}</div>
+                <div class="bank-summary-card">
+                    <div class="text-xs uppercase tracking-wide text-gray-500">{{ $bank === '-' ? 'Transfer Manual' : $bank }}</div>
                     <div class="text-sm text-gray-700">{{ $item['jumlah_anggota'] }} anggota</div>
                     <div class="font-semibold text-blue-700">Rp {{ number_format($item['total'], 0, ',', '.') }}</div>
                 </div>
@@ -207,19 +208,20 @@
                 </div>
             </form>
             
-            <div class="flex gap-2">
-
-                @if($isFixed)
-                    <a href="{{ route('admin.laporan.potongan-bulanan.export', ['bulan' => $bulanPotongan]) }}"
-                        class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white shadow-sm hover:bg-green-700 transition-all duration-200">
-                        Export Excel
-                    </a>
-                @else
-                    <button type="button" disabled class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-500 cursor-not-allowed">
-                        Export Excel
-                    </button>
-                @endif
-            </div>  
+            @can('export laporan pinjaman')
+                <div class="flex gap-2">
+                    @if($isFixed)
+                        <a href="{{ route('admin.laporan.potongan-bulanan.export', ['bulan' => $bulanPotongan]) }}"
+                            class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white shadow-sm hover:bg-green-700 transition-all duration-200">
+                            Export Excel
+                        </a>
+                    @else
+                        <button type="button" disabled title="Fix potongan terlebih dahulu" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-500 cursor-not-allowed">
+                            Export Excel
+                        </button>
+                    @endif
+                </div>
+            @endcan
         </div>
 
         <div class="hidden md:block rounded-lg border border-gray-100 overflow-auto max-h-[65vh]">
@@ -230,6 +232,7 @@
                     <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Nama Anggota</th>
                     <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Bank</th>
                     <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Nomor Rekening</th>
+                    <th class="px-3 py-2 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Metode Pembayaran</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Simpanan Wajib</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Simpanan Sukarela</th>
                     <th class="px-3 py-2 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Cicilan Pinjaman</th>
@@ -250,6 +253,13 @@
                         <td class="px-3 py-2 text-xs font-medium text-gray-800">{{ $row['nama'] }}</td>
                         <td class="px-3 py-2 text-xs text-gray-700">{{ $row['bank'] }}</td>
                         <td class="px-3 py-2 text-xs text-gray-700">{{ $row['nomor_rekening'] }}</td>
+                        <td class="px-3 py-2 text-xs">
+                            @if(($row['metode_pembayaran'] ?? 'potong_bank') === 'transfer_manual')
+                                <span class="inline-flex rounded-full bg-amber-100 px-2 py-1 font-medium text-amber-800">Transfer manual</span>
+                            @else
+                                <span class="inline-flex rounded-full bg-blue-100 px-2 py-1 font-medium text-blue-800">Potong bank</span>
+                            @endif
+                        </td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['wajib'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['sukarela'], 0, ',', '.') }}</td>
                         <td class="px-3 py-2 text-right text-xs text-gray-800">Rp {{ number_format($row['cicilan'], 0, ',', '.') }}</td>
@@ -269,7 +279,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="12" class="px-3 py-8 text-center text-gray-500">
+                        <td colspan="13" class="px-3 py-8 text-center text-gray-500">
                             Tidak ada data.
                         </td>
                     </tr>
@@ -278,7 +288,7 @@
             @if($rows->count() > 0)
                 <tfoot class="bg-gray-50 border-t border-gray-200">
                     <tr>
-                        <th colspan="4" class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total</th>
+                        <th colspan="5" class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalWajib, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalSukarela, 0, ',', '.') }}</th>
                         <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700">Rp {{ number_format($totalCicilan, 0, ',', '.') }}</th>
@@ -303,6 +313,9 @@
                         <div>
                             <div class="text-xs text-gray-500">{{ $index + 1 }}. {{ $row['nama'] }}</div>
                             <div class="text-xs text-gray-600">{{ $row['bank'] }} - {{ $row['nomor_rekening'] }}</div>
+                            <div class="mt-1 text-xs font-medium {{ ($row['metode_pembayaran'] ?? 'potong_bank') === 'transfer_manual' ? 'text-amber-700' : 'text-blue-700' }}">
+                                {{ ($row['metode_pembayaran'] ?? 'potong_bank') === 'transfer_manual' ? 'Transfer manual' : 'Potong bank' }}
+                            </div>
                         </div>
                         <div class="text-sm font-bold text-blue-700">Rp {{ number_format($row['total'], 0, ',', '.') }}</div>
                     </div>

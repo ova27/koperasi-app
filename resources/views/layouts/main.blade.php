@@ -7,21 +7,22 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-100 text-slate-800">
+<body class="app-body bg-slate-50 text-slate-800">
 
 <div class="flex min-h-screen relative">
     {{-- SIDEBAR --}}
 
     <aside id="sidebar"
-        class="sidebar fixed inset-y-0 left-0 z-40 w-72 transition-all duration-300 overflow-hidden
-        bg-gradient-to-b from-blue-50 to-slate-100 border-r border-gray-200 shadow-xl px-4 pb-8
+        class="sidebar app-sidebar fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto overflow-x-hidden px-4 pb-8 transition-all duration-300
         lg:static lg:z-auto lg:translate-x-0 lg:shadow-md">
 
         <!-- Sidebar Header / Logo (moved to very top, removed pt-7 from aside, add pt-7 to header) -->
-        <div class="flex items-center gap-1 mb-4 pt-6">
-            <img src="/images/logo_koperasi.png" alt="Logo" class="w-10 h-10 rounded-full shadow border border-blue-200 bg-white">
+        <div class="sidebar-brand flex items-center gap-2 mb-4 pt-6">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-sky-500 text-sm font-extrabold tracking-tight text-white shadow-md shadow-blue-500/20" aria-label="Koperasi Simpatik">
+                KS
+            </span>
             <div class="flex flex-col ml-1 sidebar-header-text">
-                <span class="font-bold text-base text-blue-700 tracking-wide whitespace-nowrap">Koperasi Simpatik</span>
+                <span class="font-bold text-base text-slate-900 tracking-tight whitespace-nowrap">Koperasi Simpatik</span>
                 <span class="text-xs text-slate-500 leading-tight">BPS Provinsi Banten</span>
             </div>
         </div>
@@ -46,30 +47,32 @@
     {{-- WRAPPER KANAN --}}
     <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300">
         {{-- TOP NAVIGATION --}}
-        <header class="bg-white border-b shadow-sm">
+        <header class="app-header">
             @include('layouts.navigation')
         </header>
 
         {{-- CONTENT --}}
-        <main class="flex-1 p-6 bg-stone-50 border-r border-gray-200 shadow-sm">
-            <div class="max-w-7xl mx-auto">
+        <main class="page-main">
+            <div class="mx-auto w-full max-w-[1600px]">
                 {{-- PAGE TITLE --}}
                 @hasSection('page-title')
-                    <div class="mb-4">
-                        <h1 class="text-xl font-semibold text-slate-900">
+                    <div class="page-heading">
+                        <div>
+                        <h1>
                             @yield('page-title')
                         </h1>
 
                         @hasSection('page-description')
-                            <p class="mt-1 text-sm text-slate-500">
+                            <p>
                                 @yield('page-description')
                             </p>
                         @endif
+                        </div>
                     </div>
                 @endif
 
                 {{-- CARD CONTENT --}}
-                <div class="bg-white border border-gray-200 rounded-xl p-6">
+                <div class="page-card app-content">
                     @yield('content')
                 </div>
             </div>

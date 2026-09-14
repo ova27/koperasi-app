@@ -4,10 +4,10 @@
 @section('page-title', 'Simpanan Saya')
 
 @section('content')
-<div class="space-y-3">
+<div class="member-finance-page space-y-5">
 
     {{-- SALDO --}}
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div class="surface-card p-5 sm:p-6">
         @if(empty($saldo) || count($saldo) == 0)
             <div class="text-center text-gray-500 py-8">
                 <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,16 +46,16 @@
                             default => 'bg-gray-200',
                         };
                         $textColor = match($jenis) {
-                            'pokok' => 'text-blue-600',
+                            'pokok' => 'text-slate-800',
                             'wajib' => 'text-purple-600',
                             'sukarela' => 'text-green-600',
                             default => 'text-gray-600',
                         };
                     @endphp
-                    <div class="bg-gradient-to-r {{ $colorGradient }} rounded-xl px-4 py-5 shadow-sm hover:shadow-md transition-shadow border">
+                    <div class="member-summary-card savings-summary-card rounded-xl border px-5 py-5">
                         <div class="flex items-center gap-3 mb-3">
-                            <div class="p-2 {{ $bgColor }} rounded-full">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ $textColor }}" fill="currentColor" viewBox="0 0 24 24">
+                            <div class="summary-icon flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="{{ $config['icon'] }}" />
                                 </svg>
                             </div>
@@ -71,47 +71,47 @@
     </div>
 
     {{-- RIWAYAT SIMPANAN --}}
-    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div class="surface-card p-5 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <h2 class="text-base font-semibold text-gray-700">
                 Riwayat Simpanan
             </h2>
             
             {{-- FILTER BUTTONS --}}
-            <div class="flex flex-wrap gap-2">
+            <div class="finance-filter-tabs flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
                 <a href="{{ route('anggota.simpanan.index') }}" 
-                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 @if(!request('filter')) bg-blue-600 text-white shadow-sm hover:bg-blue-700 @else bg-gray-100 text-gray-700 hover:bg-gray-200 @endif">
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 @if(!request('filter')) bg-slate-800 text-white @else bg-transparent text-slate-600 hover:bg-white @endif">
                     Semua
                 </a>
                 
                 <a href="{{ route('anggota.simpanan.index', ['filter' => 'pokok']) }}" 
-                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 @if(request('filter') === 'pokok') bg-blue-600 text-white shadow-sm hover:bg-blue-700 @else bg-gray-100 text-gray-700 hover:bg-gray-200 @endif">
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 @if(request('filter') === 'pokok') bg-slate-800 text-white @else bg-transparent text-slate-600 hover:bg-white @endif">
                     Pokok
                 </a>
                 
                 <a href="{{ route('anggota.simpanan.index', ['filter' => 'wajib']) }}" 
-                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 @if(request('filter') === 'wajib') bg-purple-600 text-white shadow-sm hover:bg-purple-700 @else bg-gray-100 text-gray-700 hover:bg-gray-200 @endif">
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 @if(request('filter') === 'wajib') bg-slate-800 text-white @else bg-transparent text-slate-600 hover:bg-white @endif">
                     Wajib
                 </a>
                 
                 <a href="{{ route('anggota.simpanan.index', ['filter' => 'sukarela']) }}" 
-                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 @if(request('filter') === 'sukarela') bg-green-600 text-white shadow-sm hover:bg-green-700 @else bg-gray-100 text-gray-700 hover:bg-gray-200 @endif">
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 @if(request('filter') === 'sukarela') bg-slate-800 text-white @else bg-transparent text-slate-600 hover:bg-white @endif">
                     Sukarela
                 </a>
             </div>
         </div>
 
         {{-- TABLE --}}
-        <div class="overflow-hidden rounded-lg">
+        <div class="finance-table-shell overflow-hidden rounded-xl border border-slate-200">
             {{-- Desktop View --}}
             <div class="hidden md:block overflow-x-auto">
                 <table class="w-full">
-                    <thead class="bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-300">
+                    <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th class="px-5 py-2.5 text-left font-semibold text-xs text-blue-900 uppercase tracking-widest">Tanggal</th>
-                            <th class="px-5 py-2.5 text-center font-semibold text-xs text-blue-900 uppercase tracking-widest">Jenis</th>
-                            <th class="px-5 py-2.5 text-right font-semibold text-xs text-blue-900 uppercase tracking-widest">Jumlah</th>
-                            <th class="px-5 py-2.5 text-center font-semibold text-xs text-blue-900 uppercase tracking-widest">Keterangan</th>
+                            <th class="px-5 py-2.5 text-left font-semibold text-xs text-slate-600">Tanggal</th>
+                            <th class="px-5 py-2.5 text-center font-semibold text-xs text-slate-600">Jenis</th>
+                            <th class="px-5 py-2.5 text-right font-semibold text-xs text-slate-600">Jumlah</th>
+                            <th class="px-5 py-2.5 text-center font-semibold text-xs text-slate-600">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
@@ -128,9 +128,9 @@
                                 <td class="px-5 py-2.5 text-center">
                                     @php
                                         $badge = match($s->jenis_simpanan) {
-                                            'pokok'    => 'bg-blue-100 text-blue-700 border border-blue-300 shadow-sm',
-                                            'wajib'    => 'bg-purple-100 text-purple-700 border border-purple-300 shadow-sm',
-                                            'sukarela' => 'bg-green-100 text-green-700 border border-green-300 shadow-sm',
+                                            'pokok'    => 'bg-slate-100 text-slate-700 border border-slate-200',
+                                            'wajib'    => 'bg-slate-100 text-slate-700 border border-slate-200',
+                                            'sukarela' => 'bg-emerald-50 text-emerald-700 border border-emerald-200',
                                             default    => 'bg-gray-100 text-gray-700 border border-gray-300 shadow-sm',
                                         };
                                     @endphp
@@ -140,7 +140,7 @@
                                     </span>
                                 </td>
                                 <td class="px-5 py-2.5 text-right font-bold text-gray-900 text-sm">
-                                    <span class="text-blue-600">Rp {{ number_format($s->jumlah, 0, ',', '.') }}</span>
+                                    <span class="text-slate-800">Rp {{ number_format($s->jumlah, 0, ',', '.') }}</span>
                                 </td>
                                 <td class="px-5 py-2.5 text-center">
                                     @if($s->keterangan)
@@ -167,24 +167,24 @@
             {{-- Mobile View --}}
             <div class="md:hidden space-y-2.5">
                 @forelse($simpanan as $s)
-                    <div class="bg-gradient-to-r from-blue-50 to-white border-l-4 border-l-blue-600 border border-blue-100 rounded-lg p-3.5 shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-300">
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                         <div class="flex justify-between items-start gap-2">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-3.5 h-3.5 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     <div class="text-xs text-gray-600 font-semibold">{{ $s->tanggal->format('d M Y') }}</div>
                                 </div>
-                                <div class="text-lg font-bold text-blue-600">
+                                <div class="text-lg font-bold text-slate-800">
                                     Rp {{ number_format($s->jumlah, 0, ',', '.') }}
                                 </div>
                             </div>
                             @php
                                 $badge = match($s->jenis_simpanan) {
-                                    'pokok'    => 'bg-blue-100 text-blue-700 border border-blue-300 shadow-sm',
-                                    'wajib'    => 'bg-purple-100 text-purple-700 border border-purple-300 shadow-sm',
-                                    'sukarela' => 'bg-green-100 text-green-700 border border-green-300 shadow-sm',
+                                    'pokok'    => 'bg-slate-100 text-slate-700 border border-slate-200',
+                                    'wajib'    => 'bg-slate-100 text-slate-700 border border-slate-200',
+                                    'sukarela' => 'bg-emerald-50 text-emerald-700 border border-emerald-200',
                                     default    => 'bg-gray-100 text-gray-700 border border-gray-300 shadow-sm',
                                 };
                             @endphp

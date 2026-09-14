@@ -2,6 +2,7 @@
 
 @section('title', 'Dashboard')
 @section('page-title', 'Dashboard')
+@section('page-description', 'Ringkasan kondisi anggota, simpanan, pinjaman, dan aktivitas koperasi terkini.')
 
 @section('content')
 <div class="space-y-3">
@@ -20,11 +21,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
 
             {{-- ANGGOTA --}}
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 dashboard-summary-card rounded-xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="p-2 bg-blue-200 rounded-full">
+                    <div class="p-2 bg-slate-100 rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg"
-                             class="h-6 w-6 text-blue-600"
+                             class="h-6 w-6 text-slate-600"
                              fill="none" viewBox="0 0 24 24"
                              stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -42,11 +43,11 @@
             </div>
 
             {{-- TOTAL SIMPANAN --}}
-            <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 dashboard-summary-card rounded-xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="p-2 bg-green-200 rounded-full">
+                    <div class="p-2 bg-slate-100 rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg"
-                             class="h-6 w-6 text-green-600"
+                             class="h-6 w-6 text-slate-600"
                              fill="none" viewBox="0 0 24 24"
                              stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -65,11 +66,11 @@
             </div>
 
             {{-- TOTAL PINJAMAN --}}
-            <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 dashboard-summary-card rounded-xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="p-2 bg-yellow-200 rounded-full">
+                    <div class="p-2 bg-slate-100 rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg"
-                             class="h-6 w-6 text-yellow-600"
+                             class="h-6 w-6 text-slate-600"
                              fill="none" viewBox="0 0 24 24"
                              stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -105,21 +106,21 @@
                 <div class="space-y-2">
                     <h3 class="text-sm mx-1 font-semibold text-gray-700">Simpanan</h3>
                     <div class="grid grid-cols-1 gap-2">
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <div class="text-sm text-green-800 font-medium">Simpanan Pokok</div>
-                            <div class="text-lg font-bold text-green-900">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-600 font-medium">Simpanan Pokok</div>
+                            <div class="text-lg font-bold text-slate-900">
                                 Rp {{ number_format($simpananPokok ?? 0, 0, ',', '.') }}
                             </div>
                         </div>
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <div class="text-sm text-green-800 font-medium">Simpanan Wajib</div>
-                            <div class="text-lg font-bold text-green-900">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-600 font-medium">Simpanan Wajib</div>
+                            <div class="text-lg font-bold text-slate-900">
                                 Rp {{ number_format($simpananWajib ?? 0, 0, ',', '.') }}
                             </div>
                         </div>
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <div class="text-sm text-green-800 font-medium">Simpanan Sukarela</div>
-                            <div class="text-lg font-bold text-green-900">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-600 font-medium">Simpanan Sukarela</div>
+                            <div class="text-lg font-bold text-slate-900">
                                 Rp {{ number_format($simpananSukarela ?? 0, 0, ',', '.') }}
                             </div>
                         </div>
@@ -130,21 +131,21 @@
                 <div class="space-y-2">
                     <h3 class="text-sm mx-1 font-semibold text-gray-700">Pinjaman</h3>
                     <div class="grid grid-cols-1 gap-2">
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <div class="text-sm text-yellow-800 font-medium">Pinjaman Aktif</div>
-                            <div class="text-lg font-bold text-yellow-900">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-600 font-medium">Pinjaman Aktif</div>
+                            <div class="text-lg font-bold text-slate-900">
                                 {{ $pinjamanAktif ?? 0 }}
                             </div>
                         </div>
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <div class="text-sm text-yellow-800 font-medium">Antrian Pinjaman</div>
-                            <div class="text-lg font-bold text-yellow-900">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-600 font-medium">Antrian Pinjaman</div>
+                            <div class="text-lg font-bold text-slate-900">
                                 {{ $antrianPinjaman ?? 0 }}
                             </div>
                         </div>
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <div class="text-sm text-yellow-800 font-medium">Sisa Pinjaman Aktif</div>
-                            <div class="text-lg font-bold text-yellow-900">
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="text-sm text-slate-600 font-medium">Sisa Pinjaman Aktif</div>
+                            <div class="text-lg font-bold text-slate-900">
                                 Rp {{ number_format($sisaPinjamanAktif ?? 0, 0, ',', '.') }}
                             </div>
                         </div>
@@ -185,14 +186,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Chart.js loaded:', typeof Chart);
         const ctx = document.getElementById('trenChart');
         if (!ctx) {
             console.error('Canvas element not found');
             return;
         }
         const chartData = @json($chartData);
-        console.log('Chart data:', chartData);
 
         if (!chartData || chartData.length === 0) {
             console.warn('No chart data available');

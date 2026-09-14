@@ -9,7 +9,7 @@
             <li class="menu-item">
                 <a href="{{ route('dashboard') }}"
                 class="menu-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <span class="menu-text">Dashboard</span>
+                    <x-sidebar-icon name="home" /><span class="menu-text">Dashboard</span>
                 </a>
             </li>
             @endcan
@@ -22,7 +22,7 @@
             <li class="menu-item">
                 <a href="{{ route('anggota.profil.index') }}"
                 class="menu-link {{ request()->routeIs('anggota.profil.*') ? 'active' : '' }}">
-                    <span class="menu-text">Profil</span>
+                    <x-sidebar-icon name="user" /><span class="menu-text">Profil</span>
                 </a>
             </li>
             @endcan
@@ -31,7 +31,7 @@
             <li class="menu-item">
                 <a href="{{ route('anggota.simpanan.index') }}"
                 class="menu-link {{ request()->routeIs('anggota.simpanan.*') ? 'active' : '' }}">
-                    <span class="menu-text">Simpanan Saya</span>
+                    <x-sidebar-icon name="wallet" /><span class="menu-text">Simpanan Saya</span>
                 </a>
             </li>
             @endcan
@@ -40,7 +40,7 @@
             <li class="menu-item">
                 <a href="{{ route('anggota.pinjaman.index') }}"
                 class="menu-link {{ request()->routeIs('anggota.pinjaman.index') || request()->routeIs('anggota.pinjaman.ajukan') ? 'active' : '' }}">
-                    <span class="menu-text">Pinjaman Saya</span>
+                    <x-sidebar-icon name="credit-card" /><span class="menu-text">Pinjaman Saya</span>
                 </a>
             </li>
             @endcan
@@ -54,7 +54,7 @@
             <li class="menu-item">
                 <a href="{{ route('anggota.laporan.simpanan') }}"
                 class="menu-link {{ request()->routeIs('anggota.laporan.simpanan') ? 'active' : '' }}">
-                    <span class="menu-text">Laporan Simpanan</span>
+                    <x-sidebar-icon name="chart-bar" /><span class="menu-text">Laporan Simpanan</span>
                 </a>
             </li>
             @endcan
@@ -63,7 +63,7 @@
             <li class="menu-item">
                 <a href="{{ route('anggota.laporan.pinjaman') }}"
                 class="menu-link {{ request()->routeIs('anggota.laporan.pinjaman') ? 'active' : '' }}">
-                    <span class="menu-text">Laporan Pinjaman</span>
+                    <x-sidebar-icon name="chart-bar" /><span class="menu-text">Laporan Pinjaman</span>
                 </a>
             </li>
             @endcan
@@ -83,7 +83,7 @@
                 'view laporan simpanan bulanan',
                 'view laporan pinjaman'
             ])
-            <li class="menu-header">ADMIN</li>
+            <li class="menu-header">Pengelolaan Koperasi</li>
 
             @canany(['view anggota list', 'manage users'])
             <li class="menu-item" x-data="{ open: {{ request()->routeIs('admin.anggota.*') || request()->routeIs('admin.users.*') || request()->routeIs('admin.master.rekening-koperasi.*') ? 'true' : 'false' }} }">
@@ -92,7 +92,7 @@
                     @click="open = !open"
                     class="menu-link menu-toggle-btn w-full flex items-center justify-between transition-colors duration-200">
                     <div class="flex items-center gap-3">
-                        <span class="menu-text">Master</span>
+                        <x-sidebar-icon name="users" /><span class="menu-text">Master Data</span>
                     </div>
                     <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -101,7 +101,7 @@
                 <div x-show="open" x-transition class="ml-6 space-y-1 border-l-2 border-slate-200 pl-2">
                     <a href="{{ auth()->user()->can('manage users') ? route('admin.users.index') : route('admin.anggota.index') }}"
                         class="sub-menu-link {{ request()->routeIs('admin.anggota.*') || request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                        Data
+                        Anggota & Pengguna
                     </a>
                     @if(auth()->user()->hasAnyRole(['admin', 'ketua', 'bendahara']))
                     <a href="{{ route('admin.master.rekening-koperasi.index') }}"
@@ -125,7 +125,7 @@
                     @click="open = !open"
                     class="menu-link menu-toggle-btn w-full flex items-center justify-between transition-colors duration-200">
                     <div class="flex items-center gap-3">
-                        <span class="menu-text">Transaksi</span>
+                        <x-sidebar-icon name="credit-card" /><span class="menu-text">Transaksi</span>
                     </div>
                     <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -171,7 +171,7 @@
                     @click="open = !open"
                     class="menu-link menu-toggle-btn w-full flex items-center justify-between transition-colors duration-200">
                     <div class="flex items-center gap-3">
-                        <span class="menu-text">Keuangan</span>
+                        <x-sidebar-icon name="chart-bar" /><span class="menu-text">Keuangan & Laporan</span>
                     </div>
                     <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
